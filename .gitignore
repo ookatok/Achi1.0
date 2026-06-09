@@ -1,0 +1,25 @@
+# Node dependencies
+node_modules/
+dist/
+.astro/
+dist-ssr/
+
+# Environment configurations
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Exclude local images in assets folders from Git (except structure files)
+/frontend/src/assets/images/*
+!/frontend/src/assets/images/.gitkeep
+
+/frontend/public/assets/images/*
+!/frontend/public/assets/images/.gitkeep
