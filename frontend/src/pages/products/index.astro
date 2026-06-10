@@ -214,13 +214,11 @@ const getColorsArray = (colors: any) => {
               </svg>
             </button>
 
-            {/* Product Image */}
-            <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
-              <img
-                src={resolveImage(product.imageUrl)}
-                alt={product.name}
-                class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
-              />
+            {/* Labeled Image Placeholder Box */}
+            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 p-4">
+              <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
+                [Image: {product.name}]
+              </span>
             </div>
 
             {/* Product Details */}
@@ -259,13 +257,11 @@ const getColorsArray = (colors: any) => {
             </svg>
           </button>
 
-          {/* Product Image */}
-          <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
-            <img
-              src={resolveImage(product.imageUrl)}
-              alt={product.name}
-              class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
-            />
+          {/* Labeled Image Placeholder Box */}
+          <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 p-4">
+            <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
+              [Image: {product.name}]
+            </span>
           </div>
 
           {/* Product Details */}

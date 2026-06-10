@@ -14,6 +14,7 @@
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^3.0.0",
     "@auth/core": "^0.37.3",
+    "achi-monorepo": "file:..",
     "astro": "^4.0.0",
     "auth-astro": "^4.0.0",
     "clsx": "^2.1.0",
