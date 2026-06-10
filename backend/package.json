@@ -26,6 +26,7 @@
     "mysql2": "^3.9.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sharp": "^0.34.5",
     "zod": "^3.22.0"
   },
   "devDependencies": {

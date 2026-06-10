@@ -4,8 +4,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { OrderModule } from './modules/order/order.module';
+import { WebImageModule } from './modules/web-image/web-image.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule],
+  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule],
 })
 export class AppModule {}
