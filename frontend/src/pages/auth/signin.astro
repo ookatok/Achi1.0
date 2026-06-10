@@ -1,0 +1,10 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SignInForm from '../../components/features/SignInForm';
+---
+
+<Layout title="Sign In | ACHI Studio" description="Sign in to your client account.">
+  <div class="min-h-[70vh] flex flex-col justify-center items-center px-4 py-12">
+    <SignInForm client:load />
+  </div>
+</Layout>

@@ -23,3 +23,6 @@ Thumbs.db
 
 /frontend/public/assets/images/*
 !/frontend/public/assets/images/.gitkeep
+
+/backend/public/assets/images/*
+!/backend/public/assets/images/.gitkeep

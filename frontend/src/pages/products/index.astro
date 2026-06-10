@@ -1,0 +1,291 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  return url;
+};
+
+// Fetch query params for filters
+const categorySlug = Astro.url.searchParams.get('categorySlug') || '';
+const minPrice = Astro.url.searchParams.get('minPrice') || '';
+const maxPrice = Astro.url.searchParams.get('maxPrice') || '';
+const sizes = Astro.url.searchParams.get('sizes') || '';
+const colors = Astro.url.searchParams.get('colors') || '';
+const searchQuery = Astro.url.searchParams.get('query') || '';
+
+let productsList = [] as any[];
+
+// Build query string for API
+const queryParams = new URLSearchParams();
+if (categorySlug) queryParams.set('categorySlug', categorySlug);
+if (minPrice) queryParams.set('minPrice', minPrice);
+if (maxPrice) queryParams.set('maxPrice', maxPrice);
+if (sizes) queryParams.set('sizes', sizes);
+if (colors) queryParams.set('colors', colors);
+if (searchQuery) queryParams.set('query', searchQuery);
+
+try {
+  const res = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
+  if (res.ok) {
+    productsList = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching products failed. Falling back to mockup items.', err);
+}
+
+// Fallback Mock items matching Figma design screenshot exactly
+const mockEditorialProducts = [
+  {
+    id: 101,
+    name: "Generic T-shirt 1",
+    price: "499.00",
+    imageUrl: "/assets/images/tshirt-1.png",
+    colors: ["#FFE135", "#1B2F50", "#5B7C99"], // Yellow, Navy, Light Blue
+    sizes: ["S", "M", "L"]
+  },
+  {
+    id: 102,
+    name: "Generic T-shirt 2",
+    price: "499.00",
+    imageUrl: "/assets/images/polo-dark.png",
+    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
+    sizes: ["M", "L", "XL"]
+  },
+  {
+    id: 103,
+    name: "Generic T-shirt 3",
+    price: "499.00",
+    imageUrl: "/assets/images/pants-cream.png",
+    colors: ["#FF0000", "#1A1A1A"], // Red, Black
+    sizes: ["OS"]
+  },
+  {
+    id: 104,
+    name: "Generic T-shirt 4",
+    price: "499.00",
+    imageUrl: "/assets/images/shoes-white.png",
+    colors: ["#7A00FF", "#1A1A1A"], // Purple, Black
+    sizes: ["OS"]
+  }
+];
+
+const mockStandardProducts = [
+  { id: 201, name: "Generic T-shirt 1", price: "499.00", imageUrl: "/assets/images/tshirt-1.png" },
+  { id: 202, name: "Generic T-shirt 2", price: "499.00", imageUrl: "/assets/images/polo-dark.png" },
+  { id: 203, name: "Generic T-shirt 3", price: "499.00", imageUrl: "/assets/images/pants-cream.png" },
+  { id: 204, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" }
+];
+
+// Determine if we should use mock data (if API is offline or returns nothing)
+const displayEditorialList = productsList.length > 0 ? productsList.slice(0, 4) : mockEditorialProducts;
+const displayStandardList = productsList.length > 4 ? productsList.slice(4) : mockStandardProducts;
+
+const getColorsArray = (colors: any) => {
+  if (!colors) return [];
+  if (Array.isArray(colors)) return colors;
+  try {
+    const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+---
+
+<Layout title="SHOP | ACHI Studio" description="Explore ACHI's custom tailored outerwear, statement collections, and basic essentials." showHeroHeader={true}>
+  {/* Editorial Collection Hero Banner */}
+  <section class="w-full relative h-[70vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/collection-hero.png')}');`}></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+    
+    <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
+      <div class="flex items-end justify-between w-full">
+        <div>
+          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">11.09</span>
+          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">new arrival</h1>
+        </div>
+        <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
+          FOR WOMEN'S CLOTHING
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Filter Dropdowns Bar */}
+  <section class="border-y border-gray-200 bg-white">
+    <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center gap-8 text-[11px] uppercase tracking-wider font-light text-gray-500 overflow-x-auto">
+      <span class="text-brand-charcoal font-semibold">FILTER BY</span>
+      
+      <select id="price-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
+        <option value="">Price</option>
+        <option value="0-500" selected={minPrice === '0' && maxPrice === '500'}>Under $500</option>
+        <option value="500-1000" selected={minPrice === '500' && maxPrice === '1000'}>$500 - $1,000</option>
+      </select>
+
+      <select id="color-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
+        <option value="">Color</option>
+        <option value="#94B2E6" selected={colors === '#94B2E6'}>Soft Blue</option>
+        <option value="#F3F1EC" selected={colors === '#F3F1EC'}>Soft Cream</option>
+        <option value="#1B2F50" selected={colors === '#1B2F50'}>Navy</option>
+      </select>
+
+      <select id="size-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
+        <option value="">Size</option>
+        <option value="S" selected={sizes === 'S'}>S</option>
+        <option value="M" selected={sizes === 'M'}>M</option>
+        <option value="L" selected={sizes === 'L'}>L</option>
+        <option value="XL" selected={sizes === 'XL'}>XL</option>
+      </select>
+
+      <select id="gender-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
+        <option value="">Gender</option>
+        <option value="men" selected={categorySlug === 'men'}>Male</option>
+        <option value="women" selected={categorySlug === 'women'}>Female</option>
+      </select>
+    </div>
+  </section>
+
+  <script is:inline>
+    const priceFilter = document.getElementById('price-filter');
+    const colorFilter = document.getElementById('color-filter');
+    const sizeFilter = document.getElementById('size-filter');
+    const genderFilter = document.getElementById('gender-filter');
+
+    const updateFilters = () => {
+      const params = new URLSearchParams(window.location.search);
+      
+      // Price
+      if (priceFilter && priceFilter.value) {
+        const [min, max] = priceFilter.value.split('-');
+        params.set('minPrice', min);
+        params.set('maxPrice', max);
+      } else {
+        params.delete('minPrice');
+        params.delete('maxPrice');
+      }
+
+      // Color
+      if (colorFilter && colorFilter.value) {
+        params.set('colors', colorFilter.value);
+      } else {
+        params.delete('colors');
+      }
+
+      // Size
+      if (sizeFilter && sizeFilter.value) {
+        params.set('sizes', sizeFilter.value);
+      } else {
+        params.delete('sizes');
+      }
+
+      // Gender / Category
+      if (genderFilter && genderFilter.value) {
+        params.set('categorySlug', genderFilter.value);
+      } else {
+        params.delete('categorySlug');
+      }
+
+      window.location.search = params.toString();
+    };
+
+    [priceFilter, colorFilter, sizeFilter, genderFilter].forEach(el => {
+      if (el) el.addEventListener('change', updateFilters);
+    });
+  </script>
+
+  <div class="max-w-[1440px] mx-auto px-6 py-16">
+    {/* Editorial / Mixed Layout Section */}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch mb-20">
+      <!-- Left Column: Large Model Image -->
+      <div class="relative bg-gray-100 aspect-[3/4] overflow-hidden rounded-sm">
+        <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${resolveImage('/assets/images/editorial-side.png')}');`}></div>
+      </div>
+
+      <!-- Right Column: Editorial Product Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        {displayEditorialList.map((product: any) => (
+          <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
+            {/* Heart Favorite Button */}
+            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+            </button>
+
+            {/* Product Image */}
+            <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
+              <img
+                src={resolveImage(product.imageUrl)}
+                alt={product.name}
+                class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+
+            {/* Product Details */}
+            <div>
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                  {product.name}
+                </h3>
+                {/* Color swatches */}
+                {getColorsArray(product.colors).length > 0 && (
+                  <div class="flex gap-1.5 shrink-0">
+                    {getColorsArray(product.colors).map((color: string) => (
+                      <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+            </div>
+            
+            {/* Clickable Area Link */}
+            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Standard 4-Column Grid Section */}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+      {displayStandardList.map((product: any) => (
+        <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
+          {/* Heart Favorite Button */}
+          <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+            </svg>
+          </button>
+
+          {/* Product Image */}
+          <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
+            <img
+              src={resolveImage(product.imageUrl)}
+              alt={product.name}
+              class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Product Details */}
+          <div>
+            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+              {product.name}
+            </h3>
+            <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+          </div>
+
+          {/* Clickable Area Link */}
+          <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
+        </div>
+      ))}
+    </div>
+
+    {/* View More Outline Button */}
+    <div class="text-center py-12">
+      <button class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300 cursor-pointer">
+        view more
+      </button>
+    </div>
+  </div>
+</Layout>

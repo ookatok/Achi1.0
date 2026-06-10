@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect('/auth/signin');
+}
+
+// Get orderId from query parameter
+const orderId = Astro.url.searchParams.get('orderId') || '';
+---
+
+<Layout title="Order Confirmed | ACHI Studio" description="Your order has been placed successfully.">
+  <div class="min-h-[60vh] flex flex-col justify-center items-center px-6 text-center">
+    <div class="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+      </svg>
+    </div>
+    
+    <span class="text-xs uppercase tracking-widest text-brand-gold font-semibold mb-2">Order Confirmed</span>
+    <h1 class="font-serif text-3xl font-bold tracking-tight text-brand-charcoal mb-4">Thank You for Your Order</h1>
+    <p class="text-sm text-gray-500 max-w-md font-light mb-8">
+      Your payment has been simulated successfully and order has been logged. Your order confirmation reference is <strong class="text-brand-charcoal">#{orderId}</strong>.
+    </p>
+
+    <div class="flex gap-4">
+      <a href="/products" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
+        Continue Shopping
+      </a>
+      <a href="/" class="border border-gray-200 text-brand-charcoal hover:bg-gray-50 px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
+        Home
+      </a>
+    </div>
+  </div>
+</Layout>

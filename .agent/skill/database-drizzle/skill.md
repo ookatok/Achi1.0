@@ -55,7 +55,7 @@ export const DatabaseProvider: Provider = {
       port: Number(process.env.DATABASE_PORT) || 3306,
       user: process.env.DATABASE_USER || 'root',
       password: process.env.DATABASE_PASSWORD || 'password',
-      database: process.env.DATABASE_NAME || 'fashion_db',
+      database: process.env.DATABASE_NAME || 'achi_db',
       connectionLimit: 10,
     });
     return drizzle(connection, { schema, mode: 'default' });
@@ -126,7 +126,7 @@ export default defineConfig({
     host: process.env.DATABASE_HOST || 'localhost',
     user: process.env.DATABASE_USER || 'root',
     password: process.env.DATABASE_PASSWORD || 'password',
-    database: process.env.DATABASE_NAME || 'fashion_db',
+    database: process.env.DATABASE_NAME || 'achi_db',
     port: Number(process.env.DATABASE_PORT) || 3306,
   },
 });

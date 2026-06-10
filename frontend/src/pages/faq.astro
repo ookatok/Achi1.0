@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="FAQ | ACHI Studio" description="Frequently Asked Questions about orders, shipping, and returns.">
+  <div class="max-w-[800px] mx-auto px-6 py-24">
+    <div class="text-center mb-16">
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">FAQ</h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Frequently Asked Questions</p>
+    </div>
+
+    <div class="space-y-6 divide-y divide-gray-200 text-xs tracking-wider uppercase font-light text-gray-600">
+      <div class="py-6 first:pt-0">
+        <details class="group cursor-pointer">
+          <summary class="flex justify-between items-center focus:outline-none select-none">
+            <span>What are your shipping methods and delivery times?</span>
+            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+            We offer free standard shipping on all orders. Standard delivery typically takes 2-4 business days within Bangkok, and 3-5 business days for other provinces.
+          </div>
+        </details>
+      </div>
+
+      <div class="py-6">
+        <details class="group cursor-pointer">
+          <summary class="flex justify-between items-center focus:outline-none select-none">
+            <span>What is your return policy?</span>
+            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+            We accept unconditional returns up to 14 days after receiving your order. Items must be unworn, unwashed, and have their original tags attached.
+          </div>
+        </details>
+      </div>
+
+      <div class="py-6">
+        <details class="group cursor-pointer">
+          <summary class="flex justify-between items-center focus:outline-none select-none">
+            <span>How do I care for my linen and cotton garments?</span>
+            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+            We recommend machine washing on a gentle cycle in cold water with similar colors. Line dry or tumble dry low. Warm iron if necessary. Avoid bleaching.
+          </div>
+        </details>
+      </div>
+
+      <div class="py-6">
+        <details class="group cursor-pointer">
+          <summary class="flex justify-between items-center focus:outline-none select-none">
+            <span>Can I modify or cancel my order after it has been placed?</span>
+            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+          </summary>
+          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+            Orders are processed quickly. Please contact us via Line or phone within 30 minutes of order placement to request modifications or cancellation.
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</Layout>

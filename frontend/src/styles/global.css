@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fashion branding custom theme variables (Tailwind CSS v4 CSS-first config) */
+  --color-brand-charcoal: #1a1a1a;
+  --color-brand-cream: #fbf9f6;
+  --color-brand-gold: #c5a880;
+  
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Outfit', sans-serif;
+  
+  --radius-custom: 8px;
+}
+
+/* Base style resets and layout rules */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-cream);
+  color: var(--color-brand-charcoal);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Chic slide-in card transitions */
+.product-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+}

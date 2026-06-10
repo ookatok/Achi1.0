@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect('/auth/signin?callbackUrl=/admin');
+}
+
+// Security double check (just in case middleware is bypassed)
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let productsCount = 0;
+let orders = [] as any[];
+let errorMsg = null;
+
+try {
+  // 1. Fetch products count
+  const prodRes = await fetch('http://localhost:3001/api/products');
+  if (prodRes.ok) {
+    const products = await prodRes.json();
+    productsCount = products.length;
+  }
+
+  // 2. Fetch all orders (since we are admin, we can fetch all orders or look up our own)
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    orders = await ordRes.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Admin page fetch failed.', err);
+  errorMsg = 'Could not load admin panel data. Backend server may be offline.';
+}
+---
+
+<Layout title="Admin Panel | ACHI Studio" description="ACHI E-Commerce administrative console.">
+  <div class="max-w-[1000px] mx-auto px-6 py-24">
+    {/* Page Header */}
+    <div class="text-center mb-16">
+      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Admin Panel</h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">E-Commerce Management Console</p>
+    </div>
+
+    {errorMsg && (
+      <div class="text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm mb-8">
+        {errorMsg}
+      </div>
+    )}
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <!-- Card 1: Products Count -->
+      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Products</span>
+        <span class="text-3xl font-serif font-bold text-brand-charcoal">{productsCount}</span>
+      </div>
+
+      <!-- Card 2: Orders Count -->
+      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Orders</span>
+        <span class="text-3xl font-serif font-bold text-brand-charcoal">{orders.length}</span>
+      </div>
+
+      <!-- Card 3: Active Promotions -->
+      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Active Promos</span>
+        <span class="text-3xl font-serif font-bold text-brand-charcoal">0</span>
+      </div>
+
+      <!-- Card 4: Server Status -->
+      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Server Status</span>
+        <span class="text-xs font-semibold text-green-600 uppercase tracking-widest bg-green-50 px-2.5 py-1.5 rounded-full border border-green-100 inline-block mt-1">
+          Online
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Section: Orders Management -->
+    <div class="bg-white border border-gray-200 p-8 rounded-sm space-y-6">
+      <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-gray-100">
+        System Orders List
+      </h2>
+
+      {orders.length === 0 ? (
+        <div class="text-center py-12 text-gray-400 text-xs font-light">
+          No orders found in the database.
+        </div>
+      ) : (
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-gray-500 border-collapse border border-gray-100">
+            <thead>
+              <tr class="bg-gray-50 text-brand-charcoal uppercase font-semibold">
+                <th class="p-3 border border-gray-100">Order ID</th>
+                <th class="p-3 border border-gray-100">Date</th>
+                <th class="p-3 border border-gray-100">Shipping Address</th>
+                <th class="p-3 border border-gray-100 text-right">Amount</th>
+                <th class="p-3 border border-gray-100 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order: any) => (
+                <tr>
+                  <td class="p-3 border border-gray-100 font-medium text-brand-charcoal">#{order.id}</td>
+                  <td class="p-3 border border-gray-100">{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td class="p-3 border border-gray-100 max-w-[250px] truncate">{order.shippingAddress}</td>
+                  <td class="p-3 border border-gray-100 text-right font-semibold text-brand-charcoal">
+                    ${Number(order.totalPrice).toLocaleString()}
+                  </td>
+                  <td class="p-3 border border-gray-100 text-center">
+                    <span class="text-[9px] uppercase tracking-widest text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100 font-semibold inline-block">
+                      {order.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>

@@ -32,7 +32,7 @@ This guide details authentication implementation, token lifecycle, security vali
 Initialize Auth.js handler configuration under `frontend/src/pages/api/auth/[...auth].ts`.
 
 ```typescript
-import AstroAuth from "@auth/astro";
+import AstroAuth from "auth-astro";
 import Credentials from "@auth/core/providers/credentials";
 
 export const { GET, POST } = AstroAuth({

@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  return url;
+};
+---
+
+<Layout title="ACHI | ASPIRE to be AUTHENTIC" description="Explore the ACHI 2026 Spring Collection featuring clean cuts, tailored outfits, and premium fabrics." showHeroHeader={true}>
+  <!-- Hero Section -->
+  <section class="w-full relative h-[100vh] bg-[#1A1A1A] flex items-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/hero-authentic.png')}');`}></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+    
+    <div class="relative w-full max-w-[1440px] mx-auto px-6 pt-24 flex flex-col justify-center items-start h-full">
+      <span class="text-xs uppercase tracking-[0.3em] text-gray-300 font-light mb-4 block">2026 Spring Collection</span>
+      <h1 class="font-serif text-5xl sm:text-8xl tracking-tight leading-none mb-4 uppercase">
+        ASPIRE to be<br/>
+        <span class="italic font-normal">AUTHENTIC.</span>
+      </h1>
+      <p class="font-sans text-xs sm:text-sm max-w-[500px] tracking-widest font-light mb-10 text-gray-300 uppercase leading-relaxed">
+        Minimalist High-Quality - That's the Way We Do Business. Explore apparel designed for daily functionality.
+      </p>
+      
+      <a href="/products" class="border border-white hover:bg-white hover:text-brand-charcoal text-white px-10 py-3.5 text-xs uppercase tracking-widest font-medium transition-all duration-300 rounded-sm">
+        Shop now
+      </a>
+    </div>
+  </section>
+
+  <!-- Side-by-Side Category Banners (MEN & WOMEN) -->
+  <section class="w-full py-16 bg-white">
+    <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Left Column: MEN -->
+      <a href="/products/men" class="relative aspect-[3/4] overflow-hidden rounded-sm group block bg-gray-100">
+        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/men-category.png')}');`}></div>
+        <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-35 transition-all"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
+            MEN
+          </h2>
+        </div>
+      </a>
+
+      <!-- Right Column: WOMEN -->
+      <a href="/products/women" class="relative aspect-[3/4] overflow-hidden rounded-sm group block bg-gray-100">
+        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/women-category.png')}');`}></div>
+        <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-35 transition-all"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
+            WOMEN
+          </h2>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- New Arrivals Collage Grid -->
+  <section class="bg-[#F2F4F8] py-24 border-y border-gray-100">
+    <div class="max-w-[1440px] mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="font-serif text-3xl sm:text-4xl tracking-wide font-semibold text-brand-charcoal uppercase">
+          New Arrivals
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
+        <!-- Col 1: Item 1 & Item 2 Stack -->
+        <div class="flex flex-col gap-8 justify-between">
+          <!-- Item 1: Polo -->
+          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
+            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+            </button>
+            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
+              <img src={resolveImage('/assets/images/polo-dark.png')} alt="generic shirt" class="max-h-[85%] object-contain mix-blend-multiply" />
+            </div>
+            <div>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic shirt</h3>
+              <span class="text-xs text-gray-500 mt-2 block">$567</span>
+            </div>
+            <a href="/products/105" class="absolute inset-0 z-10" aria-label="View Product"></a>
+          </div>
+          
+          <!-- Item 2: Watch -->
+          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
+            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+            </button>
+            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
+              <img src={resolveImage('/assets/images/watch-dark.png')} alt="generic watch" class="max-h-[85%] object-contain mix-blend-multiply" />
+            </div>
+            <div>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic watch</h3>
+              <span class="text-xs text-gray-500 mt-2 block">$567</span>
+            </div>
+            <a href="/products/106" class="absolute inset-0 z-10" aria-label="View Product"></a>
+          </div>
+        </div>
+
+        <!-- Col 2: Tall vertical Model Photo (Col 2 & Col 3 middle) -->
+        <div class="md:col-span-2 relative aspect-[3/4] md:aspect-auto overflow-hidden bg-gray-200 rounded-sm">
+          <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${resolveImage('/assets/images/collage-model.png')}');`}></div>
+        </div>
+
+        <!-- Col 3: Item 3 & Item 4 Stack -->
+        <div class="flex flex-col gap-8 justify-between">
+          <!-- Item 3: Pants -->
+          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
+            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+            </button>
+            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
+              <img src={resolveImage('/assets/images/pants-cream.png')} alt="generic pants" class="max-h-[85%] object-contain mix-blend-multiply" />
+            </div>
+            <div>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic pants</h3>
+              <span class="text-xs text-gray-500 mt-2 block">$569</span>
+            </div>
+            <a href="/products/107" class="absolute inset-0 z-10" aria-label="View Product"></a>
+          </div>
+
+          <!-- Item 4: Shoes -->
+          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
+            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+            </button>
+            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
+              <img src={resolveImage('/assets/images/shoes-white.png')} alt="generic shoes" class="max-h-[85%] object-contain mix-blend-multiply" />
+            </div>
+            <div>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic shoes</h3>
+              <span class="text-xs text-gray-500 mt-2 block">$567</span>
+            </div>
+            <a href="/products/108" class="absolute inset-0 z-10" aria-label="View Product"></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-16">
+        <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300">
+          view more
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,275 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+// Fetch user session for token authorization
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+const { id } = Astro.params;
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  return url;
+};
+
+let product = null;
+
+try {
+  const res = await fetch(`${BACKEND_URL}/api/products/${id}`);
+  if (res.ok) {
+    product = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching product details failed. Using Figma mock product.', err);
+}
+
+// Fallback Mock Product if API is offline or database item is missing
+const mockProduct = {
+  id: Number(id) || 1,
+  name: "Generic T-shirt 1",
+  price: "499.00",
+  imageUrl: "/assets/images/tshirt-1.png",
+  description: "Minimalist cotton crewneck t-shirt with contrasting neck ribbing.",
+  sizes: ["S", "M", "L", "XL"],
+  colors: ["#94B2E6", "#F3F1EC"] // Soft Blue, Soft Cream swatches matching screenshot
+};
+
+const displayProduct = product || mockProduct;
+---
+
+<Layout title={`${displayProduct.name} | ACHI Studio`} description={displayProduct.description}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16">
+    {/* Breadcrumbs */}
+    <nav class="text-xs uppercase tracking-widest text-gray-400 font-light mb-8">
+      <a href="/products" class="hover:text-brand-charcoal transition-colors">Clothing</a>
+      <span class="mx-2">/</span>
+      <span class="text-brand-charcoal">{displayProduct.name}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <!-- Left Column: Vertical Image Stack -->
+      <div class="space-y-8 flex flex-col items-center">
+        <!-- Main Product Image -->
+        <div class="w-full bg-gray-50 overflow-hidden flex items-center justify-center p-8 aspect-[1/1] rounded-sm relative">
+          <img
+            src={resolveImage(displayProduct.imageUrl)}
+            alt={displayProduct.name}
+            class="max-h-[90%] object-contain mix-blend-multiply"
+          />
+        </div>
+
+        {/* Alternate Gray Image Placeholders from Figma design PDP */}
+        <div class="w-full bg-gray-100 flex items-center justify-center aspect-[1/1] text-gray-400 font-light uppercase tracking-widest text-sm rounded-sm">
+          image
+        </div>
+
+        <div class="w-full bg-gray-100 flex items-center justify-center aspect-[1/1] text-gray-400 font-light uppercase tracking-widest text-sm rounded-sm">
+          image
+        </div>
+      </div>
+
+      <!-- Right Column: Product Details & Options -->
+      <div class="space-y-8 lg:sticky lg:top-28">
+        <div>
+          <h1 class="font-serif text-3xl font-bold tracking-wide text-brand-charcoal mb-4 uppercase">
+            {displayProduct.name}
+          </h1>
+          
+          <div class="text-xl font-semibold text-brand-charcoal mb-6">
+            ${Number(displayProduct.price).toLocaleString()}
+          </div>
+          
+          <p class="text-xs text-gray-500 font-light leading-relaxed mb-4">
+            incl. tax. Shipping costs showing post coding: Free returns until 14 days.
+          </p>
+        </div>
+
+        {/* Option: Colors Swatches */}
+        {displayProduct.colors && displayProduct.colors.length > 0 && (
+          <div>
+            <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
+              Product colors
+            </h4>
+            <div class="flex gap-3">
+              {displayProduct.colors.map((color: string, index: number) => (
+                <button
+                  class={`w-7 h-7 rounded-full border border-gray-200 block shadow-sm focus:outline-none cursor-pointer color-option-btn ${index === 0 ? 'ring-2 ring-brand-charcoal ring-offset-2' : ''}`}
+                  style={{ backgroundColor: color }}
+                  data-color={color}
+                ></button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Option: Sizes Divisors */}
+        {displayProduct.sizes && displayProduct.sizes.length > 0 && (
+          <div>
+            <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
+              Product size
+            </h4>
+            <div class="flex items-center gap-4 text-xs font-light tracking-wider text-gray-500">
+              {displayProduct.sizes.map((size: string, index: number) => (
+                <>
+                  {index > 0 && <span class="text-gray-300">|</span>}
+                  <button
+                    class={`hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer size-option-btn ${index === 0 ? 'font-semibold text-brand-charcoal' : ''}`}
+                    data-size={size}
+                  >
+                    {size}
+                  </button>
+                </>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add To Cart Button */}
+        <div>
+          <button
+            id="add-to-cart-btn"
+            class="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 cursor-pointer"
+          >
+            ADD TO CART
+          </button>
+          <div id="cart-msg" class="hidden mt-4 p-4 text-xs font-medium rounded-sm"></div>
+        </div>
+
+        {/* Accordions */}
+        <div class="border-t border-gray-200 pt-4 divide-y divide-gray-200 text-xs tracking-wider uppercase font-light text-gray-600">
+          <div class="py-4">
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center focus:outline-none select-none">
+                <span>Check in-store Availability</span>
+                <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+                Available at ACHI Flagship Studio and selected branches in Bangkok.
+              </div>
+            </details>
+          </div>
+
+          <div class="py-4">
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center focus:outline-none select-none">
+                <span>Fit Details</span>
+                <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+                Relaxed fit contours, designed for everyday minimal chic style. Model is wearing size L.
+              </div>
+            </details>
+          </div>
+
+          <div class="py-4">
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center focus:outline-none select-none">
+                <span>Materials</span>
+                <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+                100% premium organic cotton. Clean double-needle stitched seams.
+              </div>
+            </details>
+          </div>
+
+          <div class="py-4">
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center focus:outline-none select-none">
+                <span>Shipping and returns</span>
+                <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
+                Free standard delivery. Easy and unconditional returns up to 14 days.
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ token, productId: displayProduct.id }}>
+    let selectedColor = '';
+    let selectedSize = '';
+
+    // Handle option selectors highlights
+    const colorButtons = document.querySelectorAll('.color-option-btn');
+    const sizeButtons = document.querySelectorAll('.size-option-btn');
+
+    if (colorButtons.length > 0) {
+      selectedColor = colorButtons[0].getAttribute('data-color') || '';
+      colorButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          colorButtons.forEach(b => b.classList.remove('ring-2', 'ring-brand-charcoal', 'ring-offset-2'));
+          btn.classList.add('ring-2', 'ring-brand-charcoal', 'ring-offset-2');
+          selectedColor = btn.getAttribute('data-color') || '';
+        });
+      });
+    }
+
+    if (sizeButtons.length > 0) {
+      selectedSize = sizeButtons[0].getAttribute('data-size') || '';
+      sizeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          sizeButtons.forEach(b => b.classList.remove('font-semibold', 'text-brand-charcoal'));
+          btn.classList.add('font-semibold', 'text-brand-charcoal');
+          selectedSize = btn.getAttribute('data-size') || '';
+        });
+      });
+    }
+
+    // Add to cart click event
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const cartMsg = document.getElementById('cart-msg');
+
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener('click', async () => {
+        if (!token) {
+          window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
+          return;
+        }
+
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'ADDING TO CART...';
+
+        try {
+          const res = await fetch('http://localhost:3001/api/cart/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              productId,
+              quantity: 1,
+              size: selectedSize || undefined,
+              color: selectedColor || undefined
+            })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            if (cartMsg) {
+              cartMsg.textContent = 'Item added to your cart successfully!';
+              cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-green-50 border-l-2 border-green-500 text-green-600 block';
+            }
+          } else {
+            throw new Error(data.message || 'Could not add item');
+          }
+        } catch (err) {
+          console.error(err);
+          if (cartMsg) {
+            cartMsg.textContent = err.message || 'An error occurred.';
+            cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-red-50 border-l-2 border-red-500 text-red-600 block';
+          }
+        } finally {
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = 'ADD TO CART';
+        }
+      });
+    }
+  </script>
+</Layout>

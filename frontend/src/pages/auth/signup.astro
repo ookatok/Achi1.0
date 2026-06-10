@@ -1,0 +1,10 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SignUpForm from '../../components/features/SignUpForm';
+---
+
+<Layout title="Register Client | ACHI Studio" description="Register a new client account.">
+  <div class="min-h-[70vh] flex flex-col justify-center items-center px-4 py-12">
+    <SignUpForm client:load />
+  </div>
+</Layout>

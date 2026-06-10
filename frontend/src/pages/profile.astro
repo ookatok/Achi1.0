@@ -1,0 +1,163 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect('/auth/signin?callbackUrl=/profile');
+}
+
+let orders = [] as any[];
+let errorMsg = null;
+
+try {
+  const res = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (res.ok) {
+    orders = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching orders failed.', err);
+  errorMsg = 'Could not load orders history. Backend server may be offline.';
+}
+---
+
+<Layout title="Your Account | ACHI Studio" description="Manage your ACHI customer profile and track orders.">
+  <!-- Top Minimalist Banner -->
+  <section class="bg-stone-50 border-b border-stone-200/60 py-16">
+    <div class="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+      <div>
+        <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">Welcome, {session?.user?.name}</h1>
+        <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">ACHI Premium Member</p>
+      </div>
+      <div>
+        <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-8 py-3 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all duration-300">
+          Continue Shopping
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="max-w-[1200px] mx-auto px-6 py-20">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
+      
+      <!-- Left Column: Member Card -->
+      <div class="lg:col-span-1 bg-white border border-stone-200/80 p-8 rounded-sm shadow-sm relative overflow-hidden flex flex-col justify-between aspect-[1.586/1] md:aspect-auto">
+        <!-- Background Pattern -->
+        <div class="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-stone-50 pointer-events-none select-none opacity-50 border border-stone-200/50"></div>
+        
+        <div class="space-y-6 relative z-10">
+          <div class="flex items-center justify-between">
+            <div class="w-10 h-10 rounded-full bg-brand-charcoal text-white font-serif flex items-center justify-center text-sm font-semibold select-none">
+              {session?.user?.name ? session.user.name.substring(0, 2).toUpperCase() : 'AC'}
+            </div>
+            <span class="text-[9px] tracking-[0.3em] font-medium text-brand-gold uppercase bg-amber-50/50 border border-brand-gold/20 px-2.5 py-0.5 rounded-full">
+              {(session?.user as any)?.role || 'customer'}
+            </span>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Name</span>
+              <span class="text-sm font-serif font-semibold text-brand-charcoal">{session?.user?.name}</span>
+            </div>
+            
+            <div>
+              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Email Account</span>
+              <span class="text-xs font-light text-stone-500">{session?.user?.email}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-stone-100 pt-6 mt-8">
+          <button
+            id="signout-btn"
+            class="w-full border border-stone-300 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Orders History Feed -->
+      <div class="lg:col-span-2 space-y-8">
+        <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
+          <h2 class="font-serif text-lg uppercase tracking-wider text-brand-charcoal font-semibold">
+            Order Logs
+          </h2>
+          <span class="text-[10px] uppercase tracking-widest text-stone-400 font-light font-sans">{orders.length} Orders Total</span>
+        </div>
+
+        {errorMsg && (
+          <div class="text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm">
+            {errorMsg}
+          </div>
+        )}
+
+        {orders.length === 0 ? (
+          <div class="text-center py-20 border border-dashed border-stone-200 text-stone-400 text-xs font-light rounded-sm bg-stone-50/30">
+            No orders found under this account.
+          </div>
+        ) : (
+          <div class="space-y-6">
+            {orders.map((order: any) => (
+              <div class="border border-stone-200/80 p-6 rounded-sm bg-white hover:border-brand-gold transition-colors duration-300 space-y-6">
+                <!-- Order Card Header -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <span class="font-mono text-xs font-semibold tracking-wider text-brand-charcoal block uppercase">
+                      ACHI-ORD-{String(order.id).padStart(5, '0')}
+                    </span>
+                    <span class="text-[9px] text-stone-400 font-light block uppercase mt-1 tracking-wider">
+                      Placed: {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  
+                  <div class="flex items-center gap-4">
+                    <div class="text-right">
+                      <span class="text-xs text-stone-400 uppercase tracking-widest font-light block">Total</span>
+                      <span class="font-semibold text-brand-charcoal text-sm">${Number(order.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    
+                    <span class={`text-[9px] uppercase tracking-widest px-3 py-1 rounded-full border font-semibold inline-block ${
+                      order.status === 'pending' 
+                        ? 'text-amber-600 bg-amber-50/50 border-amber-200/60' 
+                        : 'text-green-600 bg-green-50/50 border-green-200/60'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Order Shipping Details -->
+                <div class="bg-stone-50 p-4 rounded-sm border border-stone-100 flex flex-col sm:flex-row justify-between gap-4 text-xs font-light text-stone-500">
+                  <div>
+                    <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Shipping Address</span>
+                    <span class="text-xs text-stone-600 leading-relaxed block">{order.shippingAddress}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    import { signOut } from 'auth-astro/client';
+    const signoutBtn = document.getElementById('signout-btn');
+    if (signoutBtn) {
+      signoutBtn.addEventListener('click', () => {
+        signOut({ callbackUrl: '/' });
+      });
+    }
+  </script>
+</Layout>

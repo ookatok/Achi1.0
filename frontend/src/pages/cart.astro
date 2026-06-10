@@ -1,0 +1,199 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+// Fetch user session for token authorization
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+let cartData = { id: 0, items: [] as any[] };
+let errorMsg = null;
+
+if (token) {
+  try {
+    const res = await fetch('http://localhost:3001/api/cart', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (res.ok) {
+      cartData = await res.json();
+    } else {
+      errorMsg = 'Could not load cart details. Please try again.';
+    }
+  } catch (err) {
+    console.error(err);
+    errorMsg = 'Network error: Backend server is not running.';
+  }
+}
+
+// Compute cart totals
+const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number(item.productPrice) * item.quantity), 0);
+const cartTotal = subtotal; // Modify if taxes/shipping applies
+---
+
+<Layout title="Cart | ACHI Studio" description="Review your selected items and checkout.">
+  <div class="max-w-[1440px] mx-auto px-6 py-16">
+    {/* Page Title */}
+    <div class="text-center mb-16">
+      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Your Cart</h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Confirm selected clothing configurations</p>
+    </div>
+
+    {!token ? (
+      <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
+        <p class="text-gray-500 mb-6 font-light">Please sign in to view and manage your shopping cart.</p>
+        <a href="/auth/signin?callbackUrl=/cart" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
+          Sign In
+        </a>
+      </div>
+    ) : errorMsg ? (
+      <div class="text-center py-16 max-w-xl mx-auto text-red-500 font-light">
+        {errorMsg}
+      </div>
+    ) : cartData.items.length === 0 ? (
+      <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
+        <p class="text-gray-500 mb-6 font-light">Your shopping cart is currently empty.</p>
+        <a href="/products" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
+          Go Shop
+        </a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        {/* Left Side: Cart Items List */}
+        <div class="lg:col-span-2 space-y-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {cartData.items.map((item: any) => (
+              <div class="border border-gray-200 p-6 relative flex flex-col justify-between aspect-[1/1] rounded-sm bg-white product-card-hover" id={`cart-item-${item.id}`}>
+                {/* Remove button at top right of the card */}
+                <button
+                  class="absolute top-4 right-4 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer remove-item-btn"
+                  data-item-id={item.id}
+                  aria-label="Remove item"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                {/* Card Top: Title */}
+                <div class="text-center">
+                  <h3 class="font-serif text-base font-medium text-brand-charcoal uppercase tracking-wider">
+                    {item.productName} {item.quantity} {item.size || ''}
+                  </h3>
+                  {item.color && (
+                    <span class="text-[10px] tracking-widest text-gray-400 uppercase font-light mt-1 block">
+                      Color: {item.color}
+                    </span>
+                  )}
+                </div>
+
+                {/* Card Center: Product Image */}
+                <div class="flex-grow flex items-center justify-center my-4 overflow-hidden aspect-[4/3] relative">
+                  <img
+                    src={item.productImageUrl || '/assets/images/placeholder-product.png'}
+                    alt={item.productName}
+                    class="h-full object-contain mix-blend-multiply"
+                  />
+                </div>
+
+                {/* Card Bottom: Quantity and Subtotal */}
+                <div class="border-t border-gray-100 pt-4 flex items-center justify-between text-xs tracking-wider font-light text-gray-500 uppercase">
+                  <span>{item.quantity} X</span>
+                  <div class="flex items-center gap-4">
+                    <span class="text-brand-charcoal font-medium">Subtotal</span>
+                    <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Side: Order Summary & Checkout */}
+        <div class="space-y-8">
+          {/* Order Summary Block */}
+          <div class="border border-gray-200 p-6 rounded-sm bg-white">
+            <h2 class="font-serif text-sm uppercase tracking-widest text-center border-b border-gray-100 pb-4 mb-6 font-medium text-brand-charcoal">
+              Order Summary
+            </h2>
+            <div class="space-y-4 text-xs tracking-widest font-light text-gray-500 uppercase">
+              <div class="flex justify-between">
+                <span>Subtotal</span>
+                <span class="text-brand-charcoal font-medium">${subtotal}</span>
+              </div>
+              <hr class="border-gray-100" />
+              <div class="flex justify-between text-sm font-medium text-brand-charcoal">
+                <span>Cart total</span>
+                <span>${cartTotal}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Gift Message Block */}
+          <div class="border border-gray-200 p-6 rounded-sm bg-white">
+            <label htmlFor="gift-message" class="block text-[11px] uppercase tracking-wider font-medium text-brand-charcoal mb-4">
+              Add gift message
+            </label>
+            <textarea
+              id="gift-message"
+              rows="4"
+              placeholder="Write your custom gift message here..."
+              class="w-full p-4 border border-gray-200 rounded-sm focus:border-brand-gold outline-none text-xs font-light resize-none bg-gray-50 focus:bg-white transition-all"
+            ></textarea>
+          </div>
+
+          {/* Go to Checkout Button */}
+          <button
+            id="checkout-btn"
+            class="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all cursor-pointer"
+          >
+            Go to Checkout
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+
+  {/* Client-side script to handle item deletion and checkout redirects */}
+  <script is:inline define:vars={{ token }}>
+    // Setup listeners for remove buttons
+    document.querySelectorAll('.remove-item-btn').forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const itemId = button.getAttribute('data-item-id');
+        if (!itemId || !token) return;
+
+        if (confirm('Are you sure you want to remove this item from your cart?')) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/cart/item/${itemId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              // Reload page to reflect updated total and cart state
+              window.location.reload();
+            } else {
+              alert('Failed to remove item. Please try again.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('A network error occurred.');
+          }
+        }
+      });
+    });
+
+    // Handle checkout button click
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', () => {
+        // Redirect to a simple checkout page
+        window.location.href = '/checkout';
+      });
+    }
+  </script>
+</Layout>

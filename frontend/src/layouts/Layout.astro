@@ -1,0 +1,305 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  showHeroHeader?: boolean;
+}
+
+const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Google Fonts for Figma Typography matching Outfit & Playfair -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen flex flex-col bg-white text-brand-charcoal font-sans">
+    <!-- Header -->
+    <header 
+      data-hero={showHeroHeader ? "true" : "false"}
+      class={`w-full z-50 transition-all duration-300 ${showHeroHeader ? 'bg-transparent fixed top-0 text-white border-b border-transparent' : 'bg-white/95 text-brand-charcoal sticky top-0 border-b border-gray-200/50 backdrop-blur-md shadow-sm'}`}
+    >
+      <div class="max-w-[1440px] mx-auto px-6 h-24 flex items-center justify-between">
+        <!-- Logo Section -->
+        <div class="flex flex-col">
+          <a href="/" class="font-serif text-3xl tracking-[0.3em] font-light leading-none">A C H I</a>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light block leading-none">Cool Every Day</span>
+        </div>
+
+        <!-- Center Navigation -->
+        <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full">
+          <a href="/" class="hover:opacity-70 transition-opacity">HOME</a>
+          
+          <!-- SHOP Mega Menu Container -->
+          <div class="relative group h-full flex items-center cursor-pointer">
+            <a href="/products" class="hover:opacity-70 transition-opacity flex items-center h-full">SHOP</a>
+            
+            <!-- Dropdown Mega Menu -->
+            <div class="absolute top-full left-1/2 -translate-x-1/2 w-screen max-w-[1440px] bg-white border-t border-b border-gray-200 py-12 px-12 grid grid-cols-3 gap-8 shadow-sm hidden group-hover:grid z-50 text-left normal-case tracking-normal">
+              <!-- Column 1: Category -->
+              <div>
+                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Category</h4>
+                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                  <li><a href="/products?categorySlug=clothing" class="hover:text-brand-gold font-medium text-brand-charcoal">Clothing</a></li>
+                  <li><a href="/products/men" class="hover:text-brand-gold pl-3 block text-[10px]">MALE</a></li>
+                  <li><a href="/products/women" class="hover:text-brand-gold pl-3 block text-[10px]">FEMALE</a></li>
+                  <li><a href="/products?categorySlug=accessories" class="hover:text-brand-gold">Accessories</a></li>
+                  <li><a href="/products?categorySlug=gifts" class="hover:text-brand-gold">Gifts</a></li>
+                  <li><a href="/products" class="hover:text-brand-gold font-medium text-brand-charcoal">Shop All</a></li>
+                </ul>
+              </div>
+
+              <!-- Column 2: Featured -->
+              <div>
+                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Featured</h4>
+                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                  <li><a href="/products?collection=new-arrivals" class="hover:text-brand-gold">New Arrivals</a></li>
+                  <li><a href="/products?collection=best-sellers" class="hover:text-brand-gold">Best Sellers</a></li>
+                  <li><a href="/products?collection=trending" class="hover:text-brand-gold">Trending Now</a></li>
+                </ul>
+              </div>
+
+              <!-- Column 3: Collections -->
+              <div>
+                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Collections</h4>
+                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                  <li class="text-gray-400 font-semibold mb-1 text-[10px]">Events</li>
+                  <li><a href="/products?collection=selection" class="hover:text-brand-gold">Selection</a></li>
+                  <li><a href="/products?collection=online-exclusives" class="hover:text-brand-gold">Online Exclusives</a></li>
+                  <li><a href="/products?collection=total-looks" class="hover:text-brand-gold">Total Looks</a></li>
+                  <li><a href="/products?collection=basics" class="hover:text-brand-gold">Basics</a></li>
+                  <li><a href="/products?collection=spring" class="hover:text-brand-gold">Spring</a></li>
+                  <li><a href="/products?collection=summer" class="hover:text-brand-gold">Summer</a></li>
+                  <li><a href="/products?collection=fall" class="hover:text-brand-gold">Fall</a></li>
+                  <li><a href="/products?collection=winter" class="hover:text-brand-gold">Winter</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <a href="/products?collection=new-arrivals" class="hover:opacity-70 transition-opacity">New Arrivals</a>
+        </nav>
+
+        <!-- Right Side Icons -->
+        <div class="flex items-center gap-6">
+          <!-- Search Icon Button -->
+          <button id="search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer" aria-label="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21-21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+            </svg>
+          </button>
+
+          <!-- Cart Icon Button -->
+          <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+            </svg>
+          </a>
+
+          <!-- Language Selector -->
+          <button class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Language Selector">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.905 0-5.62-.977-7.843-2.636m15.686 0a9.004 9.004 0 0 1-15.686 0" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full bg-white border-t border-gray-200 py-16 mt-20">
+      <div class="max-w-[1440px] mx-auto px-6 flex flex-col items-center">
+        <!-- Footer Logo -->
+        <div class="flex flex-col items-center mb-12 text-center">
+          <h4 class="font-serif text-3xl tracking-[0.3em] font-light leading-none">A C H I</h4>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light leading-none">Cool Every Day</span>
+        </div>
+
+        <hr class="w-full border-gray-100 mb-12" />
+
+        <!-- Footer Links Grid -->
+        <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-8 text-[11px] uppercase tracking-wider font-light mb-8">
+          <!-- Col 1 -->
+          <div>
+            <h5 class="font-medium mb-4 text-brand-charcoal">THE COMPANY</h5>
+            <ul class="space-y-2 text-gray-500">
+              <li><a href="/about" class="hover:text-brand-gold transition-colors">ABOUT US</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 2 -->
+          <div>
+            <h5 class="font-medium mb-4 text-brand-charcoal">CUSTOMER SERVICE</h5>
+            <ul class="space-y-2 text-gray-500">
+              <li><a href="/contact" class="hover:text-brand-gold transition-colors">CONTACT US</a></li>
+              <li><a href="/stores" class="hover:text-brand-gold transition-colors">STORE LOCATOR</a></li>
+              <li><a href="/delivery" class="hover:text-brand-gold transition-colors">DELIVERY INFORMATION</a></li>
+              <li><a href="/payments" class="hover:text-brand-gold transition-colors">PAYMENTS</a></li>
+              <li><a href="/return" class="hover:text-brand-gold transition-colors">UNCONDITIONAL RETURN</a></li>
+              <li><a href="/refunds" class="hover:text-brand-gold transition-colors">RETURN & REFUNDS</a></li>
+              <li><a href="/product-care" class="hover:text-brand-gold transition-colors">PRODUCT CARE</a></li>
+              <li><a href="/size-guide" class="hover:text-brand-gold transition-colors">SIZE GUIDE</a></li>
+              <li><a href="/faq" class="hover:text-brand-gold transition-colors">FAQ</a></li>
+              <li><a href="/fact-sheet" class="hover:text-brand-gold transition-colors">REQUEST A FACT SHEET</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3 -->
+          <div>
+            <h5 class="font-medium mb-4 text-brand-charcoal">LEGAL</h5>
+            <ul class="space-y-2 text-gray-500">
+              <li><a href="/privacy" class="hover:text-brand-gold transition-colors">PRIVACY POLICY</a></li>
+              <li><a href="/terms" class="hover:text-brand-gold transition-colors">TERMS & CONDITIONS</a></li>
+              <li><a href="/cookies" class="hover:text-brand-gold transition-colors">COOKIE SETTINGS</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4 -->
+          <div>
+            <h5 class="font-medium mb-4 text-brand-charcoal">FOLLOW US</h5>
+            <ul class="space-y-2 text-gray-500">
+              <li><a href="https://facebook.com" class="hover:text-brand-gold transition-colors">FACEBOOK</a></li>
+              <li><a href="https://line.me" class="hover:text-brand-gold transition-colors">LINE OFFICIAL</a></li>
+              <li><a href="https://instagram.com" class="hover:text-brand-gold transition-colors">INSTAGRAM</a></li>
+              <li><a href="https://pinterest.com" class="hover:text-brand-gold transition-colors">PINTEREST</a></li>
+              <li><a href="https://twitter.com" class="hover:text-brand-gold transition-colors">TWITTER</a></li>
+              <li><a href="https://spotify.com" class="hover:text-brand-gold transition-colors">SPOTIFY</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="fixed inset-0 bg-white z-50 flex flex-col hidden">
+      <!-- Search Overlay Header -->
+      <div class="max-w-[1440px] w-full mx-auto px-6 h-24 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-serif text-3xl tracking-[0.3em] font-light">A C H I</span>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light">Cool Every Day</span>
+        </div>
+        <button id="close-search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Search Input Section -->
+      <div class="flex-grow flex flex-col max-w-[800px] w-full mx-auto px-6 pt-16">
+        <form action="/products" method="GET" class="relative border-b border-gray-400 flex items-center py-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-6 h-6 text-gray-400 mr-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21-21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+          </svg>
+          <input
+            type="text"
+            name="query"
+            placeholder="Search"
+            class="w-full bg-transparent text-xl font-light outline-none text-brand-charcoal placeholder-gray-400"
+            autocomplete="off"
+            id="search-input"
+          />
+          <button type="reset" id="clear-search-btn" class="text-gray-400 hover:text-brand-charcoal focus:outline-none hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </form>
+        
+        <!-- Quick links / search results preview (optional) -->
+        <div class="mt-8 text-xs uppercase tracking-widest text-gray-400 font-light">
+          Suggestions: T-shirt, Denim, Jacket, Shades
+        </div>
+      </div>
+    </div>
+
+    <!-- Client-side script to toggle search overlay -->
+    <script>
+      const searchBtn = document.getElementById('search-btn');
+      const closeSearchBtn = document.getElementById('close-search-btn');
+      const searchOverlay = document.getElementById('search-overlay');
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const clearSearchBtn = document.getElementById('clear-search-btn');
+
+      if (searchBtn && searchOverlay) {
+        searchBtn.addEventListener('click', () => {
+          searchOverlay.classList.remove('hidden');
+          document.body.style.overflow = 'hidden'; // Lock background scroll
+          if (searchInput) searchInput.focus();
+        });
+      }
+
+      if (closeSearchBtn && searchOverlay) {
+        closeSearchBtn.addEventListener('click', () => {
+          searchOverlay.classList.add('hidden');
+          document.body.style.overflow = ''; // Unlock background scroll
+        });
+      }
+
+      if (searchInput && clearSearchBtn) {
+        searchInput.addEventListener('input', () => {
+          if (searchInput.value.length > 0) {
+            clearSearchBtn.classList.remove('hidden');
+          } else {
+            clearSearchBtn.classList.add('hidden');
+          }
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          searchInput.focus();
+        });
+      }
+    </script>
+
+    <!-- Client-side script for sticky header scroll transitions -->
+    <script is:inline>
+      const stickyHeader = document.querySelector('header');
+      const isHeroHeader = stickyHeader?.getAttribute('data-hero') === 'true';
+
+      if (stickyHeader) {
+        const handleStickyScroll = () => {
+          if (window.scrollY > 20) {
+            stickyHeader.classList.add('scrolled');
+            if (isHeroHeader) {
+              stickyHeader.classList.remove('bg-transparent', 'text-white', 'border-transparent');
+              stickyHeader.classList.add('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
+            } else {
+              stickyHeader.classList.add('shadow-md');
+            }
+          } else {
+            stickyHeader.classList.remove('scrolled');
+            if (isHeroHeader) {
+              stickyHeader.classList.add('bg-transparent', 'text-white', 'border-transparent');
+              stickyHeader.classList.remove('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
+            } else {
+              stickyHeader.classList.remove('shadow-md');
+            }
+          }
+        };
+
+        window.addEventListener('scroll', handleStickyScroll);
+        // Initial check in case of page reload when already scrolled down
+        handleStickyScroll();
+      }
+    </script>
+  </body>
+</html>

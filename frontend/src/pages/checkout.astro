@@ -1,0 +1,183 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+// Fetch user session for token authorization
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect('/auth/signin?callbackUrl=/checkout');
+}
+
+let cartData = { id: 0, items: [] as any[] };
+let errorMsg = null;
+
+try {
+  const res = await fetch('http://localhost:3001/api/cart', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (res.ok) {
+    cartData = await res.json();
+  } else {
+    errorMsg = 'Could not load cart details. Please try again.';
+  }
+} catch (err) {
+  console.error(err);
+  errorMsg = 'Network error: Backend server is not running.';
+}
+
+const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number(item.productPrice) * item.quantity), 0);
+const cartTotal = subtotal;
+---
+
+<Layout title="Checkout | ACHI Studio" description="Specify shipping address and place your order.">
+  <div class="max-w-[1440px] mx-auto px-6 py-16">
+    <div class="text-center mb-16">
+      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Checkout</h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Enter delivery address to place your order</p>
+    </div>
+
+    {errorMsg ? (
+      <div class="text-center py-16 max-w-xl mx-auto text-red-500 font-light">
+        {errorMsg}
+      </div>
+    ) : cartData.items.length === 0 ? (
+      <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
+        <p class="text-gray-500 mb-6 font-light">Your shopping cart is empty. Cannot checkout.</p>
+        <a href="/products" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
+          Go Shop
+        </a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-[1100px] mx-auto">
+        <!-- Left Side: Shipping Address Form -->
+        <div class="lg:col-span-2 space-y-8 bg-white border border-gray-200 p-8 rounded-sm">
+          <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal mb-6 pb-2 border-b border-gray-100">
+            Shipping Information
+          </h2>
+
+          <div class="space-y-6">
+            <div>
+              <label htmlFor="address" class="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">
+                Delivery Address
+              </label>
+              <textarea
+                id="address"
+                rows="4"
+                required
+                placeholder="Street address, City, Province, ZIP code"
+                class="w-full p-4 border border-gray-200 rounded-sm focus:border-brand-gold outline-none text-xs font-light resize-none bg-gray-50 focus:bg-white transition-all"
+              ></textarea>
+            </div>
+
+            <div id="checkout-error" class="hidden p-4 bg-red-50 border-l-2 border-red-500 text-red-600 text-xs font-medium rounded-sm">
+            </div>
+            
+            <div id="checkout-success" class="hidden p-4 bg-green-50 border-l-2 border-green-500 text-green-600 text-xs font-medium rounded-sm">
+              Order placed successfully! Redirecting...
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Order Summary -->
+        <div class="space-y-6">
+          <div class="border border-gray-200 p-6 rounded-sm bg-white">
+            <h2 class="font-serif text-sm uppercase tracking-widest text-center border-b border-gray-100 pb-4 mb-6 font-medium text-brand-charcoal">
+              Order Items
+            </h2>
+            
+            <div class="divide-y divide-gray-100 max-h-[250px] overflow-y-auto pr-2 mb-6">
+              {cartData.items.map((item: any) => (
+                <div class="py-3 flex justify-between text-xs tracking-wider font-light text-gray-500 uppercase">
+                  <div>
+                    <span class="text-brand-charcoal font-medium">{item.productName}</span>
+                    <span class="block text-[10px] text-gray-400">Qty: {item.quantity} | {item.size || ''}</span>
+                  </div>
+                  <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 space-y-4 text-xs tracking-widest font-light text-gray-500 uppercase">
+              <div class="flex justify-between">
+                <span>Subtotal</span>
+                <span class="text-brand-charcoal font-medium">${subtotal}</span>
+              </div>
+              <hr class="border-gray-100" />
+              <div class="flex justify-between text-sm font-medium text-brand-charcoal">
+                <span>Total Due</span>
+                <span>${cartTotal}</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            id="place-order-btn"
+            class="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all cursor-pointer"
+          >
+            Place Order
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <script is:inline define:vars={{ token }}>
+    const placeOrderBtn = document.getElementById('place-order-btn');
+    const addressInput = document.getElementById('address');
+    const errorDiv = document.getElementById('checkout-error');
+    const successDiv = document.getElementById('checkout-success');
+
+    if (placeOrderBtn) {
+      placeOrderBtn.addEventListener('click', async () => {
+        const shippingAddress = addressInput?.value?.trim();
+
+        if (!shippingAddress || shippingAddress.length < 5) {
+          if (errorDiv) {
+            errorDiv.textContent = 'Please enter a valid shipping address (at least 5 characters).';
+            errorDiv.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (errorDiv) errorDiv.classList.add('hidden');
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.textContent = 'Placing Order...';
+
+        try {
+          const res = await fetch('http://localhost:3001/api/orders/checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ shippingAddress })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            if (successDiv) successDiv.classList.remove('hidden');
+            setTimeout(() => {
+              window.location.href = `/order-success?orderId=${data.orderId}`;
+            }, 1500);
+          } else {
+            throw new Error(data.message || 'Checkout failed');
+          }
+        } catch (err) {
+          console.error(err);
+          if (errorDiv) {
+            errorDiv.textContent = err.message || 'Checkout failed. Please try again.';
+            errorDiv.classList.remove('hidden');
+          }
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.textContent = 'Place Order';
+        }
+      });
+    }
+  </script>
+</Layout>
