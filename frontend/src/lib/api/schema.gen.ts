@@ -39,6 +39,9 @@ export interface paths {
   "/api/orders/{id}": {
     get: operations["OrderController_findOne"];
   };
+  "/api/web-image/convert-all": {
+    get: operations["WebImageController_convertAll"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -181,6 +184,13 @@ export interface operations {
         id: number;
       };
     };
+    responses: {
+      200: {
+        content: never;
+      };
+    };
+  };
+  WebImageController_convertAll: {
     responses: {
       200: {
         content: never;

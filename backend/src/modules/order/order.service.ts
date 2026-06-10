@@ -1,16 +1,17 @@
 import { Injectable, Inject, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
-import { orders, orderItems } from '../../db/schema/order.schema';
-import { products } from '../../db/schema/product.schema';
-import { CartService } from '../cart/cart.service';
-import { eq, and } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
+import { OrderRepository } from './order.repository';
+import { ProductRepository } from '../product/product.repository';
+import { CartService } from '../cart/cart.service';
 import type { CheckoutDto } from './dto/order.dto';
 
 @Injectable()
 export class OrderService {
   constructor(
     @Inject(DRIZZLE_PROVIDER) private readonly db: MySql2Database,
+    private readonly orderRepo: OrderRepository,
+    private readonly productRepo: ProductRepository,
     private readonly cartService: CartService
   ) {}
 
@@ -28,13 +29,8 @@ export class OrderService {
       // 1. Verify and deduct stock for all items
       for (const item of cart.items) {
         // Fetch fresh product stock
-        const productList = await tx
-          .select()
-          .from(products)
-          .where(eq(products.id, item.productId))
-          .limit(1);
+        const product = await this.productRepo.findOne(item.productId, tx);
 
-        const product = productList[0];
         if (!product) {
           throw new NotFoundException(`Product with ID ${item.productId} not found`);
         }
@@ -45,35 +41,30 @@ export class OrderService {
 
         // Deduct stock in DB
         const remainingStock = product.stockQuantity - item.quantity;
-        await tx
-          .update(products)
-          .set({ stockQuantity: remainingStock })
-          .where(eq(products.id, item.productId));
+        await this.productRepo.update(item.productId, { stockQuantity: remainingStock }, tx);
 
         // Increment total price
         totalPrice += Number(item.productPrice) * item.quantity;
       }
 
       // 2. Create Order
-      const orderResult = await tx.insert(orders).values({
+      const orderId = await this.orderRepo.createOrder({
         userId,
         totalPrice: String(totalPrice),
         shippingAddress: dto.shippingAddress,
         status: 'pending',
-      });
-
-      const orderId = orderResult[0].insertId;
+      }, tx);
 
       // 3. Create Order Items
       for (const item of cart.items) {
-        await tx.insert(orderItems).values({
+        await this.orderRepo.createOrderItem({
           orderId,
           productId: item.productId,
           quantity: item.quantity,
           price: item.productPrice,
           size: item.size || null,
           color: item.color || null,
-        });
+        }, tx);
       }
 
       // 4. Clear the cart
@@ -88,26 +79,11 @@ export class OrderService {
   }
 
   async findAll(userId: number) {
-    return await this.db
-      .select({
-        id: orders.id,
-        status: orders.status,
-        totalPrice: orders.totalPrice,
-        shippingAddress: orders.shippingAddress,
-        createdAt: orders.createdAt,
-      })
-      .from(orders)
-      .where(eq(orders.userId, userId));
+    return await this.orderRepo.findAllOrders(userId);
   }
 
   async findOne(userId: number, orderId: number) {
-    const orderList = await this.db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .limit(1);
-
-    const order = orderList[0];
+    const order = await this.orderRepo.findOrderById(orderId);
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
@@ -116,20 +92,7 @@ export class OrderService {
       throw new ForbiddenException('You do not own this order');
     }
 
-    const items = await this.db
-      .select({
-        id: orderItems.id,
-        productId: orderItems.productId,
-        quantity: orderItems.quantity,
-        price: orderItems.price,
-        size: orderItems.size,
-        color: orderItems.color,
-        productName: products.name,
-        productImageUrl: products.imageUrl,
-      })
-      .from(orderItems)
-      .leftJoin(products, eq(orderItems.productId, products.id))
-      .where(eq(orderItems.orderId, orderId));
+    const items = await this.orderRepo.findOrderItemsByOrderId(orderId);
 
     return {
       ...order,
@@ -137,3 +100,4 @@ export class OrderService {
     };
   }
 }
+

@@ -12,6 +12,9 @@ export default defineConfig({
   }),
   vite: {
     plugins: [tailwindcss()],
+    define: {
+      BACKEND_URL: JSON.stringify(process.env.BACKEND_URL || 'http://localhost:3001'),
+    },
   },
   output: 'server', // Enable Server-Side Rendering (SSR) for Auth.js integration
 });

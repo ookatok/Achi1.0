@@ -1,50 +1,26 @@
-import { Injectable, Inject, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
-import { carts, cartItems } from '../../db/schema/cart.schema';
-import { products } from '../../db/schema/product.schema';
-import { eq, and } from 'drizzle-orm';
-import type { MySql2Database } from 'drizzle-orm/mysql2';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { CartRepository } from './cart.repository';
+import { ProductRepository } from '../product/product.repository';
 import type { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 
 @Injectable()
 export class CartService {
   constructor(
-    @Inject(DRIZZLE_PROVIDER) private readonly db: MySql2Database
+    private readonly cartRepo: CartRepository,
+    private readonly productRepo: ProductRepository
   ) {}
 
   async getOrCreateCart(userId: number) {
-    const existingCarts = await this.db
-      .select()
-      .from(carts)
-      .where(eq(carts.userId, userId))
-      .limit(1);
-
-    if (existingCarts.length > 0) {
-      return existingCarts[0];
+    const cart = await this.cartRepo.findCartByUserId(userId);
+    if (cart) {
+      return cart;
     }
-
-    const result = await this.db.insert(carts).values({ userId });
-    return { id: result[0].insertId, userId };
+    return await this.cartRepo.createCart(userId);
   }
 
   async getCart(userId: number) {
     const cart = await this.getOrCreateCart(userId);
-
-    const items = await this.db
-      .select({
-        id: cartItems.id,
-        productId: cartItems.productId,
-        quantity: cartItems.quantity,
-        size: cartItems.size,
-        color: cartItems.color,
-        productName: products.name,
-        productPrice: products.price,
-        productImageUrl: products.imageUrl,
-        stockQuantity: products.stockQuantity,
-      })
-      .from(cartItems)
-      .innerJoin(products, eq(cartItems.productId, products.id))
-      .where(eq(cartItems.cartId, cart.id));
+    const items = await this.cartRepo.findCartItems(cart.id);
 
     return {
       id: cart.id,
@@ -57,37 +33,28 @@ export class CartService {
     const cart = await this.getOrCreateCart(userId);
 
     // Check if the product exists
-    const productList = await this.db.select().from(products).where(eq(products.id, dto.productId)).limit(1);
-    if (productList.length === 0) {
+    const product = await this.productRepo.findOne(dto.productId);
+    if (!product) {
       throw new NotFoundException(`Product with ID ${dto.productId} not found`);
     }
 
     // Check if matching item (product + size + color combo) is already in the cart
-    const conditions = [
-      eq(cartItems.cartId, cart.id),
-      eq(cartItems.productId, dto.productId),
-    ];
-    if (dto.size) conditions.push(eq(cartItems.size, dto.size));
-    if (dto.color) conditions.push(eq(cartItems.color, dto.color));
+    const existingItem = await this.cartRepo.findCartItemCombo(
+      cart.id,
+      dto.productId,
+      dto.size,
+      dto.color
+    );
 
-    const existingItems = await this.db
-      .select()
-      .from(cartItems)
-      .where(and(...conditions))
-      .limit(1);
-
-    if (existingItems.length > 0) {
+    if (existingItem) {
       // Increment quantity
-      const newQuantity = existingItems[0].quantity + dto.quantity;
-      await this.db
-        .update(cartItems)
-        .set({ quantity: newQuantity })
-        .where(eq(cartItems.id, existingItems[0].id));
+      const newQuantity = existingItem.quantity + dto.quantity;
+      await this.cartRepo.updateCartItemQuantity(existingItem.id, newQuantity);
       return { success: true, updated: true };
     }
 
     // Insert new cart item
-    await this.db.insert(cartItems).values({
+    await this.cartRepo.createCartItem({
       cartId: cart.id,
       productId: dto.productId,
       quantity: dto.quantity,
@@ -102,13 +69,8 @@ export class CartService {
     const cart = await this.getOrCreateCart(userId);
 
     // Verify ownership of the cart item
-    const item = await this.db
-      .select()
-      .from(cartItems)
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)))
-      .limit(1);
-
-    if (item.length === 0) {
+    const item = await this.cartRepo.findCartItemByIdAndCartId(itemId, cart.id);
+    if (!item) {
       throw new ForbiddenException('You do not own this cart item');
     }
 
@@ -117,7 +79,7 @@ export class CartService {
     if (dto.size !== undefined) updateFields.size = dto.size;
     if (dto.color !== undefined) updateFields.color = dto.color;
 
-    await this.db.update(cartItems).set(updateFields).where(eq(cartItems.id, itemId));
+    await this.cartRepo.updateCartItem(itemId, updateFields);
     return { success: true };
   }
 
@@ -125,23 +87,19 @@ export class CartService {
     const cart = await this.getOrCreateCart(userId);
 
     // Verify ownership
-    const item = await this.db
-      .select()
-      .from(cartItems)
-      .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)))
-      .limit(1);
-
-    if (item.length === 0) {
+    const item = await this.cartRepo.findCartItemByIdAndCartId(itemId, cart.id);
+    if (!item) {
       throw new ForbiddenException('You do not own this cart item');
     }
 
-    await this.db.delete(cartItems).where(eq(cartItems.id, itemId));
+    await this.cartRepo.deleteCartItem(itemId);
     return { success: true };
   }
 
   async clearCart(userId: number) {
     const cart = await this.getOrCreateCart(userId);
-    await this.db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+    await this.cartRepo.deleteCartItemsByCartId(cart.id);
     return { success: true };
   }
 }
+

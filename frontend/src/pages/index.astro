@@ -3,7 +3,8 @@ import Layout from '../layouts/Layout.astro';
 
 const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
-  return url;
+  if (url.startsWith('http')) return url;
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp');
 };
 ---
 

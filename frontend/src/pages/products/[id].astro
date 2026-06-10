@@ -10,7 +10,8 @@ const { id } = Astro.params;
 
 const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
-  return url;
+  if (url.startsWith('http')) return url;
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp');
 };
 
 let product = null;
@@ -36,6 +37,20 @@ const mockProduct = {
 };
 
 const displayProduct = product || mockProduct;
+
+const parseArray = (val: any) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  try {
+    const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+const displayColors = parseArray(displayProduct.colors);
+const displaySizes = parseArray(displayProduct.sizes);
 ---
 
 <Layout title={`${displayProduct.name} | ACHI Studio`} description={displayProduct.description}>
@@ -86,13 +101,13 @@ const displayProduct = product || mockProduct;
         </div>
 
         {/* Option: Colors Swatches */}
-        {displayProduct.colors && displayProduct.colors.length > 0 && (
+        {displayColors && displayColors.length > 0 && (
           <div>
             <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
               Product colors
             </h4>
             <div class="flex gap-3">
-              {displayProduct.colors.map((color: string, index: number) => (
+              {displayColors.map((color: string, index: number) => (
                 <button
                   class={`w-7 h-7 rounded-full border border-gray-200 block shadow-sm focus:outline-none cursor-pointer color-option-btn ${index === 0 ? 'ring-2 ring-brand-charcoal ring-offset-2' : ''}`}
                   style={{ backgroundColor: color }}
@@ -104,13 +119,13 @@ const displayProduct = product || mockProduct;
         )}
 
         {/* Option: Sizes Divisors */}
-        {displayProduct.sizes && displayProduct.sizes.length > 0 && (
+        {displaySizes && displaySizes.length > 0 && (
           <div>
             <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
               Product size
             </h4>
             <div class="flex items-center gap-4 text-xs font-light tracking-wider text-gray-500">
-              {displayProduct.sizes.map((size: string, index: number) => (
+              {displaySizes.map((size: string, index: number) => (
                 <>
                   {index > 0 && <span class="text-gray-300">|</span>}
                   <button

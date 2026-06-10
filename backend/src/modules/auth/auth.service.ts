@@ -1,27 +1,20 @@
-import { Injectable, Inject, ConflictException, UnauthorizedException } from '@nestjs/common';
-import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
-import { users } from '../../db/schema/user.schema';
-import { eq } from 'drizzle-orm';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { UserRepository } from '../user/user.repository';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { RegisterDto, LoginDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(DRIZZLE_PROVIDER) private readonly db: MySql2Database
+    private readonly userRepo: UserRepository
   ) {}
 
   async register(dto: RegisterDto) {
     // 1. Check if user already exists
-    const existingUsers = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.email, dto.email))
-      .limit(1);
+    const existingUser = await this.userRepo.findByEmail(dto.email);
 
-    if (existingUsers.length > 0) {
+    if (existingUser) {
       throw new ConflictException('Email already registered');
     }
 
@@ -29,7 +22,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     // 3. Create user
-    await this.db.insert(users).values({
+    await this.userRepo.create({
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
@@ -37,30 +30,21 @@ export class AuthService {
     });
 
     // 4. Fetch the newly created user to return (excluding password)
-    const newUsers = await this.db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        role: users.role,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(eq(users.email, dto.email))
-      .limit(1);
+    const newUser = await this.userRepo.findByEmail(dto.email);
+    if (!newUser) return null;
 
-    return newUsers[0];
+    return {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    };
   }
 
   async login(dto: LoginDto) {
     // 1. Find user by email
-    const foundUsers = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.email, dto.email))
-      .limit(1);
-
-    const user = foundUsers[0];
+    const user = await this.userRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
