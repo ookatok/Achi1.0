@@ -16,13 +16,17 @@ if ((session?.user as any)?.role !== 'admin') {
 
 let productsCount = 0;
 let orders = [] as any[];
+let products = [] as any[];
+let blogs = [] as any[];
+let blogCategories = [] as any[];
+let productCategories = [] as any[];
 let errorMsg = null;
 
 try {
-  // 1. Fetch products count
-  const prodRes = await fetch('http://localhost:3001/api/products');
+  // 1. Fetch products list
+  const prodRes = await fetch('http://localhost:3001/api/products?limit=100');
   if (prodRes.ok) {
-    const products = await prodRes.json();
+    products = await prodRes.json();
     productsCount = products.length;
   }
 
@@ -35,18 +39,55 @@ try {
   if (ordRes.ok) {
     orders = await ordRes.json();
   }
+
+  // 3. Fetch all blogs
+  const blogRes = await fetch('http://localhost:3001/api/blogs');
+  if (blogRes.ok) {
+    blogs = await blogRes.json();
+  }
+
+  // 4. Fetch all blog categories
+  const catRes = await fetch('http://localhost:3001/api/blogs/categories');
+  if (catRes.ok) {
+    blogCategories = await catRes.json();
+  }
+
+  // 5. Fetch all product categories
+  const prodCatRes = await fetch('http://localhost:3001/api/products/categories');
+  if (prodCatRes.ok) {
+    productCategories = await prodCatRes.json();
+  }
 } catch (err) {
   console.error('[NestJS API Error] Admin page fetch failed.', err);
   errorMsg = 'Could not load admin panel data. Backend server may be offline.';
 }
+
+const parseArray = (val: any) => {
+  try {
+    const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
 ---
 
-<Layout title="Admin Panel | ACHI Studio" description="ACHI E-Commerce administrative console.">
-  <div class="max-w-[1000px] mx-auto px-6 py-24">
+<Layout title="Admin Panel | ACHI Studio" description="ACHI E-Commerce administrative console." isAdminPanel={true}>
+  <div id="admin-container" data-token={token} class="max-w-[1000px] mx-auto px-6 py-24">
     {/* Page Header */}
-    <div class="text-center mb-16">
-      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Admin Panel</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">E-Commerce Management Console</p>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-4 border-b border-stone-100 pb-8">
+      <div class="text-center md:text-left">
+        <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Admin Panel</h1>
+        <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">E-Commerce Management Console</p>
+      </div>
+      <div>
+        <button
+          id="signout-btn"
+          class="border border-stone-300 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
 
     {errorMsg && (
@@ -55,37 +96,53 @@ try {
       </div>
     )}
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-      <!-- Card 1: Products Count -->
-      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Products</span>
-        <span class="text-3xl font-serif font-bold text-brand-charcoal">{productsCount}</span>
+    <!-- Section: Dashboard Overview -->
+    <div id="dashboard-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-8 mb-8">
+      <div class="pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          Dashboard Overview
+        </h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Card 1: Products Count -->
+        <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Products</span>
+          <span class="text-3xl font-serif font-bold text-brand-charcoal">{productsCount}</span>
+        </div>
+
+        <!-- Card 2: Orders Count -->
+        <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Orders</span>
+          <span class="text-3xl font-serif font-bold text-brand-charcoal">{orders.length}</span>
+        </div>
+
+        <!-- Card 3: Blogs Count -->
+        <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Blogs</span>
+          <span class="text-3xl font-serif font-bold text-brand-charcoal">{blogs.length}</span>
+        </div>
+
+        <!-- Card 4: Server Status -->
+        <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Server Status</span>
+          <span class="text-xs font-semibold text-green-600 uppercase tracking-widest bg-green-50 px-2.5 py-1.5 rounded-full border border-green-100 inline-block mt-1">
+            Online
+          </span>
+        </div>
       </div>
 
-      <!-- Card 2: Orders Count -->
-      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Orders</span>
-        <span class="text-3xl font-serif font-bold text-brand-charcoal">{orders.length}</span>
-      </div>
-
-      <!-- Card 3: Active Promotions -->
-      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Active Promos</span>
-        <span class="text-3xl font-serif font-bold text-brand-charcoal">0</span>
-      </div>
-
-      <!-- Card 4: Server Status -->
-      <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-        <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Server Status</span>
-        <span class="text-xs font-semibold text-green-600 uppercase tracking-widest bg-green-50 px-2.5 py-1.5 rounded-full border border-green-100 inline-block mt-1">
-          Online
-        </span>
+      <!-- Welcome Note -->
+      <div class="p-6 bg-stone-50 border border-stone-100 rounded-sm">
+        <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-2">Welcome to ACHI Studio Console</h3>
+        <p class="text-[11px] text-stone-500 font-light leading-relaxed">
+          From this panel, you can manage orders, products, and categories, as well as create and edit blog posts. Use the navigation links at the top of the page to switch between modules.
+        </p>
       </div>
     </div>
 
-    <!-- Main Section: Orders Management -->
-    <div class="bg-white border border-gray-200 p-8 rounded-sm space-y-6">
-      <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-gray-100">
+    <!-- Section: Orders Management -->
+    <div id="orders-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-stone-100">
         System Orders List
       </h2>
 
@@ -107,7 +164,7 @@ try {
             </thead>
             <tbody>
               {orders.map((order: any) => (
-                <tr>
+                <tr class="hover:bg-stone-50/50 transition-colors">
                   <td class="p-3 border border-gray-100 font-medium text-brand-charcoal">#{order.id}</td>
                   <td class="p-3 border border-gray-100">{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td class="p-3 border border-gray-100 max-w-[250px] truncate">{order.shippingAddress}</td>
@@ -126,5 +183,1561 @@ try {
         </div>
       )}
     </div>
+
+    <!-- Section: Products Management -->
+    <div id="products-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          Products Management
+        </h2>
+        <button
+          id="open-add-dialog-btn"
+          class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+        >
+          Add Product
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Products List (Col 1-3) -->
+        <div class="lg:col-span-3 space-y-6">
+          {products.length === 0 ? (
+            <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
+              No products found in the database.
+            </div>
+          ) : (
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
+                <thead>
+                  <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
+                    <th class="p-4 border border-stone-100 w-16">Image</th>
+                    <th class="p-4 border border-stone-100">Product Info</th>
+                    <th class="p-4 border border-stone-100 w-24">Price</th>
+                    <th class="p-4 border border-stone-100 w-20">Stock</th>
+                    <th class="p-4 border border-stone-100">Sizes & Colors</th>
+                    <th class="p-4 border border-stone-100 text-center w-32">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => {
+                    const prodSizes = parseArray(product.sizes);
+                    const prodColors = parseArray(product.colors);
+                    return (
+                      <tr class="hover:bg-stone-50/50 transition-colors">
+                        <td class="p-4 border border-stone-100">
+                          {product.imageUrl ? (
+                            <img src={product.imageUrl} alt={product.name} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
+                          ) : (
+                            <div class="w-12 h-14 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">No img</div>
+                          )}
+                        </td>
+                        <td class="p-4 border border-stone-100">
+                          <div class="font-medium text-brand-charcoal text-sm">{product.name}</div>
+                          <div class="text-[10px] text-stone-400 mt-0.5 tracking-wider">slug: {product.slug}</div>
+                          <div class="text-[9px] uppercase tracking-widest text-stone-400 mt-1 font-semibold">{product.categoryName || 'Clothing'}</div>
+                        </td>
+                        <td class="p-4 border border-stone-100 font-medium text-brand-charcoal">
+                          ${Number(product.price).toLocaleString()}
+                        </td>
+                        <td class="p-4 border border-stone-100">
+                          <span class={`font-medium ${product.stockQuantity === 0 ? 'text-red-500 font-semibold' : 'text-stone-700'}`}>
+                            {product.stockQuantity}
+                          </span>
+                        </td>
+                        <td class="p-4 border border-stone-100 max-w-[200px]">
+                          <div class="space-y-1">
+                            {prodSizes.length > 0 && (
+                              <div class="flex flex-wrap gap-1">
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Sizes:</span>
+                                {prodSizes.map((size: string) => (
+                                  <span class="text-[9px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono font-bold">{size}</span>
+                                ))}
+                              </div>
+                            )}
+                            {prodColors.length > 0 && (
+                              <div class="flex flex-wrap gap-1">
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Colors:</span>
+                                {prodColors.map((color: string) => (
+                                  <span class="text-[9px] bg-stone-50 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-sans">{color}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td class="p-4 border border-stone-100 text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            <button
+                              class="edit-prod-btn border border-stone-200 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+                              data-id={product.id}
+                              data-name={product.name}
+                              data-slug={product.slug}
+                              data-price={product.price}
+                              data-stock={product.stockQuantity}
+                              data-image={product.imageUrl}
+                              data-desc={product.description}
+                              data-sizes={JSON.stringify(prodSizes)}
+                              data-colors={JSON.stringify(prodColors)}
+                              data-category={product.categoryId}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              class="delete-prod-btn border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-500 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+                              data-id={product.id}
+                              data-name={product.name}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <!-- Product Categories Sidebar (Col 4) -->
+        <div class="border border-stone-200 p-6 rounded-sm bg-stone-50/50 space-y-6 self-start shadow-sm">
+          <div>
+            <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
+              Product Categories
+            </h3>
+            
+            {productCategories.length === 0 ? (
+              <p class="text-[10px] text-stone-400 font-light">No categories created yet.</p>
+            ) : (
+              <ul id="product-categories-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                {productCategories.map((cat: any) => (
+                  <li class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100">
+                    <div class="flex flex-col">
+                      <span class="font-medium text-brand-charcoal font-mono text-[11px]">{cat.name}</span>
+                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{cat.productCount} product{cat.productCount !== 1 ? 's' : ''}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="delete-prod-cat-btn text-red-500 hover:text-red-700 text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-colors"
+                      data-id={cat.id}
+                      data-name={cat.name}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div class="pt-4 border-t border-stone-200">
+            <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
+              Create New Category
+            </h4>
+            <form id="create-prod-cat-form" class="space-y-3">
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Category Name</label>
+                <input 
+                  type="text" 
+                  id="new-prod-cat-name" 
+                  placeholder="e.g. Outerwear" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <input 
+                  type="text" 
+                  id="new-prod-cat-slug" 
+                  placeholder="e.g. outerwear" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <button 
+                type="submit" 
+                class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
+              >
+                Add Category
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Blog Management -->
+    <div id="blogs-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          Blog Management
+        </h2>
+        <button
+          id="open-add-blog-btn"
+          class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+        >
+          Add Post
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Blog Posts List (Col 1-3) -->
+        <div class="lg:col-span-3 space-y-6">
+          {blogs.length === 0 ? (
+            <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
+              No blog posts found in the database.
+            </div>
+          ) : (
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
+                <thead>
+                  <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
+                    <th class="p-4 border border-stone-100 w-16">Banner</th>
+                    <th class="p-4 border border-stone-100 w-48">Article Info</th>
+                    <th class="p-4 border border-stone-100">Summary</th>
+                    <th class="p-4 border border-stone-100 w-24">Date</th>
+                    <th class="p-4 border border-stone-100 text-center w-32">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {blogs.map((blog) => (
+                    <tr class="hover:bg-stone-50/50 transition-colors">
+                      <td class="p-4 border border-stone-100">
+                        {blog.imageUrl ? (
+                          <img src={blog.imageUrl.startsWith('http') ? blog.imageUrl : `http://localhost:3001${blog.imageUrl}`} alt={blog.title} class="w-12 h-12 object-cover rounded-sm border border-stone-100" />
+                        ) : (
+                          <div class="w-12 h-12 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">No img</div>
+                        )}
+                      </td>
+                      <td class="p-4 border border-stone-100">
+                        <div class="font-medium text-brand-charcoal text-sm">{blog.title}</div>
+                        <div class="text-[10px] text-stone-400 mt-0.5 tracking-wider">slug: {blog.slug}</div>
+                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                          <span class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Author: {blog.authorName || 'Admin'}</span>
+                          {blog.categoryName && (
+                            <>
+                              <span class="text-stone-300 text-[9px]">•</span>
+                              <span class="text-[9px] uppercase tracking-widest text-brand-gold font-bold bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded-sm">{blog.categoryName}</span>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                      <td class="p-4 border border-stone-100 max-w-[250px] truncate">
+                        {blog.summary || 'No summary'}
+                      </td>
+                      <td class="p-4 border border-stone-100 text-stone-400">
+                        {new Date(blog.createdAt).toLocaleDateString()}
+                      </td>
+                      <td class="p-4 border border-stone-100 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                          <button
+                            class="edit-blog-btn border border-stone-200 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+                            data-id={blog.id}
+                            data-title={blog.title}
+                            data-slug={blog.slug}
+                            data-summary={blog.summary}
+                            data-content={blog.content}
+                            data-image={blog.imageUrl}
+                            data-category={blog.categoryId || ''}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            class="delete-blog-btn border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-500 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+                            data-id={blog.id}
+                            data-title={blog.title}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <!-- Blog Categories Sidebar (Col 4) -->
+        <div class="border border-stone-200 p-6 rounded-sm bg-stone-50/50 space-y-6 self-start shadow-sm">
+          <div>
+            <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
+              Blog Categories
+            </h3>
+            
+            {blogCategories.length === 0 ? (
+              <p class="text-[10px] text-stone-400 font-light">No categories created yet.</p>
+            ) : (
+              <ul class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                {blogCategories.map((cat: any) => (
+                  <li class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100">
+                    <span class="font-medium text-brand-charcoal font-mono text-[11px]">{cat.name}</span>
+                    <button 
+                      type="button" 
+                      class="delete-blog-cat-btn text-red-500 hover:text-red-700 text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-colors"
+                      data-id={cat.id}
+                      data-name={cat.name}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div class="pt-4 border-t border-stone-200">
+            <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
+              Create New Category
+            </h4>
+            <form id="create-blog-cat-form" class="space-y-3">
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Category Name</label>
+                <input 
+                  type="text" 
+                  id="new-blog-cat-name" 
+                  placeholder="e.g. Styling Guide" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <input 
+                  type="text" 
+                  id="new-blog-cat-slug" 
+                  placeholder="e.g. styling-guide" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <button 
+                type="submit" 
+                class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
+              >
+                Add Category
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Add Product Dialog -->
+  <dialog id="add-product-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Add Product</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="add-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="add-product-form" class="space-y-4">
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Product Name</label>
+        <input type="text" id="add-name" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <input type="text" id="add-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Price ($)</label>
+          <input type="number" id="add-price" step="0.01" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Quantity</label>
+          <input type="number" id="add-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Image URL</label>
+        <input type="text" id="add-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="https://example.com/image.jpg" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Description</label>
+        <textarea id="add-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Sizes (Comma-separated)</label>
+          <input type="text" id="add-sizes" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="S, M, L" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
+          <input type="text" id="add-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="Black, White" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+        <div class="flex gap-2">
+          <select id="add-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+            {productCategories.map((cat: any) => (
+              <option value={cat.id}>{cat.name}</option>
+            ))}
+            {productCategories.length === 0 && (
+              <option value="">No categories available - please create one first</option>
+            )}
+          </select>
+          <button type="button" id="btn-create-category-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Category Inline">+</button>
+        </div>
+        <!-- Inline Category Form -->
+        <div id="inline-category-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Category</div>
+          <div class="flex gap-2">
+            <input type="text" id="inline-category-name-add" placeholder="Category Name (e.g. Jeans)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-category-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
+            <button type="button" id="btn-cancel-category-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+          </div>
+          <div id="inline-category-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Product</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Edit Product Dialog -->
+  <dialog id="edit-product-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Edit Product</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="edit-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="edit-product-form" class="space-y-4">
+      <input type="hidden" id="edit-id" />
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Product Name</label>
+        <input type="text" id="edit-name" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <input type="text" id="edit-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Price ($)</label>
+          <input type="number" id="edit-price" step="0.01" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Quantity</label>
+          <input type="number" id="edit-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Image URL</label>
+        <input type="text" id="edit-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Description</label>
+        <textarea id="edit-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Sizes (Comma-separated)</label>
+          <input type="text" id="edit-sizes" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
+          <input type="text" id="edit-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+        <div class="flex gap-2">
+          <select id="edit-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+            {productCategories.map((cat: any) => (
+              <option value={cat.id}>{cat.name}</option>
+            ))}
+            {productCategories.length === 0 && (
+              <option value="">No categories available - please create one first</option>
+            )}
+          </select>
+          <button type="button" id="btn-create-category-inline-edit" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Category Inline">+</button>
+        </div>
+        <!-- Inline Category Form -->
+        <div id="inline-category-form-edit" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Category</div>
+          <div class="flex gap-2">
+            <input type="text" id="inline-category-name-edit" placeholder="Category Name (e.g. Jeans)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-category-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
+            <button type="button" id="btn-cancel-category-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+          </div>
+          <div id="inline-category-error-edit" class="hidden text-[9px] text-red-500 font-light"></div>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add Blog Dialog -->
+  <dialog id="add-blog-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-xl w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Add Blog Post</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="add-blog-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="add-blog-form" class="space-y-4">
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Article Title</label>
+        <input type="text" id="add-blog-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <input type="text" id="add-blog-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Summary (Short Preview)</label>
+        <input type="text" id="add-blog-summary" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="A brief preview of the post..." />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+          <select id="add-blog-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+            <option value="">Select Category (Optional)</option>
+            {blogCategories.map((cat: any) => (
+              <option value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image File</label>
+          <input type="file" id="add-blog-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image URL (or uploaded path)</label>
+        <div class="flex gap-2">
+          <input type="text" id="add-blog-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
+          <div id="add-blog-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+            <img id="add-blog-image-preview" src="" class="w-full h-full object-cover" />
+          </div>
+        </div>
+        <div id="add-blog-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Content</label>
+        <div class="border border-stone-200 rounded-sm">
+          <div class="flex flex-wrap items-center gap-0.5 p-1 bg-stone-50 border-b border-stone-200 text-xs" id="add-blog-toolbar">
+            <button type="button" data-cmd="h1" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H1</button>
+            <button type="button" data-cmd="h2" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H2</button>
+            <button type="button" data-cmd="h3" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H3</button>
+            <span class="w-[1px] h-4 bg-stone-300 mx-1"></span>
+            <button type="button" data-cmd="bold" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">B</button>
+            <button type="button" data-cmd="italic" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm italic text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">I</button>
+            <span class="w-[1px] h-4 bg-stone-300 mx-1"></span>
+            <button type="button" data-cmd="bulletList" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm text-[10px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">• List</button>
+            <button type="button" data-cmd="orderedList" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm text-[10px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">1. List</button>
+          </div>
+          <div id="add-blog-editor" class="p-3 min-h-[220px] max-h-[350px] overflow-y-auto font-sans text-xs focus:outline-none bg-white"></div>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Publish Post</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Edit Blog Dialog -->
+  <dialog id="edit-blog-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-xl w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Edit Blog Post</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="edit-blog-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="edit-blog-form" class="space-y-4">
+      <input type="hidden" id="edit-blog-id" />
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Article Title</label>
+        <input type="text" id="edit-blog-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <input type="text" id="edit-blog-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Summary (Short Preview)</label>
+        <input type="text" id="edit-blog-summary" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+          <select id="edit-blog-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+            <option value="">Select Category (Optional)</option>
+            {blogCategories.map((cat: any) => (
+              <option value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image File</label>
+          <input type="file" id="edit-blog-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image URL (or uploaded path)</label>
+        <div class="flex gap-2">
+          <input type="text" id="edit-blog-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+          <div id="edit-blog-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+            <img id="edit-blog-image-preview" src="" class="w-full h-full object-cover" />
+          </div>
+        </div>
+        <div id="edit-blog-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Content</label>
+        <div class="border border-stone-200 rounded-sm">
+          <div class="flex flex-wrap items-center gap-0.5 p-1 bg-stone-50 border-b border-stone-200 text-xs" id="edit-blog-toolbar">
+            <button type="button" data-cmd="h1" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H1</button>
+            <button type="button" data-cmd="h2" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H2</button>
+            <button type="button" data-cmd="h3" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H3</button>
+            <span class="w-[1px] h-4 bg-stone-300 mx-1"></span>
+            <button type="button" data-cmd="bold" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">B</button>
+            <button type="button" data-cmd="italic" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm italic text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">I</button>
+            <span class="w-[1px] h-4 bg-stone-300 mx-1"></span>
+            <button type="button" data-cmd="bulletList" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm text-[10px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">• List</button>
+            <button type="button" data-cmd="orderedList" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm text-[10px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">1. List</button>
+          </div>
+          <div id="edit-blog-editor" class="p-3 min-h-[220px] max-h-[350px] overflow-y-auto font-sans text-xs focus:outline-none bg-white"></div>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <style is:global>
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+    }
+    dialog {
+      border: none;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Tiptap ProseMirror styling */
+    .ProseMirror {
+      outline: none;
+      min-height: 220px;
+    }
+    .ProseMirror h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      font-family: inherit;
+    }
+    .ProseMirror h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      font-family: inherit;
+    }
+    .ProseMirror h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      margin-bottom: 0.3rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      font-family: inherit;
+    }
+    .ProseMirror p {
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+    .ProseMirror ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .ProseMirror ol {
+      list-style-type: decimal;
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .ProseMirror blockquote {
+      border-left: 2px solid #e7e5e4;
+      padding-left: 1rem;
+      color: #78716c;
+      font-style: italic;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+
+  <script>
+    import { signOut } from 'auth-astro/client';
+    import { Editor } from '@tiptap/core';
+    import StarterKit from '@tiptap/starter-kit';
+
+    // Auth setup
+    const signoutBtn = document.getElementById('signout-btn');
+    if (signoutBtn) {
+      signoutBtn.addEventListener('click', () => {
+        signOut({ callbackUrl: '/' });
+      });
+    }
+
+    // Token retrieval
+    const container = document.getElementById('admin-container');
+    const token = container ? container.dataset.token : '';
+
+    // Tab switcher using top navigation
+    const navDashboard = document.getElementById('nav-tab-dashboard');
+    const navOrders = document.getElementById('nav-tab-orders');
+    const navProducts = document.getElementById('nav-tab-products');
+    const navBlogs = document.getElementById('nav-tab-blogs');
+
+    const dashboardSection = document.getElementById('dashboard-section');
+    const ordersSection = document.getElementById('orders-section');
+    const productsSection = document.getElementById('products-section');
+    const blogsSection = document.getElementById('blogs-section');
+
+    const switchTab = (activeNavBtn, activeSection) => {
+      [navDashboard, navOrders, navProducts, navBlogs].forEach(btn => {
+        if (btn) {
+          if (btn === activeNavBtn) {
+            btn.classList.add('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
+            btn.classList.remove('border-transparent', 'text-gray-400', 'font-light');
+          } else {
+            btn.classList.remove('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
+            btn.classList.add('border-transparent', 'text-gray-400', 'font-light');
+          }
+        }
+      });
+
+      [dashboardSection, ordersSection, productsSection, blogsSection].forEach(section => {
+        if (section) {
+          if (section === activeSection) {
+            section.classList.remove('hidden');
+          } else {
+            section.classList.add('hidden');
+          }
+        }
+      });
+    };
+
+    navDashboard?.addEventListener('click', () => switchTab(navDashboard, dashboardSection));
+    navOrders?.addEventListener('click', () => switchTab(navOrders, ordersSection));
+    navProducts?.addEventListener('click', () => switchTab(navProducts, productsSection));
+    navBlogs?.addEventListener('click', () => switchTab(navBlogs, blogsSection));
+
+    // Initialize the default tab
+    switchTab(navDashboard, dashboardSection);
+
+    // Modal Setup helper
+    const setupDialog = (dialogId, openBtnId, onOpen = null) => {
+      const dialog = document.getElementById(dialogId);
+      if (!dialog) return;
+
+      if (openBtnId) {
+        const openBtn = document.getElementById(openBtnId);
+        openBtn?.addEventListener('click', () => {
+          const errorDiv = dialog.querySelector('.text-red-500');
+          if (errorDiv) errorDiv.classList.add('hidden');
+          if (onOpen) onOpen();
+          dialog.showModal();
+        });
+      }
+
+      dialog.querySelectorAll('.close-dialog-btn').forEach(btn => {
+        btn.addEventListener('click', () => dialog.close());
+      });
+    };
+
+    // Helper for generating slugs
+    const slugify = (text) => {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    };
+
+    // Initialize Tiptap Editors
+    let addEditor = null;
+    let editEditor = null;
+
+    const addEditorEl = document.getElementById('add-blog-editor');
+    if (addEditorEl) {
+      addEditor = new Editor({
+        element: addEditorEl,
+        extensions: [StarterKit],
+        content: '',
+      });
+    }
+
+    const editEditorEl = document.getElementById('edit-blog-editor');
+    if (editEditorEl) {
+      editEditor = new Editor({
+        element: editEditorEl,
+        extensions: [StarterKit],
+        content: '',
+      });
+    }
+
+    // Toolbar logic helper
+    const setupToolbar = (toolbarId, editorInstance) => {
+      const toolbar = document.getElementById(toolbarId);
+      if (!toolbar || !editorInstance) return;
+
+      toolbar.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const cmd = btn.dataset.cmd;
+          if (!cmd) return;
+
+          if (cmd === 'h1') {
+            editorInstance.chain().focus().toggleHeading({ level: 1 }).run();
+          } else if (cmd === 'h2') {
+            editorInstance.chain().focus().toggleHeading({ level: 2 }).run();
+          } else if (cmd === 'h3') {
+            editorInstance.chain().focus().toggleHeading({ level: 3 }).run();
+          } else if (cmd === 'bold') {
+            editorInstance.chain().focus().toggleBold().run();
+          } else if (cmd === 'italic') {
+            editorInstance.chain().focus().toggleItalic().run();
+          } else if (cmd === 'bulletList') {
+            editorInstance.chain().focus().toggleBulletList().run();
+          } else if (cmd === 'orderedList') {
+            editorInstance.chain().focus().toggleOrderedList().run();
+          }
+          
+          updateButtonStates(toolbar, editorInstance);
+        });
+      });
+
+      editorInstance.on('selectionUpdate', () => updateButtonStates(toolbar, editorInstance));
+      editorInstance.on('transaction', () => updateButtonStates(toolbar, editorInstance));
+    };
+
+    const updateButtonStates = (toolbar, editorInstance) => {
+      toolbar.querySelectorAll('button').forEach(btn => {
+        const cmd = btn.dataset.cmd;
+        let isActive = false;
+
+        if (cmd === 'h1') isActive = editorInstance.isActive('heading', { level: 1 });
+        else if (cmd === 'h2') isActive = editorInstance.isActive('heading', { level: 2 });
+        else if (cmd === 'h3') isActive = editorInstance.isActive('heading', { level: 3 });
+        else if (cmd === 'bold') isActive = editorInstance.isActive('bold');
+        else if (cmd === 'italic') isActive = editorInstance.isActive('italic');
+        else if (cmd === 'bulletList') isActive = editorInstance.isActive('bulletList');
+        else if (cmd === 'orderedList') isActive = editorInstance.isActive('orderedList');
+
+        if (isActive) {
+          btn.classList.add('bg-stone-300', 'border-stone-400');
+          btn.classList.remove('bg-white', 'border-stone-200');
+        } else {
+          btn.classList.remove('bg-stone-300', 'border-stone-400');
+          btn.classList.add('bg-white', 'border-stone-200');
+        }
+      });
+    };
+
+    setupToolbar('add-blog-toolbar', addEditor);
+    setupToolbar('edit-blog-toolbar', editEditor);
+
+    // Setup dialog modals
+    setupDialog('add-product-dialog', 'open-add-dialog-btn');
+    setupDialog('edit-product-dialog');
+    setupDialog('add-blog-dialog', 'open-add-blog-btn', () => {
+      // Clear add editor content when opening add post modal
+      if (addEditor) {
+        addEditor.commands.setContent('');
+      }
+      const previewContainer = document.getElementById('add-blog-image-preview-container');
+      if (previewContainer) previewContainer.classList.add('hidden');
+      const uploadStatus = document.getElementById('add-blog-upload-status');
+      if (uploadStatus) uploadStatus.classList.add('hidden');
+    });
+    setupDialog('edit-blog-dialog');
+
+    // Image Upload helper
+    const setupImageUpload = (fileInputId, textInputId, previewContainerId, previewId, statusId) => {
+      const fileInput = document.getElementById(fileInputId);
+      const textInput = document.getElementById(textInputId);
+      const previewContainer = document.getElementById(previewContainerId);
+      const preview = document.getElementById(previewId);
+      const status = document.getElementById(statusId);
+
+      if (!fileInput || !textInput) return;
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+
+        if (status) {
+          status.textContent = 'Uploading image...';
+          status.classList.remove('hidden', 'text-red-500', 'text-green-600');
+          status.classList.add('text-stone-500');
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('http://localhost:3001/api/blogs/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            textInput.value = data.imageUrl;
+            
+            if (preview && previewContainer) {
+              preview.src = `http://localhost:3001${data.imageUrl}`;
+              previewContainer.classList.remove('hidden');
+            }
+
+            if (status) {
+              status.textContent = 'Upload successful!';
+              status.classList.remove('text-stone-500', 'text-red-500');
+              status.classList.add('text-green-600');
+            }
+          } else {
+            const data = await res.json();
+            if (status) {
+              status.textContent = data.message || 'Upload failed.';
+              status.classList.remove('text-stone-500', 'text-green-600');
+              status.classList.add('text-red-500');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (status) {
+            status.textContent = 'Network error during upload.';
+            status.classList.remove('text-stone-500', 'text-green-600');
+            status.classList.add('text-red-500');
+          }
+        }
+      });
+
+      // Also listen to textInput changes to update preview
+      textInput.addEventListener('input', () => {
+        if (textInput.value) {
+          let src = textInput.value;
+          if (!src.startsWith('http') && src.startsWith('/')) {
+            src = `http://localhost:3001${src}`;
+          }
+          if (preview && previewContainer) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+          }
+        } else {
+          if (previewContainer) {
+            previewContainer.classList.add('hidden');
+          }
+        }
+      });
+    };
+
+    setupImageUpload('add-blog-image-file', 'add-blog-image', 'add-blog-image-preview-container', 'add-blog-image-preview', 'add-blog-upload-status');
+    setupImageUpload('edit-blog-image-file', 'edit-blog-image', 'edit-blog-image-preview-container', 'edit-blog-image-preview', 'edit-blog-upload-status');
+
+    // Add auto-slug generation to forms (Products)
+    const addName = document.getElementById('add-name');
+    const addSlug = document.getElementById('add-slug');
+    if (addName && addSlug) {
+      addName.addEventListener('input', () => {
+        addSlug.value = slugify(addName.value);
+      });
+    }
+
+    const editName = document.getElementById('edit-name');
+    const editSlug = document.getElementById('edit-slug');
+    if (editName && editSlug) {
+      editName.addEventListener('input', () => {
+        editSlug.value = slugify(editName.value);
+      });
+    }
+
+    // Add auto-slug generation to forms (Blogs)
+    const addBlogTitle = document.getElementById('add-blog-title');
+    const addBlogSlug = document.getElementById('add-blog-slug');
+    if (addBlogTitle && addBlogSlug) {
+      addBlogTitle.addEventListener('input', () => {
+        addBlogSlug.value = slugify(addBlogTitle.value);
+      });
+    }
+
+    const editBlogTitle = document.getElementById('edit-blog-title');
+    const editBlogSlug = document.getElementById('edit-blog-slug');
+    if (editBlogTitle && editBlogSlug) {
+      editBlogTitle.addEventListener('input', () => {
+        editBlogSlug.value = slugify(editBlogTitle.value);
+      });
+    }
+
+    // Add Product Submit Handler
+    const addForm = document.getElementById('add-product-form');
+    const addError = document.getElementById('add-error');
+
+    addForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addError) addError.classList.add('hidden');
+
+      const name = document.getElementById('add-name').value;
+      const slug = document.getElementById('add-slug').value;
+      const price = parseFloat(document.getElementById('add-price').value);
+      const stockQuantity = parseInt(document.getElementById('add-stock').value, 10);
+      const imageUrl = document.getElementById('add-image').value;
+      const description = document.getElementById('add-desc').value;
+      
+      const sizesStr = document.getElementById('add-sizes').value;
+      const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
+      
+      const colorsStr = document.getElementById('add-colors').value;
+      const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
+
+      const categoryId = parseInt(document.getElementById('add-category').value, 10);
+
+      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, categoryId };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (addError) {
+            addError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to create product.');
+            addError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (addError) {
+          addError.textContent = 'Could not connect to the backend server.';
+          addError.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Edit Product Setup & Submit Handler
+    const editDialog = document.getElementById('edit-product-dialog');
+    const editForm = document.getElementById('edit-product-form');
+    const editError = document.getElementById('edit-error');
+
+    document.querySelectorAll('.edit-prod-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (editError) editError.classList.add('hidden');
+        
+        const id = btn.dataset.id || '';
+        const name = btn.dataset.name || '';
+        const slug = btn.dataset.slug || '';
+        const price = btn.dataset.price || '';
+        const stock = btn.dataset.stock || '';
+        const image = btn.dataset.image || '';
+        const desc = btn.dataset.desc || '';
+        const sizes = JSON.parse(btn.dataset.sizes || '[]');
+        const colors = JSON.parse(btn.dataset.colors || '[]');
+        const category = btn.dataset.category || '1';
+
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-name').value = name;
+        document.getElementById('edit-slug').value = slug;
+        document.getElementById('edit-price').value = price;
+        document.getElementById('edit-stock').value = stock;
+        document.getElementById('edit-image').value = image;
+        document.getElementById('edit-desc').value = desc;
+        document.getElementById('edit-sizes').value = sizes.join(', ');
+        document.getElementById('edit-colors').value = colors.join(', ');
+        document.getElementById('edit-category').value = category;
+
+        editDialog?.showModal();
+      });
+    });
+
+    editForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (editError) editError.classList.add('hidden');
+
+      const id = document.getElementById('edit-id').value;
+      const name = document.getElementById('edit-name').value;
+      const slug = document.getElementById('edit-slug').value;
+      const price = parseFloat(document.getElementById('edit-price').value);
+      const stockQuantity = parseInt(document.getElementById('edit-stock').value, 10);
+      const imageUrl = document.getElementById('edit-image').value;
+      const description = document.getElementById('edit-desc').value;
+      
+      const sizesStr = document.getElementById('edit-sizes').value;
+      const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
+      
+      const colorsStr = document.getElementById('edit-colors').value;
+      const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
+
+      const categoryId = parseInt(document.getElementById('edit-category').value, 10);
+
+      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, categoryId };
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/products/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (editError) {
+            editError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to update product.');
+            editError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (editError) {
+          editError.textContent = 'Could not connect to the backend server.';
+          editError.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Delete Product Handler
+    document.querySelectorAll('.delete-prod-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+
+        if (!id || !name) return;
+
+        if (confirm(`Are you sure you want to delete product "${name}"?`)) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/products/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              window.location.reload();
+            } else {
+              const data = await res.json();
+              alert(data.message || 'Failed to delete product.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not connect to the backend server.');
+          }
+        }
+      });
+    });
+
+    // Add Blog Submit Handler
+    const addBlogForm = document.getElementById('add-blog-form');
+    const addBlogError = document.getElementById('add-blog-error');
+
+    addBlogForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addBlogError) addBlogError.classList.add('hidden');
+
+      const title = document.getElementById('add-blog-title').value;
+      const slug = document.getElementById('add-blog-slug').value;
+      const summary = document.getElementById('add-blog-summary').value;
+      const imageUrl = document.getElementById('add-blog-image').value;
+      const content = addEditor ? addEditor.getHTML() : '';
+      const categoryIdVal = document.getElementById('add-blog-category').value;
+      const categoryId = categoryIdVal ? parseInt(categoryIdVal, 10) : null;
+
+      const payload = { title, slug, summary, imageUrl, content, categoryId };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/blogs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (addBlogError) {
+            addBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to create blog post.');
+            addBlogError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (addBlogError) {
+          addBlogError.textContent = 'Could not connect to the backend server.';
+          addBlogError.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Edit Blog Setup & Submit Handler
+    const editBlogDialog = document.getElementById('edit-blog-dialog');
+    const editBlogForm = document.getElementById('edit-blog-form');
+    const editBlogError = document.getElementById('edit-blog-error');
+
+    document.querySelectorAll('.edit-blog-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (editBlogError) editBlogError.classList.add('hidden');
+        
+        const id = btn.dataset.id || '';
+        const title = btn.dataset.title || '';
+        const slug = btn.dataset.slug || '';
+        const summary = btn.dataset.summary || '';
+        const content = btn.dataset.content || '';
+        const image = btn.dataset.image || '';
+        const categoryId = btn.dataset.category || '';
+
+        document.getElementById('edit-blog-id').value = id;
+        document.getElementById('edit-blog-title').value = title;
+        document.getElementById('edit-blog-slug').value = slug;
+        document.getElementById('edit-blog-summary').value = summary;
+        document.getElementById('edit-blog-image').value = image;
+        document.getElementById('edit-blog-category').value = categoryId;
+
+        // Set Tiptap content
+        if (editEditor) {
+          editEditor.commands.setContent(content);
+        }
+
+        // Set preview image if exists
+        const previewContainer = document.getElementById('edit-blog-image-preview-container');
+        const preview = document.getElementById('edit-blog-image-preview');
+        const uploadStatus = document.getElementById('edit-blog-upload-status');
+        if (uploadStatus) uploadStatus.classList.add('hidden');
+        if (image) {
+          let src = image;
+          if (!src.startsWith('http') && src.startsWith('/')) {
+            src = `http://localhost:3001${src}`;
+          }
+          if (preview && previewContainer) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+          }
+        } else {
+          if (previewContainer) previewContainer.classList.add('hidden');
+        }
+
+        editBlogDialog?.showModal();
+      });
+    });
+
+    editBlogForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (editBlogError) editBlogError.classList.add('hidden');
+
+      const id = document.getElementById('edit-blog-id').value;
+      const title = document.getElementById('edit-blog-title').value;
+      const slug = document.getElementById('edit-blog-slug').value;
+      const summary = document.getElementById('edit-blog-summary').value;
+      const imageUrl = document.getElementById('edit-blog-image').value;
+      const content = editEditor ? editEditor.getHTML() : '';
+      const categoryIdVal = document.getElementById('edit-blog-category').value;
+      const categoryId = categoryIdVal ? parseInt(categoryIdVal, 10) : null;
+
+      const payload = { title, slug, summary, imageUrl, content, categoryId };
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/blogs/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (editBlogError) {
+            editBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to update blog post.');
+            editBlogError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (editBlogError) {
+          editBlogError.textContent = 'Could not connect to the backend server.';
+          editBlogError.classList.remove('hidden');
+        }
+      }
+    });
+
+    // Delete Blog Handler
+    document.querySelectorAll('.delete-blog-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const title = btn.dataset.title;
+
+        if (!id || !title) return;
+
+        if (confirm(`Are you sure you want to delete blog post "${title}"?`)) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/blogs/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              window.location.reload();
+            } else {
+              const data = await res.json();
+              alert(data.message || 'Failed to delete blog post.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not connect to the backend server.');
+          }
+        }
+      });
+    });
+
+    // Blog Category Submit Handler
+    const createCatForm = document.getElementById('create-blog-cat-form');
+    createCatForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-blog-cat-name').value;
+      const slug = document.getElementById('new-blog-cat-slug').value;
+
+      try {
+        const res = await fetch('http://localhost:3001/api/blogs/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, slug })
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data.message || 'Failed to create category.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to backend server.');
+      }
+    });
+
+    // Delete Blog Category Handler
+    document.querySelectorAll('.delete-blog-cat-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        if (!id || !name) return;
+
+        if (confirm(`Are you sure you want to delete blog category "${name}"? Blogs in this category will be uncategorized.`)) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/blogs/categories/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              window.location.reload();
+            } else {
+              const data = await res.json();
+              alert(data.message || 'Failed to delete category.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not connect to server.');
+          }
+        }
+      });
+    });
+
+    // Auto-slug for category
+    const catNameInput = document.getElementById('new-blog-cat-name') as HTMLInputElement;
+    const catSlugInput = document.getElementById('new-blog-cat-slug') as HTMLInputElement;
+    if (catNameInput && catSlugInput) {
+      catNameInput.addEventListener('input', () => {
+        catSlugInput.value = slugify(catNameInput.value);
+      });
+    }
+
+    // Product Category Submit Handler
+    const createProdCatForm = document.getElementById('create-prod-cat-form');
+    createProdCatForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = (document.getElementById('new-prod-cat-name') as HTMLInputElement).value;
+      const slug = (document.getElementById('new-prod-cat-slug') as HTMLInputElement).value;
+
+      try {
+        const res = await fetch('http://localhost:3001/api/products/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, slug })
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data.message || 'Failed to create category.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to backend server.');
+      }
+    });
+
+    // Delete Product Category Handler
+    document.querySelectorAll('.delete-prod-cat-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn as HTMLElement).dataset.id;
+        const name = (btn as HTMLElement).dataset.name;
+        if (!id || !name) return;
+
+        if (confirm(`Are you sure you want to delete product category "${name}"? Products in this category will be uncategorized.`)) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/products/categories/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              window.location.reload();
+            } else {
+              const data = await res.json();
+              alert(data.message || 'Failed to delete category.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not connect to server.');
+          }
+        }
+      });
+    });
+
+    // Auto-slug for product category
+    const prodCatNameInput = document.getElementById('new-prod-cat-name') as HTMLInputElement;
+    const prodCatSlugInput = document.getElementById('new-prod-cat-slug') as HTMLInputElement;
+    if (prodCatNameInput && prodCatSlugInput) {
+      prodCatNameInput.addEventListener('input', () => {
+        prodCatSlugInput.value = slugify(prodCatNameInput.value);
+      });
+    }
+
+    // Inline Category Form Init
+    const initInlineCategoryForm = (mode: 'add' | 'edit') => {
+      const btnOpen = document.getElementById(`btn-create-category-inline-${mode}`);
+      const btnCancel = document.getElementById(`btn-cancel-category-inline-${mode}`);
+      const btnSubmit = document.getElementById(`btn-submit-category-inline-${mode}`);
+      const form = document.getElementById(`inline-category-form-${mode}`);
+      const input = document.getElementById(`inline-category-name-${mode}`) as HTMLInputElement;
+      const errorDiv = document.getElementById(`inline-category-error-${mode}`);
+      const select = document.getElementById(`${mode}-category`) as HTMLSelectElement;
+
+      if (!btnOpen || !btnCancel || !btnSubmit || !form || !input || !errorDiv || !select) return;
+
+      btnOpen.addEventListener('click', () => {
+        form.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        errorDiv.classList.add('hidden');
+      });
+
+      btnCancel.addEventListener('click', () => {
+        form.classList.add('hidden');
+      });
+
+      btnSubmit.addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (!name) {
+          errorDiv.textContent = 'Category name is required';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        const slug = slugify(name);
+
+        try {
+          const res = await fetch('http://localhost:3001/api/products/categories', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, slug })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            const newId = data.id;
+            const newOption1 = new Option(name, String(newId));
+            const newOption2 = new Option(name, String(newId));
+            
+            const selectAdd = document.getElementById('add-category') as HTMLSelectElement;
+            const selectEdit = document.getElementById('edit-category') as HTMLSelectElement;
+            
+            if (selectAdd) selectAdd.add(newOption1);
+            if (selectEdit) selectEdit.add(newOption2);
+
+            // Select this new option in the active dropdown
+            select.value = String(newId);
+
+            // Hide the inline form
+            form.classList.add('hidden');
+          } else {
+            errorDiv.textContent = data.message || 'Failed to create category';
+            errorDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          console.error(err);
+          errorDiv.textContent = 'Could not connect to backend server';
+          errorDiv.classList.remove('hidden');
+        }
+      });
+    };
+
+    initInlineCategoryForm('add');
+    initInlineCategoryForm('edit');
+  </script>
 </Layout>

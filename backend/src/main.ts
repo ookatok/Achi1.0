@@ -11,9 +11,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // Serve static assets from backend/public
-  const publicPath = __dirname.includes('dist') 
-    ? path.join(__dirname, '..', '..', 'public') 
-    : path.join(__dirname, '..', 'public');
+  const publicPath = path.join(process.cwd(), 'public');
   app.useStaticAssets(publicPath);
   console.log(`[NestJS] Serving static assets from: ${publicPath}`);  // Enable Cross-Origin Resource Sharing (CORS) for Frontend
   app.enableCors({

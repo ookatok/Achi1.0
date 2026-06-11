@@ -2,19 +2,20 @@
 import Layout from '../../layouts/Layout.astro';
 
 const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
 };
 
 let productsList = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products`);
+  const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=men`);
   if (res.ok) {
-    const allProducts = await res.json();
-    // Filter only Men's outfit sets (ID 109, 110, 111)
-    productsList = allProducts.filter((p: any) => [109, 110, 111].includes(p.id));
+    productsList = await res.json();
   }
 } catch (err) {
   console.error('[NestJS API Error] Fetching men products failed. Using mocks.', err);
@@ -57,7 +58,7 @@ const displayProducts = productsList.length > 0 ? productsList : mockSets;
       <!-- Col 1: Shirt -->
       <a href="/products?colors=&sizes=&query=shirt" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/shirt-cat-men.png')}');`}></div>
-        <div class="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-25 transition-all"></div>
+        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
           <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">SHIRT</span>
         </div>
@@ -66,7 +67,7 @@ const displayProducts = productsList.length > 0 ? productsList : mockSets;
       <!-- Col 2: Bottoms -->
       <a href="/products?colors=&sizes=&query=pants" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/bottoms-cat-men.png')}');`}></div>
-        <div class="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-25 transition-all"></div>
+        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
           <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">BOTTOMS</span>
         </div>
@@ -75,7 +76,7 @@ const displayProducts = productsList.length > 0 ? productsList : mockSets;
       <!-- Col 3: Cap -->
       <a href="/products?colors=&sizes=&query=cap" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/cap-cat-men.png')}');`}></div>
-        <div class="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-25 transition-all"></div>
+        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
           <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">CAP</span>
         </div>

@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { products } from '../../db/schema/product.schema';
 import { categories } from '../../db/schema/category.schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, like, or } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { CreateProductDto, GetProductsQueryDto } from './dto/product.dto';
 
@@ -25,6 +25,27 @@ export class ProductRepository {
     }
     if (query.maxPrice !== undefined) {
       conditions.push(lte(products.price, String(query.maxPrice)));
+    }
+
+    if (query.query) {
+      conditions.push(
+        or(
+          like(products.name, `%${query.query}%`),
+          like(products.description, `%${query.query}%`)
+        )
+      );
+    }
+
+    if (query.collection) {
+      if (query.collection === 'best-sellers') {
+        conditions.push(sql`${products.id} IN (101, 102, 105, 106)`);
+      } else if (query.collection === 'trending') {
+        conditions.push(sql`${products.id} IN (103, 104, 107, 108)`);
+      } else if (query.collection === 'new-arrivals') {
+        conditions.push(sql`${products.id} IN (109, 110, 111)`);
+      } else {
+        conditions.push(sql`1 = 0`);
+      }
     }
 
     // Filter using JSON_CONTAINS for clothing sizes
@@ -102,4 +123,38 @@ export class ProductRepository {
   async delete(id: number) {
     await this.db.delete(products).where(eq(products.id, id));
   }
+
+  // Product categories CRUD
+  async createCategory(data: typeof categories.$inferInsert) {
+    const result = await this.db.insert(categories).values(data);
+    return result[0].insertId;
+  }
+
+  async findAllCategories() {
+    return await this.db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+        productCount: sql<number>`cast(count(${products.id}) as unsigned)`,
+      })
+      .from(categories)
+      .leftJoin(products, eq(categories.id, products.categoryId))
+      .groupBy(categories.id)
+      .orderBy(categories.name);
+  }
+
+  async findCategoryById(id: number) {
+    const results = await this.db
+      .select()
+      .from(categories)
+      .where(eq(categories.id, id))
+      .limit(1);
+    return results[0] || null;
+  }
+
+  async deleteCategory(id: number) {
+    await this.db.delete(categories).where(eq(categories.id, id));
+  }
 }
+

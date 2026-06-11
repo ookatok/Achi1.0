@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductRepository } from './product.repository';
-import type { CreateProductDto, GetProductsQueryDto, UpdateProductDto } from './dto/product.dto';
+import type { CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategoryDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductService {
@@ -62,6 +62,27 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     await this.productRepo.delete(id);
+    return { success: true };
+  }
+
+  async createCategory(dto: CreateProductCategoryDto) {
+    const insertId = await this.productRepo.createCategory({
+      name: dto.name,
+      slug: dto.slug,
+    });
+    return { success: true, id: insertId };
+  }
+
+  async findAllCategories() {
+    return await this.productRepo.findAllCategories();
+  }
+
+  async removeCategory(id: number) {
+    const category = await this.productRepo.findCategoryById(id);
+    if (!category) {
+      throw new NotFoundException(`Product category with ID ${id} not found`);
+    }
+    await this.productRepo.deleteCategory(id);
     return { success: true };
   }
 }

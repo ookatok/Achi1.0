@@ -21,11 +21,14 @@ export default function SignInForm() {
         email,
         password,
         callbackUrl,
-        redirect: true,
+        redirect: false,
       });
       
       if (result?.error) {
         setError('Invalid email or password. Please try again.');
+      } else {
+        // Force manual client-side redirection to callbackUrl
+        window.location.href = callbackUrl;
       }
     } catch (err) {
       console.error(err);

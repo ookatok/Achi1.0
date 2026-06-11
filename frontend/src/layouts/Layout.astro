@@ -5,9 +5,10 @@ interface Props {
   title: string;
   description?: string;
   showHeroHeader?: boolean;
+  isAdminPanel?: boolean;
 }
 
-const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } = Astro.props;
+const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, isAdminPanel = false } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -24,6 +25,39 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <title>{title}</title>
+    <style is:global>
+      #shop-mega-menu a {
+        color: #1c1917 !important; /* text-brand-charcoal (black) */
+        transition: color 0.2s ease-in-out;
+      }
+      #shop-mega-menu a:hover {
+        color: #a8a29e !important; /* text-stone-400 (grey) */
+      }
+      #shop-mega-menu a.active {
+        color: #a8a29e !important; /* active link is grey */
+      }
+      
+      /* Underline for active main nav links and buttons */
+      header nav a,
+      header nav button#shop-menu-btn {
+        border-bottom: 2px solid transparent;
+        padding-bottom: 4px;
+        transition: border-color 0.3s ease-in-out, opacity 0.2s ease-in-out;
+      }
+      
+      header nav a.active,
+      header nav button.active {
+        border-bottom-color: currentColor !important;
+      }
+      
+      /* Typography reset to ensure buttons look exactly like neighboring links */
+      #shop-menu-btn,
+      header nav button {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 300 !important; /* Outfit-light font weight */
+        color: inherit;
+      }
+    </style>
   </head>
   <body class="min-h-screen flex flex-col bg-white text-brand-charcoal font-sans">
     <!-- Header -->
@@ -33,63 +67,93 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
     >
       <div class="max-w-[1440px] mx-auto px-6 h-24 flex items-center justify-between">
         <!-- Logo Section -->
-        <div class="flex flex-col">
-          <a href="/" class="font-serif text-3xl tracking-[0.3em] font-light leading-none">A C H I</a>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light block leading-none">Cool Every Day</span>
+        <div class="flex flex-col items-center">
+          <a href="/" class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</a>
+          <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light block leading-none pl-[0.4em]">Cool Every Day</span>
         </div>
 
         <!-- Center Navigation -->
         <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full">
-          <a href="/" class="hover:opacity-70 transition-opacity">HOME</a>
-          
-          <!-- SHOP Mega Menu Container -->
-          <div class="relative group h-full flex items-center cursor-pointer">
-            <a href="/products" class="hover:opacity-70 transition-opacity flex items-center h-full">SHOP</a>
-            
-            <!-- Dropdown Mega Menu -->
-            <div class="absolute top-full left-1/2 -translate-x-1/2 w-screen max-w-[1440px] bg-white border-t border-b border-gray-200 py-12 px-12 grid grid-cols-3 gap-8 shadow-sm hidden group-hover:grid z-50 text-left normal-case tracking-normal">
-              <!-- Column 1: Category -->
-              <div>
-                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Category</h4>
-                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                  <li><a href="/products?categorySlug=clothing" class="hover:text-brand-gold font-medium text-brand-charcoal">Clothing</a></li>
-                  <li><a href="/products/men" class="hover:text-brand-gold pl-3 block text-[10px]">MALE</a></li>
-                  <li><a href="/products/women" class="hover:text-brand-gold pl-3 block text-[10px]">FEMALE</a></li>
-                  <li><a href="/products?categorySlug=accessories" class="hover:text-brand-gold">Accessories</a></li>
-                  <li><a href="/products?categorySlug=gifts" class="hover:text-brand-gold">Gifts</a></li>
-                  <li><a href="/products" class="hover:text-brand-gold font-medium text-brand-charcoal">Shop All</a></li>
-                </ul>
-              </div>
+          {isAdminPanel ? (
+            <>
+              <button id="nav-tab-dashboard" class="border-b-2 border-brand-charcoal pb-1 text-xs font-semibold uppercase tracking-widest text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                DASHBOARD
+              </button>
+              <button id="nav-tab-orders" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                ORDERS
+              </button>
+              <button id="nav-tab-products" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                PRODUCTS
+              </button>
+              <button id="nav-tab-blogs" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                BLOGS
+              </button>
+            </>
+          ) : (
+            <>
+              <a href="/" class="hover:opacity-70 transition-opacity">HOME</a>
+              
+              <!-- SHOP Mega Menu Container -->
+              <div class="h-full flex items-center cursor-pointer">
+                <button id="shop-menu-btn" class="hover:opacity-70 transition-opacity flex items-center uppercase bg-transparent border-none outline-none cursor-pointer tracking-[0.15em] font-light text-[13px] p-0 m-0 text-current">SHOP</button>
+                
+                <!-- Dropdown Mega Menu (Full Width) -->
+                <div id="shop-mega-menu" class="absolute top-full left-0 w-full bg-white border-t border-b border-gray-200 py-12 shadow-sm hidden z-50 text-left normal-case tracking-normal animate-fade-in">
+                  <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-3 gap-8">
+                    <!-- Column 1: Category -->
+                    <div>
+                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Category</h4>
+                      <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                        <li>
+                          <a href="/products?categorySlug=clothing" id="clothing-toggle-btn" class="hover:text-brand-gold font-medium text-brand-charcoal flex items-center gap-1.5 cursor-pointer">
+                            Clothing
+                            <svg id="clothing-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 transition-transform duration-300 transform">
+                              <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                          </a>
+                        </li>
+                        <li class="clothing-sub-item hidden"><a href="/products/men" class="hover:text-brand-gold pl-3 block text-[10px]">MALE</a></li>
+                        <li class="clothing-sub-item hidden"><a href="/products/women" class="hover:text-brand-gold pl-3 block text-[10px]">FEMALE</a></li>
+                        <li><a href="/products/accessories" class="hover:text-brand-gold">Accessories</a></li>
+                        <li><a href="/products/gifts" class="hover:text-brand-gold">Gifts</a></li>
+                        <li><a href="/products" class="hover:text-brand-gold font-medium text-brand-charcoal">Shop All</a></li>
+                      </ul>
+                    </div>
 
-              <!-- Column 2: Featured -->
-              <div>
-                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Featured</h4>
-                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                  <li><a href="/products?collection=new-arrivals" class="hover:text-brand-gold">New Arrivals</a></li>
-                  <li><a href="/products?collection=best-sellers" class="hover:text-brand-gold">Best Sellers</a></li>
-                  <li><a href="/products?collection=trending" class="hover:text-brand-gold">Trending Now</a></li>
-                </ul>
-              </div>
+                    <!-- Column 2: Featured -->
+                    <div>
+                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Featured</h4>
+                      <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                        <li><a href="/products/new-arrivals" class="hover:text-brand-gold">New Arrivals</a></li>
+                        <li><a href="/products/best-sellers" class="hover:text-brand-gold">Best Sellers</a></li>
+                        <li><a href="/products/trending" class="hover:text-brand-gold">Trending Now</a></li>
+                      </ul>
+                    </div>
 
-              <!-- Column 3: Collections -->
-              <div>
-                <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Collections</h4>
-                <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                  <li class="text-gray-400 font-semibold mb-1 text-[10px]">Events</li>
-                  <li><a href="/products?collection=selection" class="hover:text-brand-gold">Selection</a></li>
-                  <li><a href="/products?collection=online-exclusives" class="hover:text-brand-gold">Online Exclusives</a></li>
-                  <li><a href="/products?collection=total-looks" class="hover:text-brand-gold">Total Looks</a></li>
-                  <li><a href="/products?collection=basics" class="hover:text-brand-gold">Basics</a></li>
-                  <li><a href="/products?collection=spring" class="hover:text-brand-gold">Spring</a></li>
-                  <li><a href="/products?collection=summer" class="hover:text-brand-gold">Summer</a></li>
-                  <li><a href="/products?collection=fall" class="hover:text-brand-gold">Fall</a></li>
-                  <li><a href="/products?collection=winter" class="hover:text-brand-gold">Winter</a></li>
-                </ul>
+                    <!-- Column 3: Collections -->
+                    <div>
+                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Collections</h4>
+                      <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                        <li class="text-gray-400 font-semibold mb-1 text-[10px]">Events</li>
+                        <li><a href="/products/selection" class="hover:text-brand-gold">Selection</a></li>
+                        <li><a href="/products/online-exclusives" class="hover:text-brand-gold">Online Exclusives</a></li>
+                        <li><a href="/products/total-looks" class="hover:text-brand-gold">Total Looks</a></li>
+                        <li><a href="/products/basics" class="hover:text-brand-gold">Basics</a></li>
+                        <li><a href="/products/spring" class="hover:text-brand-gold">Spring</a></li>
+                        <li><a href="/products/summer" class="hover:text-brand-gold">Summer</a></li>
+                        <li><a href="/products/fall" class="hover:text-brand-gold">Fall</a></li>
+                        <li><a href="/products/winter" class="hover:text-brand-gold">Winter</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <a href="/products?collection=new-arrivals" class="hover:opacity-70 transition-opacity">New Arrivals</a>
+              
+              <a href="/products/new-arrivals" class="hover:opacity-70 transition-opacity">New Arrivals</a>
+              <a href="/blog" class="hover:opacity-70 transition-opacity">BLOG</a>
+            </>
+          )}
         </nav>
 
         <!-- Right Side Icons -->
@@ -133,8 +197,9 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
       <div class="max-w-[1440px] mx-auto px-6 flex flex-col items-center">
         <!-- Footer Logo -->
         <div class="flex flex-col items-center mb-12 text-center">
-          <h4 class="font-serif text-3xl tracking-[0.3em] font-light leading-none">A C H I</h4>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light leading-none">Cool Every Day</span>
+          <h4 class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</h4>
+          <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light leading-none pl-[0.4em]">Cool Every Day</span>
         </div>
 
         <hr class="w-full border-gray-100 mb-12" />
@@ -196,9 +261,10 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
     <div id="search-overlay" class="fixed inset-0 bg-white z-50 flex flex-col hidden">
       <!-- Search Overlay Header -->
       <div class="max-w-[1440px] w-full mx-auto px-6 h-24 flex items-center justify-between">
-        <div class="flex flex-col">
-          <span class="font-serif text-3xl tracking-[0.3em] font-light">A C H I</span>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 mt-1 font-light">Cool Every Day</span>
+        <div class="flex flex-col items-center">
+          <span class="font-serif text-3xl tracking-[0.3em] font-light pl-[0.3em]">A C H I</span>
+          <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light pl-[0.4em]">Cool Every Day</span>
         </div>
         <button id="close-search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-6 h-6">
@@ -274,6 +340,32 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
           searchInput.focus();
         });
       }
+
+      // Shop Mega Menu Click Toggle Logic
+      const shopMenuBtn = document.getElementById('shop-menu-btn');
+      const shopMegaMenu = document.getElementById('shop-mega-menu');
+
+      if (shopMenuBtn && shopMegaMenu) {
+        shopMenuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isHidden = shopMegaMenu.classList.contains('hidden');
+          if (isHidden) {
+            shopMegaMenu.classList.remove('hidden');
+            shopMegaMenu.classList.add('block');
+          } else {
+            shopMegaMenu.classList.remove('block');
+            shopMegaMenu.classList.add('hidden');
+          }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+          if (shopMegaMenu && !shopMegaMenu.contains(e.target as Node) && e.target !== shopMenuBtn) {
+            shopMegaMenu.classList.remove('block');
+            shopMegaMenu.classList.add('hidden');
+          }
+        });
+      }
     </script>
 
     <!-- Client-side script for sticky header scroll transitions -->
@@ -305,6 +397,88 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false } =
         window.addEventListener('scroll', handleStickyScroll);
         // Initial check in case of page reload when already scrolled down
         handleStickyScroll();
+      }
+    </script>
+    <!-- Client-side script to highlight active links and toggle clothing menu -->
+    <script is:inline>
+      const currentPathName = window.location.pathname + window.location.search;
+      
+      // 1. Highlight active sub-links in the mega menu
+      document.querySelectorAll('#shop-mega-menu a').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href) {
+          // Normalize paths for matching
+          const normalizedHref = href.endsWith('/') ? href.slice(0, -1) : href;
+          const normalizedCurrent = currentPathName.endsWith('/') ? currentPathName.slice(0, -1) : currentPathName;
+          
+          if (normalizedCurrent === normalizedHref || (normalizedHref !== '' && normalizedHref !== '/products' && normalizedCurrent.startsWith(normalizedHref))) {
+            link.classList.add('active');
+          }
+        }
+      });
+
+      // 2. Highlight active main navigation items (HOME, SHOP, New Arrivals, BLOG)
+      const mainLinks = document.querySelectorAll('header nav a, header nav button#shop-menu-btn');
+      mainLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        const id = link.getAttribute('id');
+        const normalizedCurrent = currentPathName.endsWith('/') ? currentPathName.slice(0, -1) : currentPathName;
+
+        if (id === 'shop-menu-btn') {
+          // Active if pathname starts with /products but is not /products/new-arrivals
+          if (window.location.pathname.startsWith('/products') && window.location.pathname !== '/products/new-arrivals') {
+            link.classList.add('active');
+          }
+        } else if (href) {
+          const normalizedHref = href.endsWith('/') ? href.slice(0, -1) : href;
+          if (normalizedHref === '' && normalizedCurrent === '') {
+            link.classList.add('active');
+          } else if (normalizedHref !== '' && normalizedCurrent.startsWith(normalizedHref)) {
+            link.classList.add('active');
+          }
+        }
+      });
+
+      // 3. Clothing subcategory toggle logic
+      const clothingToggle = document.getElementById('clothing-toggle-btn');
+      const clothingSubItems = document.querySelectorAll('.clothing-sub-item');
+      const clothingArrow = document.getElementById('clothing-arrow');
+
+      const toggleClothingMenu = (show) => {
+        clothingSubItems.forEach(item => {
+          if (show === undefined) {
+            item.classList.toggle('hidden');
+          } else if (show) {
+            item.classList.remove('hidden');
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+
+        // Toggle arrow rotation
+        if (clothingArrow) {
+          const isCurrentlyHidden = clothingSubItems[0]?.classList.contains('hidden');
+          if (isCurrentlyHidden) {
+            clothingArrow.classList.remove('rotate-180');
+          } else {
+            clothingArrow.classList.add('rotate-180');
+          }
+        }
+      };
+
+      if (clothingToggle) {
+        clothingToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleClothingMenu();
+        });
+      }
+
+      // Auto-expand on page load if user is on /products/men or /products/women, or categorySlug is clothing
+      const pathName = window.location.pathname;
+      const searchParams = window.location.search;
+      if (pathName === '/products/men' || pathName === '/products/women' || searchParams.includes('categorySlug=clothing')) {
+        toggleClothingMenu(true);
       }
     </script>
   </body>

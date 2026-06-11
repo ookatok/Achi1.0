@@ -6,8 +6,9 @@ import { CartModule } from './modules/cart/cart.module';
 import { OrderModule } from './modules/order/order.module';
 import { WebImageModule } from './modules/web-image/web-image.module';
 import { UserModule } from './modules/user/user.module';
+import { BlogModule } from './modules/blog/blog.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule, UserModule],
+  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule, UserModule, BlogModule],
 })
 export class AppModule {}

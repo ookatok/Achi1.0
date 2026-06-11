@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+let blogs = [] as any[];
+let errorMsg = null;
+
+try {
+  const res = await fetch('http://localhost:3001/api/blogs');
+  if (res.ok) {
+    blogs = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching blogs failed.', err);
+  errorMsg = 'Could not fetch blog posts from server.';
+}
+
+const mockBlogs = [
+  {
+    id: 1,
+    title: "The Art of Minimalist Layering",
+    slug: "art-of-minimalist-layering",
+    summary: "Explore the essential guidelines for assembling light, premium outfits that hold depth and style in any climate.",
+    imageUrl: "/assets/images/set1.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Editorial"
+  },
+  {
+    id: 2,
+    title: "Neutral Color Palettes for Summer",
+    slug: "neutral-color-palettes-for-summer",
+    summary: "How to match cream, sand, and charcoal tones to create a cohesive summer wardrobe that feels warm yet light.",
+    imageUrl: "/assets/images/women-hero.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Stylist"
+  }
+];
+
+const displayBlogs = blogs.length > 0 ? blogs : mockBlogs;
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  return url;
+};
+---
+
+<Layout title="Editorial Blog | ACHI Studio" description="Stories, stylings, and collections from the ACHI design team." showHeroHeader={true}>
+  <!-- Blog Banner -->
+  <section class="w-full relative h-[45vh] bg-[#3B3835] flex items-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style="background-image: url('/assets/images/collection-hero.png?v=2');"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
+    
+    <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
+      <h1 class="font-serif text-4xl sm:text-6xl tracking-widest uppercase leading-none mb-3">
+        ACHI <span class="italic font-normal text-stone-200">Editorial</span>
+      </h1>
+      <p class="font-sans text-[10px] sm:text-xs tracking-[0.25em] font-light uppercase text-gray-300">
+        Collections, styling guides, and brand updates
+      </p>
+    </div>
+  </section>
+
+  <!-- Blog Articles Grid -->
+  <div class="max-w-[1200px] mx-auto px-6 py-24">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
+      {displayBlogs.map((blog) => (
+        <article class="group space-y-6">
+          <a href={`/blog/${blog.id}`} class="block aspect-[16/10] bg-stone-50 overflow-hidden rounded-sm border border-stone-100/50">
+            {blog.imageUrl ? (
+              <img 
+                src={resolveImage(blog.imageUrl)} 
+                alt={blog.title} 
+                class="w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700 ease-out" 
+              />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 font-sans text-xs uppercase tracking-widest font-light">
+                ACHI Editorial
+              </div>
+            )}
+          </a>
+          
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center gap-2.5 text-[10px] uppercase tracking-widest text-stone-400 font-medium">
+              <span>By {blog.authorName || 'ACHI Studio'}</span>
+              {blog.categoryName && (
+                <>
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand-gold opacity-50"></span>
+                  <span class="text-brand-gold font-bold">{blog.categoryName}</span>
+                </>
+              )}
+              <span class="w-1.5 h-1.5 rounded-full bg-stone-300"></span>
+              <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+            
+            <h2 class="font-serif text-2xl tracking-wide text-brand-charcoal group-hover:text-stone-600 transition-colors">
+              <a href={`/blog/${blog.id}`}>{blog.title}</a>
+            </h2>
+            
+            <p class="text-xs text-stone-600 font-light leading-relaxed font-sans line-clamp-3">
+              {blog.summary || (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '')}
+            </p>
+            
+            <div class="pt-2">
+              <a 
+                href={`/blog/${blog.id}`} 
+                class="inline-block text-[10px] uppercase tracking-widest font-semibold text-brand-charcoal border-b border-brand-charcoal hover:text-brand-gold hover:border-brand-gold transition-colors pb-0.5"
+              >
+                Read article
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</Layout>

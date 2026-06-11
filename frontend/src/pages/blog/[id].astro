@@ -1,0 +1,182 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { id } = Astro.params;
+
+let blog = null as any;
+
+try {
+  const res = await fetch(`http://localhost:3001/api/blogs/${id}`);
+  if (res.ok) {
+    blog = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching blog detail failed.', err);
+}
+
+// Fallback mock blog details matching the index page fallbacks
+const mockBlogsMap: Record<string, any> = {
+  "1": {
+    id: 1,
+    title: "The Art of Minimalist Layering",
+    summary: "Explore the essential guidelines for assembling light, premium outfits that hold depth and style in any climate.",
+    content: `Layering is often associated with heavy winter wear, but the art of minimalist layering is about creating texture, depth, and proportion without adding bulk. In neutral-focused style sheets like ACHI, mastering this technique separates simple dressing from a refined, curated appearance.
+
+### 1. Select a Lightweight Base
+Always begin with a high-quality, breathable foundation. A soft cotton crew neck or a fine linen jersey is perfect. It should fit cleanly without feeling restrictive.
+
+### 2. Introduce Textural Contrasts
+The secret to successful layering lies in texture. Pair a smooth t-shirt with a heavily textured waffle knit or a structured linen overshirt. The contrast between surfaces adds interest to monochromatic layouts.
+
+### 3. Play with Proportions
+Let the hemline of your base layer peek out underneath your sweater or jacket. This thin band of color (usually white or cream) draws a clear horizontal line that breaks up the outfit and shows deliberate assembly.
+
+### 4. Invest in Unstructured Outerwear
+An unstructured blazer or a lightweight trench coat wraps the outfit together. Without shoulder pads or heavy linings, they drape naturally over your layers, maintaining a slim, relaxed silhouette.`,
+    imageUrl: "/assets/images/set1.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Editorial"
+  },
+  "2": {
+    id: 2,
+    title: "Neutral Color Palettes for Summer",
+    summary: "How to match cream, sand, and charcoal tones to create a cohesive summer wardrobe that feels warm yet light.",
+    content: `Summer styling is often dominated by bright prints and vibrant colors. However, a curated color palette of warm neutrals offers a sophisticated, timeless alternative that keeps you looking cool and collected.
+
+### The Anchor Colors
+Every palette needs anchors. For summer, we look to three main categories:
+- **Alabaster & Cream**: These reflect light and keep you cool. They serve as the canvas of your look.
+- **Desert Sand & Taupe**: Earthy middle tones that reference organic textures like dry grass, stone, and raw linen.
+- **Charcoal & Onyx**: Dark elements used in small proportions to outline the silhouette, ground the light tones, and add a sharp modern contrast.
+
+### Fabric Selection is Key
+Neutrals only succeed when matched with premium fabrics. Linen, cotton silk, and open-weave knitwear let the textures speak for themselves. A linen shirt in desert sand paired with charcoal cotton trousers is a simple yet commanding summer silhouette.`,
+    imageUrl: "/assets/images/women-hero.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Stylist"
+  }
+};
+
+const displayBlog = blog || mockBlogsMap[id || ''] || mockBlogsMap["1"];
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  return url;
+};
+---
+
+<Layout title={`${displayBlog.title} | ACHI Studio`} description={displayBlog.summary} showHeroHeader={true}>
+  <article class="w-full bg-[#FAF9F6] min-h-screen">
+    <!-- Header Banner -->
+    <div class="w-full relative h-[60vh] bg-stone-900 overflow-hidden flex items-end">
+      {displayBlog.imageUrl ? (
+        <img 
+          src={resolveImage(displayBlog.imageUrl)} 
+          alt={displayBlog.title} 
+          class="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
+      ) : (
+        <div class="absolute inset-0 bg-[#3B3835] opacity-60"></div>
+      )}
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+      
+      <div class="relative w-full max-w-[900px] mx-auto px-6 pb-16 z-10 text-white space-y-4">
+        <div class="flex items-center gap-3 text-[10px] uppercase tracking-widest text-stone-300 font-semibold">
+          {displayBlog.categoryName && (
+            <>
+              <span class="text-brand-gold font-bold">{displayBlog.categoryName}</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+            </>
+          )}
+          <span>By {displayBlog.authorName || 'ACHI Studio'}</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+          <span>{new Date(displayBlog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        </div>
+        
+        <h1 class="font-serif text-3xl sm:text-5xl tracking-wide leading-tight uppercase">
+          {displayBlog.title}
+        </h1>
+        
+        {displayBlog.summary && (
+          <p class="font-sans text-xs sm:text-sm text-stone-200/90 font-light tracking-wide max-w-[700px] leading-relaxed">
+            {displayBlog.summary}
+          </p>
+        )}
+      </div>
+    </div>
+
+    <!-- Article Body -->
+    <div class="max-w-[750px] mx-auto px-6 py-24 bg-white border-x border-stone-200/50 shadow-sm min-h-[50vh]">
+      <!-- Content Container -->
+      <div class="font-sans text-stone-700 text-sm leading-relaxed font-light space-y-6 blog-content" set:html={displayBlog.content} />
+
+      <!-- Footer back button -->
+      <div class="mt-16 pt-8 border-t border-stone-100 flex justify-between items-center">
+        <a 
+          href="/blog" 
+          class="inline-flex items-center text-[10px] uppercase tracking-widest font-semibold text-stone-500 hover:text-brand-charcoal transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="w-4 h-4 mr-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+          </svg>
+          Back to all posts
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <style>
+    .blog-content :global(h1) {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .blog-content :global(h2) {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .blog-content :global(h3) {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #1c1917;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .blog-content :global(p) {
+      margin-bottom: 1rem;
+      line-height: 1.75;
+    }
+    .blog-content :global(ul) {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .blog-content :global(ol) {
+      list-style-type: decimal;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .blog-content :global(blockquote) {
+      border-left: 2px solid #e7e5e4;
+      padding-left: 1rem;
+      color: #78716c;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+  </style>
+</Layout>

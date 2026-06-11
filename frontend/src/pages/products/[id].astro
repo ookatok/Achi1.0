@@ -9,9 +9,12 @@ const token = (session as any)?.accessToken;
 const { id } = Astro.params;
 
 const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
 };
 
 let product = null;

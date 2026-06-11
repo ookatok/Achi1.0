@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../core/pipes/zod-validation.pipe';
-import { CreateProductSchema, GetProductsQuerySchema, CreateProductDto, GetProductsQueryDto, UpdateProductDto } from './dto/product.dto';
+import { CreateProductSchema, GetProductsQuerySchema, CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategorySchema, CreateProductCategoryDto } from './dto/product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -22,6 +22,28 @@ export class ProductController {
   @UsePipes(new ZodValidationPipe(GetProductsQuerySchema))
   async findAll(@Query() query: GetProductsQueryDto) {
     return this.productService.findAll(query);
+  }
+
+  // Product Category Endpoints
+  @Get('categories')
+  async findAllCategories() {
+    return this.productService.findAllCategories();
+  }
+
+  @Post('categories')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @UsePipes(new ZodValidationPipe(CreateProductCategorySchema))
+  async createCategory(@Body() dto: CreateProductCategoryDto) {
+    return this.productService.createCategory(dto);
+  }
+
+  @Delete('categories/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  async removeCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.removeCategory(id);
   }
 
   @Get(':id')

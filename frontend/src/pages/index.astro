@@ -2,9 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 
 const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
 };
 ---
 
@@ -36,7 +39,7 @@ const resolveImage = (url: string) => {
       <!-- Left Column: MEN -->
       <a href="/products/men" class="relative aspect-[3/4] overflow-hidden rounded-sm group block bg-gray-100">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/men-category.png')}');`}></div>
-        <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-35 transition-all"></div>
+        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-all"></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
             MEN
@@ -47,7 +50,7 @@ const resolveImage = (url: string) => {
       <!-- Right Column: WOMEN -->
       <a href="/products/women" class="relative aspect-[3/4] overflow-hidden rounded-sm group block bg-gray-100">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/women-category.png')}');`}></div>
-        <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-35 transition-all"></div>
+        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-all"></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
             WOMEN
