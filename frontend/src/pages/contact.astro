@@ -140,10 +140,48 @@ import Layout from '../layouts/Layout.astro';
   <script is:inline>
     const form = document.getElementById('contact-form');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert('Thank you for contacting us. We will get back to you shortly.');
-        form.reset();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Sending...';
+        }
+
+        const payload = {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value || null,
+          topic: document.getElementById('topic').value,
+          description: document.getElementById('description').value,
+        };
+
+        try {
+          const res = await fetch('http://localhost:3001/api/contacts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (res.ok) {
+            alert('Thank you for contacting us. We will get back to you shortly.');
+            form.reset();
+          } else {
+            const data = await res.json();
+            alert('Error: ' + (data.message || 'Could not send message'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Could not submit form. Please check if the backend server is online.');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send';
+          }
+        }
       });
     }
   </script>

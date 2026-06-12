@@ -10,6 +10,7 @@ export const CreateProductSchema = z.object({
   imageUrl: z.string().url().optional().or(z.literal('')),
   sizes: z.array(z.string()).optional().default([]),   // e.g. ["S", "M"]
   colors: z.array(z.string()).optional().default([]), // e.g. ["Red", "Black"]
+  tags: z.array(z.string()).optional().default([]),   // e.g. ["new", "basics"]
 });
 
 export const GetProductsQuerySchema = z.object({
@@ -21,6 +22,7 @@ export const GetProductsQuerySchema = z.object({
   maxPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
   sizes: z.string().optional().transform((val) => (val ? val.split(',') : undefined)),   // e.g. "S,M" -> ["S", "M"]
   colors: z.string().optional().transform((val) => (val ? val.split(',') : undefined)), // e.g. "Red,Black" -> ["Red", "Black"]
+  tags: z.string().optional().transform((val) => (val ? val.split(',') : undefined)),   // e.g. "cool,new" -> ["cool", "new"]
   query: z.string().optional(),
 });
 
@@ -29,9 +31,16 @@ export const CreateProductCategorySchema = z.object({
   slug: z.string().min(1, 'Category slug is required'),
 });
 
+export const CreateProductTagSchema = z.object({
+  name: z.string().min(1, 'Tag name is required'),
+  slug: z.string().min(1, 'Tag slug is required'),
+});
+
 export type CreateProductCategoryDto = z.infer<typeof CreateProductCategorySchema>;
+export type CreateProductTagDto = z.infer<typeof CreateProductTagSchema>;
 
 export type CreateProductDto = z.infer<typeof CreateProductSchema>;
 export type GetProductsQueryDto = z.infer<typeof GetProductsQuerySchema>;
 export type UpdateProductDto = Partial<CreateProductDto>;
+
 

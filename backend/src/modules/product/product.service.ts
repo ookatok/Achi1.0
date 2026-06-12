@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductRepository } from './product.repository';
-import type { CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategoryDto } from './dto/product.dto';
+import type { CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategoryDto, CreateProductTagDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductService {
@@ -19,7 +19,7 @@ export class ProductService {
       imageUrl: dto.imageUrl,
       sizes: dto.sizes,
       colors: dto.colors,
-    });
+    }, dto.tags);
     return { success: true, id: insertId };
   }
 
@@ -52,7 +52,7 @@ export class ProductService {
     if (dto.sizes !== undefined) updateFields.sizes = dto.sizes;
     if (dto.colors !== undefined) updateFields.colors = dto.colors;
 
-    await this.productRepo.update(id, updateFields);
+    await this.productRepo.update(id, updateFields, dto.tags);
     return { success: true };
   }
 
@@ -83,6 +83,32 @@ export class ProductService {
       throw new NotFoundException(`Product category with ID ${id} not found`);
     }
     await this.productRepo.deleteCategory(id);
+    return { success: true };
+  }
+
+  // Tag CRUD methods
+  async createTag(dto: CreateProductTagDto) {
+    const existing = await this.productRepo.findTagByNameOrSlug(dto.name, dto.slug);
+    if (existing) {
+      return { success: true, id: existing.id };
+    }
+    const insertId = await this.productRepo.createTag({
+      name: dto.name,
+      slug: dto.slug,
+    });
+    return { success: true, id: insertId };
+  }
+
+  async findAllTags() {
+    return await this.productRepo.findAllTags();
+  }
+
+  async removeTag(id: number) {
+    const tag = await this.productRepo.findTagById(id);
+    if (!tag) {
+      throw new NotFoundException(`Product tag with ID ${id} not found`);
+    }
+    await this.productRepo.deleteTag(id);
     return { success: true };
   }
 }

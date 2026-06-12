@@ -36,7 +36,12 @@ const mockProduct = {
   imageUrl: "/assets/images/tshirt-1.png",
   description: "Minimalist cotton crewneck t-shirt with contrasting neck ribbing.",
   sizes: ["S", "M", "L", "XL"],
-  colors: ["#94B2E6", "#F3F1EC"] // Soft Blue, Soft Cream swatches matching screenshot
+  colors: ["#94B2E6", "#F3F1EC"], // Soft Blue, Soft Cream swatches matching screenshot
+  tags: [
+    { id: 1, name: "summer", slug: "summer" },
+    { id: 2, name: "basics", slug: "basics" },
+    { id: 3, name: "new", slug: "new" }
+  ]
 };
 
 const displayProduct = product || mockProduct;
@@ -54,6 +59,7 @@ const parseArray = (val: any) => {
 
 const displayColors = parseArray(displayProduct.colors);
 const displaySizes = parseArray(displayProduct.sizes);
+const displayTags = parseArray(displayProduct.tags);
 ---
 
 <Layout title={`${displayProduct.name} | ACHI Studio`} description={displayProduct.description}>
@@ -121,24 +127,44 @@ const displaySizes = parseArray(displayProduct.sizes);
           </div>
         )}
 
-        {/* Option: Sizes Divisors */}
-        {displaySizes && displaySizes.length > 0 && (
+        {/* Option: Sizes Divisors & Tags */}
+        {((displaySizes && displaySizes.length > 0) || (displayTags && displayTags.length > 0)) && (
           <div>
-            <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
-              Product size
-            </h4>
-            <div class="flex items-center gap-4 text-xs font-light tracking-wider text-gray-500">
-              {displaySizes.map((size: string, index: number) => (
-                <>
-                  {index > 0 && <span class="text-gray-300">|</span>}
-                  <button
-                    class={`hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer size-option-btn ${index === 0 ? 'font-semibold text-brand-charcoal' : ''}`}
-                    data-size={size}
-                  >
-                    {size}
-                  </button>
-                </>
-              ))}
+            <div class="flex justify-between items-center mb-3">
+              {displaySizes && displaySizes.length > 0 && (
+                <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400">
+                  Product size
+                </h4>
+              )}
+            </div>
+            
+            <div class="flex justify-between items-center">
+              {displaySizes && displaySizes.length > 0 ? (
+                <div class="flex items-center gap-4 text-xs font-light tracking-wider text-gray-500">
+                  {displaySizes.map((size: string, index: number) => (
+                    <>
+                      {index > 0 && <span class="text-gray-300">|</span>}
+                      <button
+                        class={`hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer size-option-btn ${index === 0 ? 'font-semibold text-brand-charcoal' : ''}`}
+                        data-size={size}
+                      >
+                        {size}
+                      </button>
+                    </>
+                  ))}
+                </div>
+              ) : <div></div>}
+              
+              {/* Product Tags */}
+              {displayTags && displayTags.length > 0 && (
+                <div class="flex gap-2">
+                  {displayTags.map((tag: any) => (
+                    <span class="text-[9px] uppercase tracking-widest text-stone-500 border border-stone-200 px-2.5 py-0.5 rounded-full bg-stone-50/50 hover:bg-stone-100 hover:text-brand-charcoal hover:border-brand-charcoal transition-all font-sans font-medium cursor-default">
+                      {typeof tag === 'object' ? tag.name : tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -31,4 +31,11 @@ export class UserRepository {
   async create(data: typeof users.$inferInsert) {
     await this.db.insert(users).values(data);
   }
+
+  async update(id: number, data: Partial<typeof users.$inferInsert>) {
+    await this.db
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id));
+  }
 }

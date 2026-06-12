@@ -7,8 +7,9 @@ import { OrderModule } from './modules/order/order.module';
 import { WebImageModule } from './modules/web-image/web-image.module';
 import { UserModule } from './modules/user/user.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule, UserModule, BlogModule],
+  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule, UserModule, BlogModule, ContactModule],
 })
 export class AppModule {}

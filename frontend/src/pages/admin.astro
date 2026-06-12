@@ -20,6 +20,8 @@ let products = [] as any[];
 let blogs = [] as any[];
 let blogCategories = [] as any[];
 let productCategories = [] as any[];
+let productTagsList = [] as any[];
+let contacts = [] as any[];
 let errorMsg = null;
 
 try {
@@ -56,6 +58,22 @@ try {
   const prodCatRes = await fetch('http://localhost:3001/api/products/categories');
   if (prodCatRes.ok) {
     productCategories = await prodCatRes.json();
+  }
+
+  // 6. Fetch all product tags
+  const prodTagRes = await fetch('http://localhost:3001/api/products/tags');
+  if (prodTagRes.ok) {
+    productTagsList = await prodTagRes.json();
+  }
+
+  // 7. Fetch all contact requests
+  const contactRes = await fetch('http://localhost:3001/api/contacts', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (contactRes.ok) {
+    contacts = await contactRes.json();
   }
 } catch (err) {
   console.error('[NestJS API Error] Admin page fetch failed.', err);
@@ -201,6 +219,55 @@ const parseArray = (val: any) => {
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Products List (Col 1-3) -->
         <div class="lg:col-span-3 space-y-6">
+          <!-- Filters Bar -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-stone-50 border border-stone-100 rounded-sm">
+            <div>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Search</label>
+              <input
+                type="text"
+                id="admin-product-search"
+                placeholder="Search name, description..."
+                class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
+              />
+            </div>
+            <div>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+              <select
+                id="admin-product-category-filter"
+                class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
+              >
+                <option value="">All Categories</option>
+                {productCategories.map((cat: any) => (
+                  <option value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Tag</label>
+              <select
+                id="admin-product-tag-filter"
+                class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
+              >
+                <option value="">All Tags</option>
+                {productTagsList.map((tag: any) => (
+                  <option value={tag.name.toLowerCase()}>{tag.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Status</label>
+              <select
+                id="admin-product-stock-filter"
+                class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
+              >
+                <option value="">All Stock Status</option>
+                <option value="out">Out of Stock (0)</option>
+                <option value="low">Low Stock (1-10)</option>
+                <option value="in">In Stock (>10)</option>
+              </select>
+            </div>
+          </div>
+
           {products.length === 0 ? (
             <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
               No products found in the database.
@@ -222,8 +289,14 @@ const parseArray = (val: any) => {
                   {products.map((product) => {
                     const prodSizes = parseArray(product.sizes);
                     const prodColors = parseArray(product.colors);
+                    const prodTags = parseArray(product.tags);
                     return (
-                      <tr class="hover:bg-stone-50/50 transition-colors">
+                      <tr class="product-row hover:bg-stone-50/50 transition-colors"
+                          data-name={product.name.toLowerCase()}
+                          data-desc={(product.description || '').toLowerCase()}
+                          data-category-id={product.categoryId ? String(product.categoryId) : ''}
+                          data-tags={JSON.stringify(prodTags.map((t: any) => typeof t === 'object' ? t.name.toLowerCase() : t.toLowerCase()))}
+                          data-stock={product.stockQuantity}>
                         <td class="p-4 border border-stone-100">
                           {product.imageUrl ? (
                             <img src={product.imageUrl} alt={product.name} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
@@ -262,6 +335,14 @@ const parseArray = (val: any) => {
                                 ))}
                               </div>
                             )}
+                            {prodTags.length > 0 && (
+                              <div class="flex flex-wrap gap-1">
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Tags:</span>
+                                {prodTags.map((tag: any) => (
+                                  <span class="text-[9px] bg-stone-100/60 border border-dashed border-stone-200 text-stone-500 px-1.5 py-0.5 rounded font-sans">{typeof tag === 'object' ? tag.name : tag}</span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td class="p-4 border border-stone-100 text-center">
@@ -277,6 +358,7 @@ const parseArray = (val: any) => {
                               data-desc={product.description}
                               data-sizes={JSON.stringify(prodSizes)}
                               data-colors={JSON.stringify(prodColors)}
+                              data-tags={JSON.stringify(prodTags.map((t: any) => typeof t === 'object' ? t.name : t))}
                               data-category={product.categoryId}
                             >
                               Edit
@@ -360,6 +442,70 @@ const parseArray = (val: any) => {
                 class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
               >
                 Add Category
+              </button>
+            </form>
+          </div>
+
+          <!-- Product Tags Section -->
+          <div class="pt-6 border-t border-stone-200">
+            <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
+              Product Tags
+            </h3>
+            
+            {productTagsList.length === 0 ? (
+              <p class="text-[10px] text-stone-400 font-light">No tags created yet.</p>
+            ) : (
+              <ul id="product-tags-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                {productTagsList.map((tag: any) => (
+                  <li class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100">
+                    <div class="flex flex-col">
+                      <span class="font-medium text-brand-charcoal font-mono text-[11px]">{tag.name}</span>
+                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{tag.productCount} product{tag.productCount !== 1 ? 's' : ''}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="delete-prod-tag-btn text-red-500 hover:text-red-700 text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-colors"
+                      data-id={tag.id}
+                      data-name={tag.name}
+                    >
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div class="pt-4 border-t border-stone-200">
+            <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
+              Create New Tag
+            </h4>
+            <form id="create-prod-tag-form" class="space-y-3">
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Tag Name</label>
+                <input 
+                  type="text" 
+                  id="new-prod-tag-name" 
+                  placeholder="e.g. Hot Sale" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <div>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <input 
+                  type="text" 
+                  id="new-prod-tag-slug" 
+                  placeholder="e.g. hot-sale" 
+                  required 
+                  class="w-full border border-stone-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <button 
+                type="submit" 
+                class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
+              >
+                Add Tag
               </button>
             </form>
           </div>
@@ -524,6 +670,73 @@ const parseArray = (val: any) => {
         </div>
       </div>
     </div>
+
+    <!-- Section: Contact Requests Management -->
+    <div id="contacts-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          Contact Requests
+        </h2>
+      </div>
+
+      <div class="space-y-6">
+        {contacts.length === 0 ? (
+          <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
+            No contact requests found.
+          </div>
+        ) : (
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
+              <thead>
+                <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
+                  <th class="p-4 border border-stone-100">Date</th>
+                  <th class="p-4 border border-stone-100">Customer Info</th>
+                  <th class="p-4 border border-stone-100">Topic</th>
+                  <th class="p-4 border border-stone-100">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contacts.map((req: any) => (
+                  <tr class="hover:bg-stone-50/50 transition-colors">
+                    <td class="p-4 border border-stone-100 w-40 font-mono text-[10px]">
+                      {new Date(req.createdAt).toLocaleString()}
+                    </td>
+                    <td class="p-4 border border-stone-100 w-52">
+                      <div class="font-semibold text-brand-charcoal">{req.name}</div>
+                      <div class="text-[10px] text-stone-400 mt-0.5">{req.email}</div>
+                      {req.phone && <div class="text-[10px] text-stone-400 mt-0.5">tel: {req.phone}</div>}
+                    </td>
+                    <td class="p-4 border border-stone-100 w-44 font-medium uppercase tracking-wider text-brand-charcoal animate-pulse">
+                      <span class="px-2.5 py-0.5 bg-stone-100 rounded text-[9px]">
+                        {req.topic}
+                      </span>
+                    </td>
+                    <td class="p-4 border border-stone-100 normal-case leading-relaxed text-stone-600 font-light max-w-md">
+                      <details class="group cursor-pointer focus:outline-none select-none">
+                        <summary class="flex justify-between items-center gap-4 text-stone-700 hover:text-brand-charcoal transition-colors">
+                          <span class="truncate max-w-[240px] block">
+                            {req.description}
+                          </span>
+                          <span class="text-[9px] text-stone-400 font-semibold uppercase tracking-widest shrink-0 border border-stone-200 px-1.5 py-0.5 rounded-sm hover:border-brand-charcoal hover:text-brand-charcoal group-open:hidden transition-colors">
+                            Read
+                          </span>
+                          <span class="text-[9px] text-stone-400 font-semibold uppercase tracking-widest shrink-0 border border-stone-200 px-1.5 py-0.5 rounded-sm hover:border-brand-charcoal hover:text-brand-charcoal hidden group-open:inline-block transition-colors">
+                            Close
+                          </span>
+                        </summary>
+                        <div class="mt-2.5 p-3.5 bg-stone-50 border border-stone-200 rounded-sm text-stone-600 font-light leading-relaxed normal-case tracking-normal whitespace-pre-wrap text-[11px] break-words">
+                          {req.description}
+                        </div>
+                      </details>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 
   <!-- Add Product Dialog -->
@@ -568,6 +781,35 @@ const parseArray = (val: any) => {
         <div>
           <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
           <input type="text" id="add-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="Black, White" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1 flex justify-between items-center">
+          <span>Tags</span>
+          <button type="button" id="btn-create-tag-inline-add" class="px-2 border border-stone-200 hover:border-brand-charcoal text-[9px] font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Tag Inline">+</button>
+        </label>
+        
+        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="add-tags-checkboxes-container">
+          {productTagsList.map((tag: any) => (
+            <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
+              <input type="checkbox" value={tag.name} class="tag-checkbox-add border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+              <span>{tag.name}</span>
+            </label>
+          ))}
+          {productTagsList.length === 0 && (
+            <span class="text-[10px] text-stone-400 font-light">No tags available. Click + to add one.</span>
+          )}
+        </div>
+
+        <!-- Inline Tag Form -->
+        <div id="inline-tag-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Tag</div>
+          <div class="flex gap-2">
+            <input type="text" id="inline-tag-name-add" placeholder="Tag Name (e.g. Sale)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-tag-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
+            <button type="button" id="btn-cancel-tag-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+          </div>
+          <div id="inline-tag-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div>
@@ -644,6 +886,35 @@ const parseArray = (val: any) => {
         <div>
           <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
           <input type="text" id="edit-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1 flex justify-between items-center">
+          <span>Tags</span>
+          <button type="button" id="btn-create-tag-inline-edit" class="px-2 border border-stone-200 hover:border-brand-charcoal text-[9px] font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Tag Inline">+</button>
+        </label>
+        
+        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="edit-tags-checkboxes-container">
+          {productTagsList.map((tag: any) => (
+            <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
+              <input type="checkbox" value={tag.name} class="tag-checkbox-edit border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+              <span>{tag.name}</span>
+            </label>
+          ))}
+          {productTagsList.length === 0 && (
+            <span class="text-[10px] text-stone-400 font-light">No tags available. Click + to add one.</span>
+          )}
+        </div>
+
+        <!-- Inline Tag Form -->
+        <div id="inline-tag-form-edit" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Tag</div>
+          <div class="flex gap-2">
+            <input type="text" id="inline-tag-name-edit" placeholder="Tag Name (e.g. Sale)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-tag-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
+            <button type="button" id="btn-cancel-tag-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+          </div>
+          <div id="inline-tag-error-edit" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div>
@@ -903,14 +1174,16 @@ const parseArray = (val: any) => {
     const navOrders = document.getElementById('nav-tab-orders');
     const navProducts = document.getElementById('nav-tab-products');
     const navBlogs = document.getElementById('nav-tab-blogs');
+    const navContacts = document.getElementById('nav-tab-contacts');
 
     const dashboardSection = document.getElementById('dashboard-section');
     const ordersSection = document.getElementById('orders-section');
     const productsSection = document.getElementById('products-section');
     const blogsSection = document.getElementById('blogs-section');
+    const contactsSection = document.getElementById('contacts-section');
 
     const switchTab = (activeNavBtn, activeSection) => {
-      [navDashboard, navOrders, navProducts, navBlogs].forEach(btn => {
+      [navDashboard, navOrders, navProducts, navBlogs, navContacts].forEach(btn => {
         if (btn) {
           if (btn === activeNavBtn) {
             btn.classList.add('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
@@ -922,7 +1195,7 @@ const parseArray = (val: any) => {
         }
       });
 
-      [dashboardSection, ordersSection, productsSection, blogsSection].forEach(section => {
+      [dashboardSection, ordersSection, productsSection, blogsSection, contactsSection].forEach(section => {
         if (section) {
           if (section === activeSection) {
             section.classList.remove('hidden');
@@ -937,9 +1210,56 @@ const parseArray = (val: any) => {
     navOrders?.addEventListener('click', () => switchTab(navOrders, ordersSection));
     navProducts?.addEventListener('click', () => switchTab(navProducts, productsSection));
     navBlogs?.addEventListener('click', () => switchTab(navBlogs, blogsSection));
+    navContacts?.addEventListener('click', () => switchTab(navContacts, contactsSection));
 
     // Initialize the default tab
     switchTab(navDashboard, dashboardSection);
+
+    // Products table filtering logic
+    const prodSearch = document.getElementById('admin-product-search') as HTMLInputElement | null;
+    const prodCategoryFilter = document.getElementById('admin-product-category-filter') as HTMLSelectElement | null;
+    const prodTagFilter = document.getElementById('admin-product-tag-filter') as HTMLSelectElement | null;
+    const prodStockFilter = document.getElementById('admin-product-stock-filter') as HTMLSelectElement | null;
+
+    const filterProducts = () => {
+      const productRows = document.querySelectorAll('.product-row') as NodeListOf<HTMLTableRowElement>;
+      const searchVal = prodSearch?.value.toLowerCase().trim() || '';
+      const catVal = prodCategoryFilter?.value || '';
+      const tagVal = prodTagFilter?.value || '';
+      const stockVal = prodStockFilter?.value || '';
+
+      productRows.forEach(row => {
+        const name = row.getAttribute('data-name') || '';
+        const desc = row.getAttribute('data-desc') || '';
+        const categoryId = row.getAttribute('data-category-id') || '';
+        const tags = JSON.parse(row.getAttribute('data-tags') || '[]');
+        const stock = parseInt(row.getAttribute('data-stock') || '0', 10);
+
+        const matchText = !searchVal || name.includes(searchVal) || desc.includes(searchVal);
+        const matchCategory = !catVal || categoryId === catVal;
+        const matchTag = !tagVal || tags.includes(tagVal);
+
+        let matchStock = true;
+        if (stockVal === 'out') {
+          matchStock = stock === 0;
+        } else if (stockVal === 'low') {
+          matchStock = stock > 0 && stock <= 10;
+        } else if (stockVal === 'in') {
+          matchStock = stock > 10;
+        }
+
+        if (matchText && matchCategory && matchTag && matchStock) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+    };
+
+    prodSearch?.addEventListener('input', filterProducts);
+    prodCategoryFilter?.addEventListener('change', filterProducts);
+    prodTagFilter?.addEventListener('change', filterProducts);
+    prodStockFilter?.addEventListener('change', filterProducts);
 
     // Modal Setup helper
     const setupDialog = (dialogId, openBtnId, onOpen = null) => {
@@ -1210,9 +1530,14 @@ const parseArray = (val: any) => {
       const colorsStr = document.getElementById('add-colors').value;
       const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
 
+      const tags: string[] = [];
+      document.querySelectorAll('.tag-checkbox-add:checked').forEach((cb) => {
+        tags.push((cb as HTMLInputElement).value);
+      });
+
       const categoryId = parseInt(document.getElementById('add-category').value, 10);
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, categoryId };
+      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
 
       try {
         const res = await fetch('http://localhost:3001/api/products', {
@@ -1260,6 +1585,7 @@ const parseArray = (val: any) => {
         const desc = btn.dataset.desc || '';
         const sizes = JSON.parse(btn.dataset.sizes || '[]');
         const colors = JSON.parse(btn.dataset.colors || '[]');
+        const tags = JSON.parse(btn.dataset.tags || '[]');
         const category = btn.dataset.category || '1';
 
         document.getElementById('edit-id').value = id;
@@ -1271,6 +1597,10 @@ const parseArray = (val: any) => {
         document.getElementById('edit-desc').value = desc;
         document.getElementById('edit-sizes').value = sizes.join(', ');
         document.getElementById('edit-colors').value = colors.join(', ');
+        document.querySelectorAll('.tag-checkbox-edit').forEach((cb) => {
+          const checkbox = cb as HTMLInputElement;
+          checkbox.checked = tags.includes(checkbox.value);
+        });
         document.getElementById('edit-category').value = category;
 
         editDialog?.showModal();
@@ -1295,9 +1625,14 @@ const parseArray = (val: any) => {
       const colorsStr = document.getElementById('edit-colors').value;
       const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
 
+      const tags: string[] = [];
+      document.querySelectorAll('.tag-checkbox-edit:checked').forEach((cb) => {
+        tags.push((cb as HTMLInputElement).value);
+      });
+
       const categoryId = parseInt(document.getElementById('edit-category').value, 10);
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, categoryId };
+      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
 
       try {
         const res = await fetch(`http://localhost:3001/api/products/${id}`, {
@@ -1739,5 +2074,157 @@ const parseArray = (val: any) => {
 
     initInlineCategoryForm('add');
     initInlineCategoryForm('edit');
+
+    // Inline Tag Form Init
+    const initInlineTagForm = (mode: 'add' | 'edit') => {
+      const btnOpen = document.getElementById(`btn-create-tag-inline-${mode}`);
+      const btnCancel = document.getElementById(`btn-cancel-tag-inline-${mode}`);
+      const btnSubmit = document.getElementById(`btn-submit-tag-inline-${mode}`);
+      const form = document.getElementById(`inline-tag-form-${mode}`);
+      const input = document.getElementById(`inline-tag-name-${mode}`) as HTMLInputElement;
+      const errorDiv = document.getElementById(`inline-tag-error-${mode}`);
+
+      if (!btnOpen || !btnCancel || !btnSubmit || !form || !input || !errorDiv) return;
+
+      btnOpen.addEventListener('click', () => {
+        form.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        errorDiv.classList.add('hidden');
+      });
+
+      btnCancel.addEventListener('click', () => {
+        form.classList.add('hidden');
+      });
+
+      btnSubmit.addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (!name) {
+          errorDiv.textContent = 'Tag name is required';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        const slug = slugify(name);
+
+        try {
+          const res = await fetch('http://localhost:3001/api/products/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, slug })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            ['add', 'edit'].forEach((m) => {
+              const container = document.getElementById(`${m}-tags-checkboxes-container`);
+              if (container) {
+                const emptySpan = container.querySelector('span.text-stone-400');
+                if (emptySpan) emptySpan.remove();
+
+                const exists = Array.from(container.querySelectorAll('input')).some(i => i.value === name);
+                if (!exists) {
+                  const label = document.createElement('label');
+                  label.className = 'flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors';
+                  label.innerHTML = `
+                    <input type="checkbox" value="${name}" ${m === mode ? 'checked' : ''} class="tag-checkbox-${m} border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+                    <span>${name}</span>
+                  `;
+                  container.appendChild(label);
+                } else {
+                  const existingCheckbox = Array.from(container.querySelectorAll('input')).find(i => i.value === name);
+                  if (existingCheckbox && m === mode) {
+                    existingCheckbox.checked = true;
+                  }
+                }
+              }
+            });
+
+            form.classList.add('hidden');
+          } else {
+            errorDiv.textContent = data.message || 'Failed to create tag';
+            errorDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          console.error(err);
+          errorDiv.textContent = 'Could not connect to backend server';
+          errorDiv.classList.remove('hidden');
+        }
+      });
+    };
+
+    initInlineTagForm('add');
+    initInlineTagForm('edit');
+
+    // Product Tag Submit Handler
+    const createProdTagForm = document.getElementById('create-prod-tag-form');
+    createProdTagForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = (document.getElementById('new-prod-tag-name') as HTMLInputElement).value.trim();
+      const slug = (document.getElementById('new-prod-tag-slug') as HTMLInputElement).value.trim();
+
+      try {
+        const res = await fetch('http://localhost:3001/api/products/tags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, slug })
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data.message || 'Failed to create tag.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to backend server.');
+      }
+    });
+
+    // Delete Product Tag Handler
+    document.querySelectorAll('.delete-prod-tag-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn as HTMLElement).dataset.id;
+        const name = (btn as HTMLElement).dataset.name;
+        if (!id || !name) return;
+
+        if (confirm(`Are you sure you want to delete product tag "${name}"? This will untag all associated products.`)) {
+          try {
+            const res = await fetch(`http://localhost:3001/api/products/tags/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              window.location.reload();
+            } else {
+              const data = await res.json();
+              alert(data.message || 'Failed to delete tag.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not connect to server.');
+          }
+        }
+      });
+    });
+
+    // Auto-slug for product tag
+    const prodTagNameInput = document.getElementById('new-prod-tag-name') as HTMLInputElement;
+    const prodTagSlugInput = document.getElementById('new-prod-tag-slug') as HTMLInputElement;
+    if (prodTagNameInput && prodTagSlugInput) {
+      prodTagNameInput.addEventListener('input', () => {
+        prodTagSlugInput.value = slugify(prodTagNameInput.value);
+      });
+    }
   </script>
 </Layout>

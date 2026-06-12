@@ -1,0 +1,37 @@
+---
+interface Props {
+  title: string;
+  subtitle: string;
+  rightText?: string;
+  imageUrl: string;
+  bgColor?: string;
+  heightClass?: string;
+}
+
+const {
+  title,
+  subtitle,
+  rightText,
+  imageUrl,
+  bgColor = "#2E312F",
+  heightClass = "h-[60vh]",
+} = Astro.props;
+---
+<section class={`w-full relative ${heightClass} flex items-center justify-center text-white overflow-hidden`} style={`background-color: ${bgColor};`}>
+  <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${imageUrl}');`}></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
+  
+  <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
+    <div class="flex items-end justify-between w-full">
+      <div>
+        <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">{subtitle}</span>
+        <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">{title}</h1>
+      </div>
+      {rightText && (
+        <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
+          {rightText}
+        </div>
+      )}
+    </div>
+  </div>
+</section>

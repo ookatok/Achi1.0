@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { ArrowDown, Search, Cart, Globe, XIcon, User } from '../components/common/icons';
+import { getSession } from 'auth-astro/server';
 
 interface Props {
   title: string;
@@ -9,6 +11,7 @@ interface Props {
 }
 
 const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, isAdminPanel = false } = Astro.props;
+const session = await getSession(Astro.request);
 ---
 
 <!DOCTYPE html>
@@ -89,6 +92,9 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
               <button id="nav-tab-blogs" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
                 BLOGS
               </button>
+              <button id="nav-tab-contacts" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                CONTACTS
+              </button>
             </>
           ) : (
             <>
@@ -108,9 +114,7 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
                         <li>
                           <a href="/products?categorySlug=clothing" id="clothing-toggle-btn" class="hover:text-brand-gold font-medium text-brand-charcoal flex items-center gap-1.5 cursor-pointer">
                             Clothing
-                            <svg id="clothing-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 transition-transform duration-300 transform">
-                              <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
+                            <ArrowDown id="clothing-arrow" />
                           </a>
                         </li>
                         <li class="clothing-sub-item hidden"><a href="/products/men" class="hover:text-brand-gold pl-3 block text-[10px]">MALE</a></li>
@@ -160,28 +164,27 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
         <div class="flex items-center gap-6">
           <!-- Search Icon Button -->
           <button id="search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer" aria-label="Search">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
-            </svg>
+            <Search />
           </button>
+
+          {session ? (
+            <!-- Profile Icon Button -->
+            <a href="/profile" class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
+              <User />
+            </a>
+          ) : (
+            <!-- Sign In Link -->
+            <a href="/auth/signin" class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">Sign In</a>
+          )}
 
           <!-- Cart Icon Button -->
           <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-              <circle cx="8" cy="21" r="1"/>
-              <circle cx="19" cy="21" r="1"/>
-              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-            </svg>
+            <Cart />
           </a>
 
           <!-- Language Selector -->
           <button class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Language Selector">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-              <path d="M2 12h20"/>
-            </svg>
+            <Globe />
           </button>
         </div>
       </div>
@@ -267,19 +270,14 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
           <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light pl-[0.4em]">Cool Every Day</span>
         </div>
         <button id="close-search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
+          <XIcon class="w-6 h-6" />
         </button>
       </div>
 
       <!-- Search Input Section -->
       <div class="flex-grow flex flex-col max-w-[800px] w-full mx-auto px-6 pt-16">
         <form action="/products" method="GET" class="relative border-b border-gray-400 flex items-center py-4">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-gray-400 mr-4">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.3-4.3"/>
-          </svg>
+          <Search class="w-6 h-6 text-gray-400 mr-4" />
           <input
             type="text"
             name="query"
@@ -289,9 +287,7 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
             id="search-input"
           />
           <button type="reset" id="clear-search-btn" class="text-gray-400 hover:text-brand-charcoal focus:outline-none hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
+            <XIcon class="w-5 h-5" />
           </button>
         </form>
         
@@ -340,10 +336,43 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
           searchInput.focus();
         });
       }
+    </script>
 
-      // Shop Mega Menu Click Toggle Logic
+    <!-- Client-side script for sticky header and shop mega menu transitions -->
+    <script is:inline>
+      const stickyHeader = document.querySelector('header');
+      const isHeroHeader = stickyHeader?.getAttribute('data-hero') === 'true';
       const shopMenuBtn = document.getElementById('shop-menu-btn');
       const shopMegaMenu = document.getElementById('shop-mega-menu');
+
+      const handleStickyScroll = () => {
+        if (!stickyHeader) return;
+        const isMenuOpen = shopMegaMenu && (shopMegaMenu.classList.contains('block') || !shopMegaMenu.classList.contains('hidden'));
+        
+        if (window.scrollY > 20 || isMenuOpen) {
+          stickyHeader.classList.add('scrolled');
+          if (isHeroHeader) {
+            stickyHeader.classList.remove('bg-transparent', 'text-white', 'border-transparent');
+            stickyHeader.classList.add('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
+          } else {
+            stickyHeader.classList.add('shadow-md');
+          }
+        } else {
+          stickyHeader.classList.remove('scrolled');
+          if (isHeroHeader) {
+            stickyHeader.classList.add('bg-transparent', 'text-white', 'border-transparent');
+            stickyHeader.classList.remove('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
+          } else {
+            stickyHeader.classList.remove('shadow-md');
+          }
+        }
+      };
+
+      if (stickyHeader) {
+        window.addEventListener('scroll', handleStickyScroll);
+        // Initial check in case of page reload when already scrolled down
+        handleStickyScroll();
+      }
 
       if (shopMenuBtn && shopMegaMenu) {
         shopMenuBtn.addEventListener('click', (e) => {
@@ -356,47 +385,17 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
             shopMegaMenu.classList.remove('block');
             shopMegaMenu.classList.add('hidden');
           }
+          handleStickyScroll();
         });
 
         // Close when clicking outside
         document.addEventListener('click', (e) => {
-          if (shopMegaMenu && !shopMegaMenu.contains(e.target as Node) && e.target !== shopMenuBtn) {
+          if (shopMegaMenu && !shopMegaMenu.contains(e.target) && e.target !== shopMenuBtn) {
             shopMegaMenu.classList.remove('block');
             shopMegaMenu.classList.add('hidden');
+            handleStickyScroll();
           }
         });
-      }
-    </script>
-
-    <!-- Client-side script for sticky header scroll transitions -->
-    <script is:inline>
-      const stickyHeader = document.querySelector('header');
-      const isHeroHeader = stickyHeader?.getAttribute('data-hero') === 'true';
-
-      if (stickyHeader) {
-        const handleStickyScroll = () => {
-          if (window.scrollY > 20) {
-            stickyHeader.classList.add('scrolled');
-            if (isHeroHeader) {
-              stickyHeader.classList.remove('bg-transparent', 'text-white', 'border-transparent');
-              stickyHeader.classList.add('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
-            } else {
-              stickyHeader.classList.add('shadow-md');
-            }
-          } else {
-            stickyHeader.classList.remove('scrolled');
-            if (isHeroHeader) {
-              stickyHeader.classList.add('bg-transparent', 'text-white', 'border-transparent');
-              stickyHeader.classList.remove('bg-white/90', 'text-brand-charcoal', 'border-gray-200/50', 'shadow-sm', 'backdrop-blur-md');
-            } else {
-              stickyHeader.classList.remove('shadow-md');
-            }
-          }
-        };
-
-        window.addEventListener('scroll', handleStickyScroll);
-        // Initial check in case of page reload when already scrolled down
-        handleStickyScroll();
       }
     </script>
     <!-- Client-side script to highlight active links and toggle clothing menu -->

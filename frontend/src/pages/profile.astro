@@ -9,22 +9,25 @@ if (!token) {
   return Astro.redirect('/auth/signin?callbackUrl=/profile');
 }
 
+const role = (session?.user as any)?.role || 'customer';
 let orders = [] as any[];
 let errorMsg = null;
 
-try {
-  const res = await fetch('http://localhost:3001/api/orders', {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
+if (role === 'customer') {
+  try {
+    const res = await fetch('http://localhost:3001/api/orders', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
 
-  if (res.ok) {
-    orders = await res.json();
+    if (res.ok) {
+      orders = await res.json();
+    }
+  } catch (err) {
+    console.error('[NestJS API Error] Fetching orders failed.', err);
+    errorMsg = 'Could not load orders history. Backend server may be offline.';
   }
-} catch (err) {
-  console.error('[NestJS API Error] Fetching orders failed.', err);
-  errorMsg = 'Could not load orders history. Backend server may be offline.';
 }
 ---
 
@@ -34,7 +37,7 @@ try {
     <div class="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
       <div>
         <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">Welcome, {session?.user?.name}</h1>
-        <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">ACHI Premium Member</p>
+        <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">ACHI Premium {role === 'admin' ? 'Administrator' : 'Member'}</p>
       </div>
       <div>
         <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-8 py-3 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all duration-300">
@@ -44,7 +47,7 @@ try {
     </div>
   </section>
 
-  <div class="max-w-[1200px] mx-auto px-6 py-20">
+  <div id="profile-container" data-token={token} class="max-w-[1200px] mx-auto px-6 py-20">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">
       
       <!-- Left Column: Member Card -->
@@ -58,7 +61,7 @@ try {
               {session?.user?.name ? session.user.name.substring(0, 2).toUpperCase() : 'AC'}
             </div>
             <span class="text-[9px] tracking-[0.3em] font-medium text-brand-gold uppercase bg-amber-50/50 border border-brand-gold/20 px-2.5 py-0.5 rounded-full">
-              {(session?.user as any)?.role || 'customer'}
+              {role}
             </span>
           </div>
 
@@ -75,7 +78,7 @@ try {
           </div>
         </div>
 
-        <div class="border-t border-stone-100 pt-6 mt-8">
+        <div class="border-t border-stone-100 pt-6 mt-8 relative z-10">
           <button
             id="signout-btn"
             class="w-full border border-stone-300 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
@@ -85,65 +88,136 @@ try {
         </div>
       </div>
 
-      <!-- Right Column: Orders History Feed -->
-      <div class="lg:col-span-2 space-y-8">
-        <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
-          <h2 class="font-serif text-lg uppercase tracking-wider text-brand-charcoal font-semibold">
-            Order Logs
-          </h2>
-          <span class="text-[10px] uppercase tracking-widest text-stone-400 font-light font-sans">{orders.length} Orders Total</span>
+      <!-- Right Column: Profile Form and Details -->
+      <div class="lg:col-span-2 space-y-12">
+        <!-- Profile Update Form -->
+        <div class="bg-white border border-stone-200/80 p-8 rounded-sm shadow-sm space-y-6">
+          <div class="pb-2 border-b border-stone-100">
+            <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+              Manage Profile Settings
+            </h2>
+          </div>
+
+          <div id="profile-error" class="hidden text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm"></div>
+          <div id="profile-success" class="hidden text-xs text-green-600 font-light bg-green-50 p-4 border-l-2 border-green-600 rounded-sm"></div>
+
+          <form id="profile-edit-form" class="space-y-6">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Full Name</label>
+              <input 
+                type="text" 
+                id="profile-name" 
+                value={session?.user?.name || ''} 
+                required 
+                class="w-full border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+              />
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">New Password (leave blank to keep current)</label>
+                <input 
+                  type="password" 
+                  id="profile-password" 
+                  class="w-full border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Confirm New Password</label>
+                <input 
+                  type="password" 
+                  id="profile-confirm-password" 
+                  class="w-full border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white" 
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              class="bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
+            >
+              Save Profile Changes
+            </button>
+          </form>
         </div>
 
-        {errorMsg && (
-          <div class="text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm">
-            {errorMsg}
-          </div>
-        )}
-
-        {orders.length === 0 ? (
-          <div class="text-center py-20 border border-dashed border-stone-200 text-stone-400 text-xs font-light rounded-sm bg-stone-50/30">
-            No orders found under this account.
+        {role === 'admin' ? (
+          <!-- Admin Control panel Quick Access -->
+          <div class="bg-stone-50 border border-stone-200/80 p-8 rounded-sm shadow-sm space-y-4">
+            <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-stone-200">
+              Admin Dashboard Access
+            </h3>
+            <p class="text-[11px] text-stone-500 font-light leading-relaxed">
+              As an Administrator, you have full access to management tools including catalog additions, order tracking, categories configuration, and blogging engine.
+            </p>
+            <div class="pt-2">
+              <a href="/admin" class="inline-block bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300">
+                Go to Admin Panel
+              </a>
+            </div>
           </div>
         ) : (
-          <div class="space-y-6">
-            {orders.map((order: any) => (
-              <div class="border border-stone-200/80 p-6 rounded-sm bg-white hover:border-brand-gold transition-colors duration-300 space-y-6">
-                <!-- Order Card Header -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <span class="font-mono text-xs font-semibold tracking-wider text-brand-charcoal block uppercase">
-                      ACHI-ORD-{String(order.id).padStart(5, '0')}
-                    </span>
-                    <span class="text-[9px] text-stone-400 font-light block uppercase mt-1 tracking-wider">
-                      Placed: {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  
-                  <div class="flex items-center gap-4">
-                    <div class="text-right">
-                      <span class="text-xs text-stone-400 uppercase tracking-widest font-light block">Total</span>
-                      <span class="font-semibold text-brand-charcoal text-sm">${Number(order.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                    </div>
-                    
-                    <span class={`text-[9px] uppercase tracking-widest px-3 py-1 rounded-full border font-semibold inline-block ${
-                      order.status === 'pending' 
-                        ? 'text-amber-600 bg-amber-50/50 border-amber-200/60' 
-                        : 'text-green-600 bg-green-50/50 border-green-200/60'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
+          <!-- Customer Orders History -->
+          <div class="space-y-8">
+            <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
+              <h2 class="font-serif text-lg uppercase tracking-wider text-brand-charcoal font-semibold">
+                Order History Logs
+              </h2>
+              <span class="text-[10px] uppercase tracking-widest text-stone-400 font-light font-sans">{orders.length} Orders Total</span>
+            </div>
 
-                <!-- Order Shipping Details -->
-                <div class="bg-stone-50 p-4 rounded-sm border border-stone-100 flex flex-col sm:flex-row justify-between gap-4 text-xs font-light text-stone-500">
-                  <div>
-                    <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Shipping Address</span>
-                    <span class="text-xs text-stone-600 leading-relaxed block">{order.shippingAddress}</span>
-                  </div>
-                </div>
+            {errorMsg && (
+              <div class="text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm">
+                {errorMsg}
               </div>
-            ))}
+            )}
+
+            {orders.length === 0 ? (
+              <div class="text-center py-20 border border-dashed border-stone-200 text-stone-400 text-xs font-light rounded-sm bg-stone-50/30">
+                No orders found under this account.
+              </div>
+            ) : (
+              <div class="space-y-6">
+                {orders.map((order: any) => (
+                  <div class="border border-stone-200/80 p-6 rounded-sm bg-white hover:border-brand-gold transition-colors duration-300 space-y-6">
+                    <!-- Order Card Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div>
+                        <span class="font-mono text-xs font-semibold tracking-wider text-brand-charcoal block uppercase">
+                          ACHI-ORD-{String(order.id).padStart(5, '0')}
+                        </span>
+                        <span class="text-[9px] text-stone-400 font-light block uppercase mt-1 tracking-wider">
+                          Placed: {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                      
+                      <div class="flex items-center gap-4">
+                        <div class="text-right">
+                          <span class="text-xs text-stone-400 uppercase tracking-widest font-light block">Total</span>
+                          <span class="font-semibold text-brand-charcoal text-sm">${Number(order.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        
+                        <span class={`text-[9px] uppercase tracking-widest px-3 py-1 rounded-full border font-semibold inline-block ${
+                          order.status === 'pending' 
+                            ? 'text-amber-600 bg-amber-50/50 border-amber-200/60' 
+                            : 'text-green-600 bg-green-50/50 border-green-200/60'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Order Shipping Details -->
+                    <div class="bg-stone-50 p-4 rounded-sm border border-stone-100 flex flex-col sm:flex-row justify-between gap-4 text-xs font-light text-stone-500">
+                      <div>
+                        <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Shipping Address</span>
+                        <span class="text-xs text-stone-600 leading-relaxed block">{order.shippingAddress}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -153,10 +227,79 @@ try {
 
   <script>
     import { signOut } from 'auth-astro/client';
+    
+    // Sign out logic
     const signoutBtn = document.getElementById('signout-btn');
     if (signoutBtn) {
       signoutBtn.addEventListener('click', () => {
         signOut({ callbackUrl: '/' });
+      });
+    }
+
+    // Profile update form logic
+    const profileForm = document.getElementById('profile-edit-form');
+    const profileError = document.getElementById('profile-error');
+    const profileSuccess = document.getElementById('profile-success');
+    
+    if (profileForm) {
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (profileError) profileError.classList.add('hidden');
+        if (profileSuccess) profileSuccess.classList.add('hidden');
+        
+        const nameInput = document.getElementById('profile-name') as HTMLInputElement;
+        const passwordInput = document.getElementById('profile-password') as HTMLInputElement;
+        const confirmPasswordInput = document.getElementById('profile-confirm-password') as HTMLInputElement;
+        
+        const name = nameInput?.value;
+        const password = passwordInput?.value;
+        const confirmPassword = confirmPasswordInput?.value;
+        
+        if (password && password !== confirmPassword) {
+          if (profileError) {
+            profileError.textContent = 'Passwords do not match.';
+            profileError.classList.remove('hidden');
+          }
+          return;
+        }
+        
+        const container = document.getElementById('profile-container');
+        const token = container?.getAttribute('data-token');
+        
+        try {
+          const res = await fetch('http://localhost:3001/api/users/profile', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              name,
+              ...(password ? { password } : {})
+            })
+          });
+          
+          if (res.ok) {
+            if (profileSuccess) {
+              profileSuccess.textContent = 'Profile updated successfully. Please re-sign in for changes to reflect in your header name.';
+              profileSuccess.classList.remove('hidden');
+            }
+            if (passwordInput) passwordInput.value = '';
+            if (confirmPasswordInput) confirmPasswordInput.value = '';
+          } else {
+            const err = await res.json();
+            if (profileError) {
+              profileError.textContent = err.message || 'Failed to update profile.';
+              profileError.classList.remove('hidden');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (profileError) {
+            profileError.textContent = 'Backend server error or network issue.';
+            profileError.classList.remove('hidden');
+          }
+        }
       });
     }
   </script>

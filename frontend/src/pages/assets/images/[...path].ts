@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ params }) => {
   const { path } = params;
-  const backendUrl = `http://localhost:3001/assets/images/${path}`;
+  const backendUrl = `${BACKEND_URL}/assets/images/${path}`;
   
   try {
     const res = await fetch(backendUrl);

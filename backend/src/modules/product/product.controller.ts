@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/guards/roles.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../core/pipes/zod-validation.pipe';
-import { CreateProductSchema, GetProductsQuerySchema, CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategorySchema, CreateProductCategoryDto } from './dto/product.dto';
+import { CreateProductSchema, GetProductsQuerySchema, CreateProductDto, GetProductsQueryDto, UpdateProductDto, CreateProductCategorySchema, CreateProductCategoryDto, CreateProductTagSchema, CreateProductTagDto } from './dto/product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -44,6 +44,28 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   async removeCategory(@Param('id', ParseIntPipe) id: number) {
     return this.productService.removeCategory(id);
+  }
+
+  // Product Tag Endpoints
+  @Get('tags')
+  async findAllTags() {
+    return this.productService.findAllTags();
+  }
+
+  @Post('tags')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @UsePipes(new ZodValidationPipe(CreateProductTagSchema))
+  async createTag(@Body() dto: CreateProductTagDto) {
+    return this.productService.createTag(dto);
+  }
+
+  @Delete('tags/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  async removeTag(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.removeTag(id);
   }
 
   @Get(':id')
