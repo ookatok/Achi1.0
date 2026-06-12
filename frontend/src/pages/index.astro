@@ -15,7 +15,7 @@ const resolveImage = (url: string) => {
 
 <Layout title="ACHI | ASPIRE to be AUTHENTIC" description="Explore the ACHI 2026 Spring Collection featuring clean cuts, tailored outfits, and premium fabrics." showHeroHeader={true}>
   <HeroBanner
-    title="ASPIRE to be<br/><span class='italic font-normal'>AUTHENTIC.</span>"
+    title="ASPIRE to be<br/>AUTHENTIC."
     subtitle="2026 Spring Collection"
     description="Minimalist High-Quality - That's the Way We Do Business. Explore apparel designed for daily functionality."
     imageUrl={resolveImage('/assets/images/hero-authentic.png')}
@@ -64,7 +64,14 @@ const resolveImage = (url: string) => {
         <div class="flex flex-col gap-8 justify-between">
           <!-- Item 1: Polo -->
           <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id="105"
+              data-name="generic shirt"
+              data-price="567"
+              data-image="/assets/images/polo-dark.png"
+            >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
@@ -79,7 +86,14 @@ const resolveImage = (url: string) => {
           
           <!-- Item 2: Watch -->
           <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id="106"
+              data-name="generic watch"
+              data-price="567"
+              data-image="/assets/images/watch-dark.png"
+            >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
@@ -102,7 +116,14 @@ const resolveImage = (url: string) => {
         <div class="flex flex-col gap-8 justify-between">
           <!-- Item 3: Pants -->
           <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id="107"
+              data-name="generic pants"
+              data-price="569"
+              data-image="/assets/images/pants-cream.png"
+            >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
@@ -117,7 +138,14 @@ const resolveImage = (url: string) => {
 
           <!-- Item 4: Shoes -->
           <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer">
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id="108"
+              data-name="generic shoes"
+              data-price="567"
+              data-image="/assets/images/shoes-white.png"
+            >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">

@@ -1,0 +1,141 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Favorites | ACHI Studio" description="View and manage your favorited items." showHeroHeader={false}>
+  <!-- Title Banner -->
+  <section class="border-b border-gray-100 bg-white">
+    <div class="max-w-[1440px] mx-auto px-6 py-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <nav class="flex items-center gap-2 text-[11px] uppercase tracking-wider font-light text-gray-400 mb-3">
+          <a href="/" class="hover:text-brand-charcoal transition-colors">Home</a>
+          <span>/</span>
+          <span class="text-brand-charcoal">Favorites</span>
+        </nav>
+        <h1 class="font-serif text-3xl sm:text-4xl font-semibold text-brand-charcoal uppercase tracking-wide">
+          My Favorites
+        </h1>
+      </div>
+      <span id="favorites-count-label" class="text-xs uppercase tracking-widest text-gray-400 font-light shrink-0">
+        0 items saved
+      </span>
+    </div>
+  </section>
+
+  <!-- Content Section -->
+  <div class="max-w-[1440px] mx-auto px-6 py-16 min-h-[50vh]">
+    <!-- Empty State -->
+    <div id="favorites-empty" class="hidden text-center py-24">
+      <h2 class="font-serif text-2xl font-semibold text-brand-charcoal mb-4 uppercase tracking-wider">YOUR WISHLIST IS EMPTY</h2>
+      <p class="font-sans text-xs tracking-widest text-gray-400 mb-8 uppercase font-light">Explore our collections to add items to your favorites.</p>
+      <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-10 py-3.5 text-xs uppercase tracking-widest font-medium transition-all duration-300 rounded-sm">
+        Shop now
+      </a>
+    </div>
+    
+    <!-- Favorites Grid -->
+    <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 hidden">
+      <!-- Populate Dynamically -->
+    </div>
+  </div>
+
+  <script is:inline>
+    (function() {
+      const emptyState = document.getElementById('favorites-empty');
+      const gridState = document.getElementById('favorites-grid');
+      const countLabel = document.getElementById('favorites-count-label');
+
+      const resolveImage = (url) => {
+        if (!url) return '/assets/images/placeholder-product.png';
+        if (url.startsWith('http') || url.startsWith('data:')) return url;
+        if (url.startsWith('/assets/uploads/')) {
+          return `http://localhost:3001${url}`;
+        }
+        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+      };
+
+      const renderFavorites = () => {
+        if (!window.achiFavorites) return;
+        const favs = window.achiFavorites.get();
+
+        // Update Label
+        if (countLabel) {
+          countLabel.textContent = `${favs.length} item${favs.length === 1 ? '' : 's'} saved`;
+        }
+
+        if (favs.length === 0) {
+          if (emptyState) emptyState.classList.remove('hidden');
+          if (gridState) {
+            gridState.classList.add('hidden');
+            gridState.innerHTML = '';
+          }
+          return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+        if (gridState) {
+          gridState.classList.remove('hidden');
+          gridState.innerHTML = '';
+
+          favs.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative transition-all duration-300';
+            card.id = `fav-card-${product.id}`;
+
+            const formattedPrice = isNaN(Number(product.price)) ? product.price : Number(product.price).toLocaleString();
+
+            card.innerHTML = `
+              <!-- Heart Favorite Button -->
+              <button 
+                class="absolute top-6 right-6 text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20 is-favorite"
+                data-favorite-btn
+                data-id="${product.id}"
+                data-name="${product.name}"
+                data-price="${product.price}"
+                data-image="${product.imageUrl}"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                </svg>
+              </button>
+
+              <!-- Product Image Box -->
+              <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
+                <img src="${resolveImage(product.imageUrl)}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </div>
+
+              <!-- Product Details -->
+              <div>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                  ${product.name}
+                </h3>
+                <span class="text-xs text-brand-gold font-medium mt-2 block">$${formattedPrice}</span>
+              </div>
+
+              <!-- Clickable Area Link -->
+              <a href="/products/${product.id}" class="absolute inset-0 z-10" aria-label="View Details"></a>
+            `;
+
+            gridState.appendChild(card);
+          });
+        }
+      };
+
+      const handlePageLoad = () => {
+        renderFavorites();
+
+        // Listen for favorites updates to re-render in real time
+        window.addEventListener('achi-favorites-updated', () => {
+          renderFavorites();
+        });
+      };
+
+      // Run immediately if DOM is ready, otherwise wait
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handlePageLoad);
+      } else {
+        handlePageLoad();
+      }
+    })();
+  </script>
+</Layout>

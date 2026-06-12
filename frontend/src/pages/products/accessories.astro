@@ -55,7 +55,14 @@ const displayProducts = productsList.length > 0 ? productsList : mockAccessories
       {displayProducts.map((product: any) => (
         <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
           <!-- Heart Favorite Button -->
-          <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
+          <button
+            class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
+            data-favorite-btn
+            data-id={product.id}
+            data-name={product.name}
+            data-price={product.price}
+            data-image={product.imageUrl}
+          >
             <Heart />
           </button>
 

@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { ArrowDown, Search, Cart, Globe, XIcon, User } from '../components/common/icons';
+import { ArrowDown, Search, Cart, Globe, XIcon, User, Heart } from '../components/common/icons';
 import { getSession } from 'auth-astro/server';
 
 interface Props {
@@ -59,6 +59,15 @@ const session = await getSession(Astro.request);
         font-family: 'Outfit', sans-serif !important;
         font-weight: 300 !important; /* Outfit-light font weight */
         color: inherit;
+      }
+
+      /* Favorites active state styling */
+      [data-favorite-btn].is-favorite {
+        color: #1c1917 !important; /* brand-charcoal */
+      }
+      [data-favorite-btn].is-favorite svg {
+        fill: #1c1917 !important;
+        stroke: #1c1917 !important;
       }
     </style>
   </head>
@@ -140,7 +149,7 @@ const session = await getSession(Astro.request);
                       <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Collections</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
                         <li class="text-gray-400 font-semibold mb-1 text-[10px]">Events</li>
-                        <li><a href="/products/selection" class="hover:text-brand-gold">Selection</a></li>
+                        <li><a href="/products/recommend" class="hover:text-brand-gold">Recommend</a></li>
                         <li><a href="/products/online-exclusives" class="hover:text-brand-gold">Online Exclusives</a></li>
                         <li><a href="/products/total-looks" class="hover:text-brand-gold">Total Looks</a></li>
                         <li><a href="/products/basics" class="hover:text-brand-gold">Basics</a></li>
@@ -167,15 +176,11 @@ const session = await getSession(Astro.request);
             <Search />
           </button>
 
-          {session ? (
-            <!-- Profile Icon Button -->
-            <a href="/profile" class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
-              <User />
-            </a>
-          ) : (
-            <!-- Sign In Link -->
-            <a href="/auth/signin" class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">Sign In</a>
-          )}
+          <!-- Favorite Icon Button -->
+          <a href="/favorite" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="header-favorite-btn">
+            <Heart />
+            <span id="favorite-badge" class="absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
+          </a>
 
           <!-- Cart Icon Button -->
           <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
@@ -186,6 +191,16 @@ const session = await getSession(Astro.request);
           <button class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Language Selector">
             <Globe />
           </button>
+
+          {session ? (
+            <!-- Profile Icon Button -->
+            <a href="/profile" class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
+              <User />
+            </a>
+          ) : (
+            <!-- Sign In Link -->
+            <a href="/auth/signin" class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">Sign In</a>
+          )}
         </div>
       </div>
     </header>
@@ -291,14 +306,26 @@ const session = await getSession(Astro.request);
           </button>
         </form>
         
-        <!-- Quick links / search results preview (optional) -->
-        <div class="mt-8 text-xs uppercase tracking-widest text-gray-400 font-light">
+        <!-- Live Search Results Preview -->
+        <div id="search-preview-container" class="mt-12 overflow-y-auto max-h-[55vh] hidden">
+          <h4 class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-6 border-b border-gray-100 pb-2">Products</h4>
+          <div id="search-preview-results" class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-12">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div id="search-preview-empty" class="mt-12 text-center hidden">
+          <p class="text-xs text-gray-400 font-light italic uppercase tracking-widest">No products found matching your search</p>
+        </div>
+        
+        <!-- Suggestions -->
+        <div id="search-suggestions" class="mt-8 text-xs uppercase tracking-widest text-gray-400 font-light">
           Suggestions: T-shirt, Denim, Jacket, Shades
         </div>
       </div>
     </div>
 
-    <!-- Client-side script to toggle search overlay -->
+    <!-- Client-side script to toggle search overlay and handle live search -->
     <script>
       const searchBtn = document.getElementById('search-btn');
       const closeSearchBtn = document.getElementById('close-search-btn');
@@ -306,11 +333,84 @@ const session = await getSession(Astro.request);
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const clearSearchBtn = document.getElementById('clear-search-btn');
 
+      const searchPreviewContainer = document.getElementById('search-preview-container');
+      const searchPreviewResults = document.getElementById('search-preview-results');
+      const searchPreviewEmpty = document.getElementById('search-preview-empty');
+      const searchSuggestions = document.getElementById('search-suggestions');
+
+      const resolveImage = (url: string) => {
+        if (!url) return '/assets/images/placeholder-product.png';
+        if (url.startsWith('http') || url.startsWith('data:')) return url;
+        if (url.startsWith('/assets/uploads/')) {
+          return `http://localhost:3001${url}`;
+        }
+        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+      };
+
+      let debounceTimer: number;
+
+      const performSearch = async (query: string) => {
+        if (!query.trim()) {
+          if (searchPreviewContainer) searchPreviewContainer.classList.add('hidden');
+          if (searchPreviewEmpty) searchPreviewEmpty.classList.add('hidden');
+          if (searchSuggestions) searchSuggestions.classList.remove('hidden');
+          if (searchPreviewResults) searchPreviewResults.innerHTML = '';
+          return;
+        }
+
+        try {
+          const res = await fetch(`http://localhost:3001/api/products?query=${encodeURIComponent(query)}`);
+          if (res.ok) {
+            const products = await res.json();
+            
+            if (products.length > 0) {
+              if (searchPreviewEmpty) searchPreviewEmpty.classList.add('hidden');
+              if (searchSuggestions) searchSuggestions.classList.add('hidden');
+              if (searchPreviewContainer) searchPreviewContainer.classList.remove('hidden');
+              
+              if (searchPreviewResults) {
+                searchPreviewResults.innerHTML = products.map((product: any) => {
+                  const price = isNaN(Number(product.price)) ? product.price : Number(product.price).toLocaleString();
+                  return `
+                    <div class="flex items-center gap-4 p-3 bg-gray-50/50 border border-gray-100 rounded-sm hover:border-brand-charcoal transition-all relative group">
+                      <div class="w-16 h-16 bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 rounded-sm">
+                        <img src="${resolveImage(product.imageUrl)}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      </div>
+                      <div class="flex-grow">
+                        <h5 class="text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight group-hover:text-brand-gold transition-colors">
+                          ${product.name}
+                        </h5>
+                        <span class="text-xs text-brand-gold font-medium mt-1.5 block">
+                          $${price}
+                        </span>
+                      </div>
+                      <a href="/products/${product.id}" class="absolute inset-0 z-10" aria-label="View Details"></a>
+                    </div>
+                  `;
+                }).join('');
+              }
+            } else {
+              if (searchPreviewContainer) searchPreviewContainer.classList.add('hidden');
+              if (searchSuggestions) searchSuggestions.classList.add('hidden');
+              if (searchPreviewEmpty) searchPreviewEmpty.classList.remove('hidden');
+              if (searchPreviewResults) searchPreviewResults.innerHTML = '';
+            }
+          }
+        } catch (e) {
+          console.error('Failed to perform live search', e);
+        }
+      };
+
       if (searchBtn && searchOverlay) {
         searchBtn.addEventListener('click', () => {
           searchOverlay.classList.remove('hidden');
           document.body.style.overflow = 'hidden'; // Lock background scroll
-          if (searchInput) searchInput.focus();
+          if (searchInput) {
+            searchInput.value = '';
+            performSearch('');
+            if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+            searchInput.focus();
+          }
         });
       }
 
@@ -318,23 +418,38 @@ const session = await getSession(Astro.request);
         closeSearchBtn.addEventListener('click', () => {
           searchOverlay.classList.add('hidden');
           document.body.style.overflow = ''; // Unlock background scroll
+          if (searchInput) {
+            searchInput.value = '';
+            performSearch('');
+            if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+          }
         });
       }
 
-      if (searchInput && clearSearchBtn) {
+      if (searchInput) {
         searchInput.addEventListener('input', () => {
-          if (searchInput.value.length > 0) {
-            clearSearchBtn.classList.remove('hidden');
+          clearTimeout(debounceTimer);
+          
+          const val = searchInput.value;
+          if (val.length > 0) {
+            if (clearSearchBtn) clearSearchBtn.classList.remove('hidden');
           } else {
-            clearSearchBtn.classList.add('hidden');
+            if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
           }
+
+          debounceTimer = window.setTimeout(() => {
+            performSearch(val);
+          }, 250);
         });
 
-        clearSearchBtn.addEventListener('click', () => {
-          searchInput.value = '';
-          clearSearchBtn.classList.add('hidden');
-          searchInput.focus();
-        });
+        if (clearSearchBtn) {
+          clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            performSearch('');
+            searchInput.focus();
+          });
+        }
       }
     </script>
 
@@ -479,6 +594,113 @@ const session = await getSession(Astro.request);
       if (pathName === '/products/men' || pathName === '/products/women' || searchParams.includes('categorySlug=clothing')) {
         toggleClothingMenu(true);
       }
+    </script>
+
+    <!-- Client-side script for Favorites Wishlist sync and click tracking -->
+    <script is:inline>
+      (function() {
+        const STORAGE_KEY = 'achi_favorites';
+
+        const getFavorites = () => {
+          try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+          } catch (e) {
+            return [];
+          }
+        };
+
+        const saveFavorites = (favs) => {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+          } catch (e) {
+            console.error('Failed to save favorites', e);
+          }
+        };
+
+        const updateFavoriteBadge = (count) => {
+          const badge = document.getElementById('favorite-badge');
+          if (!badge) return;
+          badge.textContent = count;
+          if (count > 0) {
+            badge.classList.remove('scale-0');
+            badge.classList.add('scale-100');
+          } else {
+            badge.classList.remove('scale-100');
+            badge.classList.add('scale-0');
+          }
+        };
+
+        const syncFavoriteButtons = () => {
+          const favs = getFavorites();
+          updateFavoriteBadge(favs.length);
+
+          const favIds = new Set(favs.map(f => String(f.id)));
+          
+          document.querySelectorAll('[data-favorite-btn]').forEach(btn => {
+            const id = btn.getAttribute('data-id');
+            if (id && favIds.has(String(id))) {
+              btn.classList.add('is-favorite');
+            } else {
+              btn.classList.remove('is-favorite');
+            }
+          });
+        };
+
+        const toggleFavorite = (product) => {
+          let favs = getFavorites();
+          const index = favs.findIndex(f => String(f.id) === String(product.id));
+
+          if (index > -1) {
+            favs.splice(index, 1);
+          } else {
+            favs.push(product);
+          }
+
+          saveFavorites(favs);
+          syncFavoriteButtons();
+
+          // Dispatch a custom event so the favorite page or other elements can react if they want
+          window.dispatchEvent(new CustomEvent('achi-favorites-updated', { detail: favs }));
+        };
+
+        // Initialize and bind click handlers
+        const initFavorites = () => {
+          syncFavoriteButtons();
+
+          // Global click event listener for event delegation
+          document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-favorite-btn]');
+            if (!btn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name') || '';
+            const price = btn.getAttribute('data-price') || '';
+            const imageUrl = btn.getAttribute('data-image') || '';
+
+            if (id) {
+              toggleFavorite({ id, name, price, imageUrl });
+            }
+          });
+        };
+
+        // Run on DOMContentLoaded or immediately if already loaded
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initFavorites);
+        } else {
+          initFavorites();
+        }
+
+        // Expose to window so other pages can easily check/manipulate if needed
+        window.achiFavorites = {
+          get: getFavorites,
+          toggle: toggleFavorite,
+          sync: syncFavoriteButtons
+        };
+      })();
     </script>
   </body>
 </html>
