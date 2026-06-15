@@ -1,27 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="PRIVACY POLICY | ACHI Studio" description="ACHI's privacy policies and customer data protection rules.">
+<Layout 
+  title={lang === 'en' ? "PRIVACY POLICY | ACHI Studio" : "นโยบายความเป็นส่วนตัว | ACHI Studio"} 
+  description={lang === 'en' ? "ACHI's privacy policies and customer data protection rules." : "นโยบายความเป็นส่วนตัวและกฎการรักษาความปลอดภัยข้อมูลลูกค้าของ ACHI"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">PRIVACY POLICY</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Data protection and privacy guidelines</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "PRIVACY POLICY" : "นโยบายความเป็นส่วนตัว"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Data protection and privacy guidelines" : "แนวทางการรักษาความปลอดภัยข้อมูลและนโยบายส่วนบุคคล"}
+      </p>
     </div>
 
     <div class="space-y-6 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        ACHI is committed to protecting your privacy. This policy explains what information we collect, how we protect it, and your data rights.
+        {lang === 'en'
+          ? "ACHI is committed to protecting your privacy. This policy explains what information we collect, how we protect it, and your data rights."
+          : "ACHI มุ่งมั่นในการรักษาความปลอดภัยความเป็นส่วนตัวของคุณ นโยบายนี้อธิบายถึงข้อมูลที่เราเก็บรวบรวม วิธีการปกป้องข้อมูล และสิทธิในข้อมูลส่วนบุคคลของคุณ"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Information We Collect</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Information We Collect" : "ข้อมูลที่เราเก็บรวบรวม"}
+      </h3>
       <p>
-        When you register a customer profile, place an order, or contact us, we collect your name, email, shipping address, phone number, and transaction logs.
+        {lang === 'en'
+          ? "When you register a customer profile, place an order, or contact us, we collect your name, email, shipping address, phone number, and transaction logs."
+          : "เมื่อคุณลงทะเบียนโปรไฟล์ลูกค้า ทำรายการสั่งซื้อ หรือติดต่อหาเรา เราจะเก็บรวบรวมข้อมูล ได้แก่ ชื่อ, อีเมล, ที่อยู่จัดส่งสินค้า, เบอร์โทรศัพท์ และข้อมูลบันทึกธุรกรรมของคุณ"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Data Protection</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Data Protection" : "การรักษาความปลอดภัยข้อมูล"}
+      </h3>
       <p>
-        All connection credentials and personal logs are encrypted. We never sell or share your personal data with third-party advertising networks.
+        {lang === 'en'
+          ? "All connection credentials and personal logs are encrypted. We never sell or share your personal data with third-party advertising networks."
+          : "ข้อมูลประจำตัวการเชื่อมต่อและข้อมูลส่วนบุคคลทั้งหมดได้รับการเข้ารหัสและเก็บรักษาเป็นความลับอย่างปลอดภัย เราไม่มีนโยบายขายหรือแชร์ข้อมูลส่วนบุคคลของคุณให้กับเครือข่ายโฆษณาภายนอกโดยเด็ดขาด"
+        }
       </p>
     </div>
   </div>

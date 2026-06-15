@@ -1,5 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { useTranslations, translateBlog } from '../../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 const { id } = Astro.params;
 
@@ -54,10 +58,119 @@ Neutrals only succeed when matched with premium fabrics. Linen, cotton silk, and
     imageUrl: "/assets/images/women-hero.png",
     createdAt: new Date().toISOString(),
     authorName: "ACHI Stylist"
+  },
+  "3": {
+    id: 3,
+    title: "The Essential Fabric Guide: Linen & Cotton",
+    summary: "Explore why breathable, natural fibres are at the core of our summer design philosophy.",
+    content: `Breathable, natural fibers are the cornerstone of high-quality summer wardrobes. Here is our guide to linen and cotton blends.
+
+### 1. Linen: The Classic Choice
+Linen is exceptionally strong, absorbent, and dries faster than cotton. This makes it ideal for humid weather.
+
+### 2. Cotton: The Versatile Essential
+Cotton provides soft comfort and structural durability. When woven loosely, it offers superior air circulation.
+
+### 3. Blend Options
+Blending linen and cotton yields the best of both worlds: the drape and breathability of linen with the soft structure and wrinkle resistance of cotton.`,
+    imageUrl: "/assets/images/set2.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Editorial"
+  },
+  "4": {
+    id: 4,
+    title: "Designing the Perfect Trench Coat",
+    summary: "A deep dive into structural tailoring, fabrics, and drape of our signature outerwear.",
+    content: `Creating the perfect trench coat requires attention to proportions, water resistance, and drape.
+
+### 1. Tailoring & Silhouette
+A modern trench coat should have clean lines, a slightly oversized fit for layering, and a structural belt to define the waist.
+
+### 2. Fabric Choice
+We utilize premium heavy gabardine cotton to ensure rain protection while maintaining breathability.
+
+### 3. Hardware Details
+From custom horn buttons to metal D-rings, every detail is selected to endure generations.`,
+    imageUrl: "/assets/images/set3.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Stylist"
+  },
+  "5": {
+    id: 5,
+    title: "Monochrome Styling Rules",
+    summary: "How to master single-tone styling with subtle differences in fabric textures.",
+    content: `Monochrome dressing is effortless yet sophisticated when done right. Follow these rules to avoid looking flat.
+
+### 1. Play with Textures
+Combine different materials like a matte cotton tee with a glossy silk skirt, or a rough knit sweater with smooth linen trousers.
+
+### 2. Vary the Shades
+Monochrome does not mean wearing the exact same shade. Use varying tones of the same color family (e.g. charcoal, slate, light grey) to create depth.
+
+### 3. Focus on Silhouettes
+Use strong cuts, asymmetrical lines, and unique fits to make the monochrome outfit stand out visually.`,
+    imageUrl: "/assets/images/collection-hero.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Editorial"
+  },
+  "6": {
+    id: 6,
+    title: "Crafting the Perfect Basic Tee",
+    summary: "Behind the scenes of selecting weight, cut, and seam spacing for comfort.",
+    content: `A basic t-shirt is the most worn item in any closet. We take its design very seriously.
+
+### 1. Cotton Weight
+We select a medium-weight long-staple cotton that retains its shape after dozens of washes.
+
+### 2. The Neckline
+A robust rib collar that doesn't stretch out over time is essential for a clean look.
+
+### 3. The Cut
+Neither too tight nor too loose, our basic tee is designed to sit comfortably on the shoulders and drape straight down.`,
+    imageUrl: "/assets/images/tshirt-1.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Stylist"
+  },
+  "7": {
+    id: 7,
+    title: "A Guide to Sustainable Smart Casual",
+    summary: "Transition from professional meetings to evening dinners with ease and elegance.",
+    content: `Smart casual is about striking a balance. Here is how to keep it sustainable and stylish.
+
+### 1. Quality Over Quantity
+Invest in 3-4 key high-quality items instead of a closet full of fast-fashion alternatives.
+
+### 2. Sustainable Fibers
+Choose items made from Tencel, organic cotton, or linen, which have a lower environmental footprint.
+
+### 3. Versatility
+Select pieces that can easily be dressed up with a blazer or dressed down with clean white sneakers.`,
+    imageUrl: "/assets/images/polo-dark.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Editorial"
+  },
+  "8": {
+    id: 8,
+    title: "The Capsule Wardrobe Concept",
+    summary: "Curate a high-utility, minimal collection of garments for everyday wear.",
+    content: `A capsule wardrobe simplifies your mornings and refines your personal style.
+
+### 1. The Core Pieces
+A capsule wardrobe typically consists of 25-30 pieces, including basics, outerwear, pants, and footwear.
+
+### 2. Cohesive Color Scheme
+Select a primary neutral (black, navy, or brown) and a secondary base (grey, cream, or sand) to ensure all pieces match.
+
+### 3. Layering & Reusability
+Choose pieces that layer well together so you can create dozens of outfits from a small selection of garments.`,
+    imageUrl: "/assets/images/pants-cream.png",
+    createdAt: new Date().toISOString(),
+    authorName: "ACHI Stylist"
   }
 };
 
-const displayBlog = blog || mockBlogsMap[id || ''] || mockBlogsMap["1"];
+const rawBlog = blog || mockBlogsMap[id || ''] || mockBlogsMap["1"];
+const displayBlog = translateBlog(rawBlog, lang);
 
 const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
@@ -92,9 +205,9 @@ const resolveImage = (url: string) => {
               <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
             </>
           )}
-          <span>By {displayBlog.authorName || 'ACHI Studio'}</span>
+          <span>{lang === 'en' ? "By" : "โดย"} {displayBlog.authorName || 'ACHI Studio'}</span>
           <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
-          <span>{new Date(displayBlog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          <span>{new Date(displayBlog.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
         
         <h1 class="font-serif text-3xl sm:text-5xl tracking-wide leading-tight uppercase">
@@ -123,7 +236,7 @@ const resolveImage = (url: string) => {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="w-4 h-4 mr-2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
           </svg>
-          Back to all posts
+          {lang === 'en' ? "Back to all posts" : "ย้อนกลับไปบล็อกทั้งหมด"}
         </a>
       </div>
     </div>

@@ -1,13 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="SIZE GUIDE | ACHI Studio" description="Detailed size measurement chart for shirts, outerwear, and trousers.">
+<Layout 
+  title={lang === 'en' ? "SIZE GUIDE | ACHI Studio" : "คู่มือขนาดเสื้อผ้า | ACHI Studio"} 
+  description={lang === 'en' ? "Detailed size measurement chart for shirts, outerwear, and trousers." : "ตารางบอกขนาดรายละเอียดและคู่มือการวัดตัวสำหรับเสื้อเชิ้ต แจ็กเก็ต และกางเกงขายาว"}
+>
   <!-- Top Header -->
   <section class="bg-stone-50 border-b border-stone-200/60 py-16 text-center">
     <div class="max-w-[800px] mx-auto px-6">
-      <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">SIZE GUIDE</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">Find your perfect fit</p>
+      <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">
+        {lang === 'en' ? "SIZE GUIDE" : "คู่มือขนาดสินค้า"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">
+        {lang === 'en' ? "Find your perfect fit" : "ค้นหาขนาดและสัดส่วนที่พอดีกับตัวคุณ"}
+      </p>
     </div>
   </section>
 
@@ -16,16 +24,16 @@ import Layout from '../layouts/Layout.astro';
     <!-- Shirts Table -->
     <div class="space-y-4">
       <h2 class="font-serif text-sm uppercase tracking-widest text-brand-charcoal font-semibold border-b border-stone-200 pb-2">
-        T-SHIRTS & SHIRTS (INCHES)
+        {lang === 'en' ? "T-SHIRTS & SHIRTS (INCHES)" : "เสื้อยืด และเสื้อเชิ้ต (หน่วยวัดเป็นนิ้ว)"}
       </h2>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-gray-500 border-collapse border border-gray-100">
           <thead>
             <tr class="bg-gray-50 text-brand-charcoal uppercase font-semibold">
-              <th class="p-3 border border-gray-100">Size</th>
-              <th class="p-3 border border-gray-100">Chest</th>
-              <th class="p-3 border border-gray-100">Length</th>
-              <th class="p-3 border border-gray-100">Shoulder</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Size" : "ขนาด (ไซส์)"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Chest" : "รอบอก"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Length" : "ความยาว"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Shoulder" : "ไหล่กว้าง"}</th>
             </tr>
           </thead>
           <tbody>
@@ -61,16 +69,16 @@ import Layout from '../layouts/Layout.astro';
     <!-- Pants Table -->
     <div class="space-y-4">
       <h2 class="font-serif text-sm uppercase tracking-widest text-brand-charcoal font-semibold border-b border-stone-200 pb-2">
-        TROUSERS & PANTS (INCHES)
+        {lang === 'en' ? "TROUSERS & PANTS (INCHES)" : "กางเกงขายาว และกางเกงอื่นๆ (หน่วยวัดเป็นนิ้ว)"}
       </h2>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-gray-500 border-collapse border border-gray-100">
           <thead>
             <tr class="bg-gray-50 text-brand-charcoal uppercase font-semibold">
-              <th class="p-3 border border-gray-100">Size</th>
-              <th class="p-3 border border-gray-100">Waist</th>
-              <th class="p-3 border border-gray-100">Hip</th>
-              <th class="p-3 border border-gray-100">Inseam</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Size" : "ขนาด (ไซส์)"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Waist" : "รอบเอว"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Hip" : "รอบสะโพก"}</th>
+              <th class="p-3 border border-gray-100">{lang === 'en' ? "Inseam" : "ความยาวเป้าถึงปลายขา"}</th>
             </tr>
           </thead>
           <tbody>
@@ -105,12 +113,14 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Measurement Advice Card -->
     <div class="bg-stone-50 p-6 rounded-sm border border-stone-200/60 text-xs font-light text-stone-500 space-y-2">
-      <h3 class="font-serif font-semibold text-brand-charcoal uppercase tracking-wider mb-2">How to Measure</h3>
+      <h3 class="font-serif font-semibold text-brand-charcoal uppercase tracking-wider mb-2">
+        {lang === 'en' ? "How to Measure" : "วิธีการวัดขนาดตัว"}
+      </h3>
       <p class="leading-relaxed">
-        <strong>Chest:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.
+        <strong>{lang === 'en' ? "Chest:" : "รอบอก:"}</strong> {lang === 'en' ? "Measure around the fullest part of your chest, keeping the tape horizontal." : "วัดส่วนที่กว้างที่สุดของหน้าอก โดยให้สายวัดอยู่ในระดับระนาบขนานกับพื้น"}
       </p>
       <p class="leading-relaxed">
-        <strong>Waist:</strong> Measure around your natural waistline, keeping the tape slightly loose.
+        <strong>{lang === 'en' ? "Waist:" : "รอบเอว:"}</strong> {lang === 'en' ? "Measure around your natural waistline, keeping the tape slightly loose." : "วัดขนาดรอบเอวธรรมชาติของคุณ โดยให้สายวัดหลวมเล็กน้อยอย่างผ่อนคลาย"}
       </p>
     </div>
   </div>

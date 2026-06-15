@@ -1,13 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="STORE LOCATOR | ACHI Studio" description="Find ACHI flagship stores and premium branches in Bangkok.">
+<Layout 
+  title={lang === 'en' ? "STORE LOCATOR | ACHI Studio" : "ค้นหาหน้าร้าน | ACHI Studio"} 
+  description={lang === 'en' ? "Find ACHI flagship stores and premium branches in Bangkok." : "ค้นหาที่ตั้งร้านธงชัยหลัก (Flagship Store) และสาขาพรีเมียมของ ACHI ในกรุงเทพมหานคร"}
+>
   <!-- Top Header -->
   <section class="bg-stone-50 border-b border-stone-200/60 py-16 text-center">
     <div class="max-w-[800px] mx-auto px-6">
-      <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">STORE LOCATOR</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">Find an ACHI branch near you</p>
+      <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">
+        {lang === 'en' ? "STORE LOCATOR" : "ค้นหาหน้าร้าน"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">
+        {lang === 'en' ? "Find an ACHI branch near you" : "ค้นหาสาขาของ ACHI ใกล้บ้านคุณ"}
+      </p>
     </div>
   </section>
 
@@ -18,16 +26,21 @@ import Layout from '../layouts/Layout.astro';
       <div class="bg-white border border-stone-200/80 p-6 rounded-sm flex flex-col justify-between hover:border-brand-gold transition-colors duration-300">
         <div class="space-y-4">
           <div class="aspect-[4/3] bg-stone-100 rounded-sm flex items-center justify-center text-[10px] uppercase tracking-widest text-stone-400 font-light border border-stone-200/50">
-            [Sukhumvit Flagship]
+            {lang === 'en' ? "[Sukhumvit Flagship]" : "[สุขุมวิท แฟลกชิป]"}
           </div>
-          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">ACHI FLAGSHIP STUDIO</h2>
+          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">
+            {lang === 'en' ? "ACHI FLAGSHIP STUDIO" : "ACHI แฟลกชิป สตูดิโอ"}
+          </h2>
           <p class="text-xs text-stone-500 font-light leading-relaxed">
-            Sukhumvit Road, Khlong Toei, Bangkok 10110
+            {lang === 'en'
+              ? "Sukhumvit Road, Khlong Toei, Bangkok 10110"
+              : "ถนนสุขุมวิท, เขตคลองเตย, กรุงเทพมหานคร 10110"
+            }
           </p>
         </div>
         <div class="border-t border-stone-100 pt-4 mt-6 text-[10px] text-stone-400 font-light space-y-1">
-          <span class="block">Hours: 10:00 AM - 9:00 PM Daily</span>
-          <span class="block">Phone: +66 2 123 4567</span>
+          <span class="block">{lang === 'en' ? "Hours: 10:00 AM - 9:00 PM Daily" : "เวลาทำการ: 10:00 - 21:00 น. ทุกวัน"}</span>
+          <span class="block">{lang === 'en' ? "Phone: +66 2 123 4567" : "เบอร์โทรศัพท์: +66 2 123 4567"}</span>
         </div>
       </div>
 
@@ -35,16 +48,21 @@ import Layout from '../layouts/Layout.astro';
       <div class="bg-white border border-stone-200/80 p-6 rounded-sm flex flex-col justify-between hover:border-brand-gold transition-colors duration-300">
         <div class="space-y-4">
           <div class="aspect-[4/3] bg-stone-100 rounded-sm flex items-center justify-center text-[10px] uppercase tracking-widest text-stone-400 font-light border border-stone-200/50">
-            [Iconsiam Studio]
+            {lang === 'en' ? "[Iconsiam Studio]" : "[ไอคอนสยาม สตูดิโอ]"}
           </div>
-          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">ACHI ICONSIAM BRANCH</h2>
+          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">
+            {lang === 'en' ? "ACHI ICONSIAM BRANCH" : "ACHI สาขาไอคอนสยาม"}
+          </h2>
           <p class="text-xs text-stone-500 font-light leading-relaxed">
-            Level 2, ICONSIAM, Charoen Nakhon Rd, Bangkok 10600
+            {lang === 'en'
+              ? "Level 2, ICONSIAM, Charoen Nakhon Rd, Bangkok 10600"
+              : "ชั้น 2, ไอคอนสยาม, ถนนเจริญนคร, กรุงเทพมหานคร 10600"
+            }
           </p>
         </div>
         <div class="border-t border-stone-100 pt-4 mt-6 text-[10px] text-stone-400 font-light space-y-1">
-          <span class="block">Hours: 10:00 AM - 10:00 PM Daily</span>
-          <span class="block">Phone: +66 2 765 4321</span>
+          <span class="block">{lang === 'en' ? "Hours: 10:00 AM - 10:00 PM Daily" : "เวลาทำการ: 10:00 - 22:00 น. ทุกวัน"}</span>
+          <span class="block">{lang === 'en' ? "Phone: +66 2 765 4321" : "เบอร์โทรศัพท์: +66 2 765 4321"}</span>
         </div>
       </div>
 
@@ -52,16 +70,21 @@ import Layout from '../layouts/Layout.astro';
       <div class="bg-white border border-stone-200/80 p-6 rounded-sm flex flex-col justify-between hover:border-brand-gold transition-colors duration-300">
         <div class="space-y-4">
           <div class="aspect-[4/3] bg-stone-100 rounded-sm flex items-center justify-center text-[10px] uppercase tracking-widest text-stone-400 font-light border border-stone-200/50">
-            [Centralworld Studio]
+            {lang === 'en' ? "[Centralworld Studio]" : "[เซ็นทรัลเวิลด์ สตูดิโอ]"}
           </div>
-          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">ACHI CENTRALWORLD BRANCH</h2>
+          <h2 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium">
+            {lang === 'en' ? "ACHI CENTRALWORLD BRANCH" : "ACHI สาขาเซ็นทรัลเวิลด์"}
+          </h2>
           <p class="text-xs text-stone-500 font-light leading-relaxed">
-            1st Floor, Centralworld, Ratchadamri Rd, Bangkok 10330
+            {lang === 'en'
+              ? "1st Floor, Centralworld, Ratchadamri Rd, Bangkok 10330"
+              : "ชั้น 1, เซ็นทรัลเวิลด์, ถนนราชดำริ, กรุงเทพมหานคร 10330"
+            }
           </p>
         </div>
         <div class="border-t border-stone-100 pt-4 mt-6 text-[10px] text-stone-400 font-light space-y-1">
-          <span class="block">Hours: 10:00 AM - 10:00 PM Daily</span>
-          <span class="block">Phone: +66 2 987 6543</span>
+          <span class="block">{lang === 'en' ? "Hours: 10:00 AM - 10:00 PM Daily" : "เวลาทำการ: 10:00 - 22:00 น. ทุกวัน"}</span>
+          <span class="block">{lang === 'en' ? "Phone: +66 2 987 6543" : "เบอร์โทรศัพท์: +66 2 987 6543"}</span>
         </div>
       </div>
 

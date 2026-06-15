@@ -1,27 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="PRODUCT CARE | ACHI Studio" description="Care guidelines to extend the lifespan of your minimalist clothing.">
+<Layout 
+  title={lang === 'en' ? "PRODUCT CARE | ACHI Studio" : "การดูแลรักษาผลิตภัณฑ์ | ACHI Studio"} 
+  description={lang === 'en' ? "Care guidelines to extend the lifespan of your minimalist clothing." : "คู่มือข้อแนะนำการดูแลรักษาเสื้อผ้าเพื่อยืดอายุการใช้งานเครื่องแต่งกายมินิมอลของคุณ"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">PRODUCT CARE</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Maintain the quality of your garments</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "PRODUCT CARE" : "การดูแลผลิตภัณฑ์"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Maintain the quality of your garments" : "เคล็ดลับการถนอมและรักษาคุณภาพเนื้อผ้า"}
+      </p>
     </div>
 
     <div class="space-y-8 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        ACHI garments are made from premium organic cotton, raw denim, and fine linen. Proper garment care preserves the fibers and ensures your clothes last for years.
+        {lang === 'en'
+          ? "ACHI garments are made from premium organic cotton, raw denim, and fine linen. Proper garment care preserves the fibers and ensures your clothes last for years."
+          : "เครื่องแต่งกายของ ACHI ผลิตขึ้นจากวัสดุชั้นดี เช่น ฝ้ายออร์แกนิกเกรดพรีเมียม เดนิมดิบ และผ้าลินินเนื้อละเอียด การถนอมดูแลเสื้อผ้าอย่างถูกวิธีจะช่วยรักษาเส้นใยและทำให้เสื้อผ้าตัวโปรดของคุณคงทนสวยงามยาวนานขึ้น"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Linen Care</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Linen Care" : "การดูแลผ้าลินิน"}
+      </h3>
       <p>
-        Wash linen in cold water on a gentle cycle. Hang or lay flat to dry to avoid shrinking. Linen gets softer with every wash!
+        {lang === 'en'
+          ? "Wash linen in cold water on a gentle cycle. Hang or lay flat to dry to avoid shrinking. Linen gets softer with every wash!"
+          : "ซักผ้าลินินในน้ำเย็นโดยใช้รอบการซักแบบถนอมผ้า ควรตากโดยใช้การแขวนหรือวางราบบนพื้นผิวเรียบเพื่อหลีกเลี่ยงการหดตัวของใยผ้า ซึ่งผ้าลินินจะนุ่มนวลขึ้นอย่างเป็นธรรมชาติในทุกๆ ครั้งที่ผ่านการซัก!"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Denim Care</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Denim Care" : "การดูแลผ้าเดนิม"}
+      </h3>
       <p>
-        Wash denim inside out in cold water to prevent fading. Avoid tumble drying; instead, line dry in shade. Wash raw denim as infrequently as possible.
+        {lang === 'en'
+          ? "Wash denim inside out in cold water to prevent fading. Avoid tumble drying; instead, line dry in shade. Wash raw denim as infrequently as possible."
+          : "ให้กลับด้านในเสื้อผ้าเดนิมออกมาก่อนซักด้วยน้ำเย็น เพื่อป้องกันการซีดจางของสีผ้า หลีกเลี่ยงการอบแห้งด้วยความร้อน โดยแนะนำให้ตากแดดร่มลมโกรกแทน และแนะนำให้ซักผ้าเดนิมดิบเท่าที่จำเป็นเท่านั้น"
+        }
       </p>
     </div>
   </div>

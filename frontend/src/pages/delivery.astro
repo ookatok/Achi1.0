@@ -1,29 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="DELIVERY INFORMATION | ACHI Studio" description="Standard and express shipping rates and delivery times.">
+<Layout 
+  title={lang === 'en' ? "DELIVERY INFORMATION | ACHI Studio" : "ข้อมูลการจัดส่ง | ACHI Studio"} 
+  description={lang === 'en' ? "Standard and express shipping rates and delivery times." : "ข้อมูลอัตราค่าบริการและระยะเวลาการจัดส่งสินค้ามาตรฐานและด่วนพิเศษ"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">DELIVERY</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Shipping Policy and Delivery Information</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "DELIVERY" : "การจัดส่ง"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Shipping Policy and Delivery Information" : "นโยบายการจัดส่งและรายละเอียดบริการ"}
+      </p>
     </div>
 
     <div class="space-y-8 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        ACHI provides shipping services all across Thailand. Orders are shipped from our Bangkok distribution center within 24 hours of payment validation.
+        {lang === 'en' 
+          ? "ACHI provides shipping services all across Thailand. Orders are shipped from our Bangkok distribution center within 24 hours of payment validation."
+          : "ACHI ให้บริการจัดส่งสินค้าครอบคลุมทั่วประเทศไทย สินค้าจะถูกจัดส่งจากศูนย์กระจายสินค้าในกรุงเทพมหานคร ภายใน 24 ชั่วโมงหลังจากทำการยืนยันยอดเงินชำระเสร็จสิ้น"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Standard Delivery</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Standard Delivery" : "การจัดส่งแบบมาตรฐาน"}
+      </h3>
       <ul class="list-disc list-inside space-y-2 text-xs text-gray-500 pl-4">
-        <li><strong>Cost:</strong> Free on all orders.</li>
-        <li><strong>Bangkok & Perimeter:</strong> 2 - 4 business days.</li>
-        <li><strong>Other Provinces:</strong> 3 - 5 business days.</li>
+        <li><strong>{lang === 'en' ? "Cost:" : "ค่าจัดส่ง:"}</strong> {lang === 'en' ? "Free on all orders." : "ฟรีสำหรับทุกรายการสั่งซื้อ"}</li>
+        <li><strong>{lang === 'en' ? "Bangkok & Perimeter:" : "กรุงเทพฯ และปริมณฑล:"}</strong> 2 - 4 {lang === 'en' ? "business days" : "วันทำการ"}</li>
+        <li><strong>{lang === 'en' ? "Other Provinces:" : "ต่างจังหวัด:"}</strong> 3 - 5 {lang === 'en' ? "business days" : "วันทำการ"}</li>
       </ul>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Tracking Your Order</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Tracking Your Order" : "การติดตามสถานะพัสดุ"}
+      </h3>
       <p>
-        Once your order has been dispatched, you will receive a tracking link via email or SMS. You can also view the dispatch status in your <a href="/profile" class="underline hover:text-brand-gold">user profile</a>.
+        {lang === 'en'
+          ? "Once your order has been dispatched, you will receive a tracking link via email or SMS. You can also view the dispatch status in your "
+          : "หลังจากพัสดุของคุณได้รับการจัดส่งแล้ว คุณจะได้รับลิงก์สำหรับติดตามสถานะผ่านทางอีเมลหรือ SMS และคุณสามารถเข้าดูสถานะการจัดส่งได้จาก "
+        }
+        <a href="/profile" class="underline hover:text-brand-gold">{lang === 'en' ? "user profile" : "โปรไฟล์ผู้ใช้"}</a>.
       </p>
     </div>
   </div>

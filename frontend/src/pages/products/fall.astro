@@ -1,10 +1,18 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { useTranslations, translateProduct } from '../../lib/translations';
+import Pagination from '../../components/common/Pagination.astro';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const limit = 8;
 
 let productsList = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?collection=fall`);
+  const res = await fetch(`${BACKEND_URL}/api/products?collection=fall&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
@@ -19,10 +27,17 @@ const mockFall = [
   { id: 1304, name: "Merino Wool Beanie", price: "55.00", imageUrl: "/assets/images/cap-cat-men.png" },
 ];
 
-const displayProducts = productsList.length > 0 ? productsList : mockFall;
+const useMocks = productsList.length === 0;
+const displayRawList = useMocks ? mockFall : productsList;
+const displayProducts = displayRawList.map(p => translateProduct(p, lang));
+
+// Paginate in-memory if we are using mocks
+const startIndex = (page - 1) * limit;
+const endIndex = startIndex + limit;
+const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
 ---
 
-<Layout title="Fall Collection | ACHI Studio" description="Cosy wool cardigans, corduroy overshirts, and soft beanies." showHeroHeader={true}>
+<Layout title={lang === 'en' ? "Fall Collection | ACHI Studio" : "คอลเลกชันฤดูใบไม้ร่วง | ACHI Studio"} description={lang === 'en' ? "Cosy wool cardigans, corduroy overshirts, and soft beanies." : "เสื้อคาร์ดิแกนผ้าขนสัตว์แสนอบอุ่น เสื้อเชิ้ตลูกฟูก และหมวกบีนนี่แสนนุ่ม"} showHeroHeader={true}>
   <section class="w-full relative h-[60vh] bg-[#362923] flex items-center justify-center text-white overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/collage-model.png?v=2');"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
@@ -30,11 +45,11 @@ const displayProducts = productsList.length > 0 ? productsList : mockFall;
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
       <div class="flex items-end justify-between w-full">
         <div>
-          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">Fall Collection</span>
-          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">Fall</h1>
+          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">{lang === 'en' ? "Fall Collection" : "คอลเลกชันฤดูใบไม้ร่วง"}</span>
+          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">{lang === 'en' ? "Fall" : "ฤดูใบไม้ร่วง"}</h1>
         </div>
         <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
-          Warm Cozy Fits
+          {lang === 'en' ? "Warm Cozy Fits" : "ความอบอุ่นและสวมใส่สบาย"}
         </div>
       </div>
     </div>
@@ -43,19 +58,19 @@ const displayProducts = productsList.length > 0 ? productsList : mockFall;
   <section class="border-b border-gray-100 bg-white">
     <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] uppercase tracking-wider font-light text-gray-400">
       <nav class="flex items-center gap-2">
-        <a href="/" class="hover:text-brand-charcoal transition-colors">Home</a>
+        <a href="/" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Home" : "หน้าแรก"}</a>
         <span>/</span>
-        <a href="/products" class="hover:text-brand-charcoal transition-colors">Shop</a>
+        <a href="/products" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Shop" : "ช้อป"}</a>
         <span>/</span>
-        <span class="text-brand-charcoal">Fall</span>
+        <span class="text-brand-charcoal">{lang === 'en' ? "Fall" : "ฤดูใบไม้ร่วง"}</span>
       </nav>
-      <span>Showing {displayProducts.length} items</span>
+      <span>{lang === 'en' ? `Showing ${displayProducts.length} items` : `แสดงทั้งหมด ${displayProducts.length} รายการ`}</span>
     </div>
   </section>
 
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {displayProducts.map((product: any) => (
+      {paginatedList.map((product: any) => (
         <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
           <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
@@ -84,6 +99,9 @@ const displayProducts = productsList.length > 0 ? productsList : mockFall;
           <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
         </div>
       ))}
-    </div>
+        </div>
+
+    <!-- Pagination Component -->
+    <Pagination totalPages={5} />
   </div>
 </Layout>

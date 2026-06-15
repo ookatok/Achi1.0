@@ -294,6 +294,7 @@ const parseArray = (val: any) => {
                       <tr class="product-row hover:bg-stone-50/50 transition-colors"
                           data-name={product.name.toLowerCase()}
                           data-desc={(product.description || '').toLowerCase()}
+                          data-category-name={(product.categoryName || '').toLowerCase()}
                           data-category-id={product.categoryId ? String(product.categoryId) : ''}
                           data-tags={JSON.stringify(prodTags.map((t: any) => typeof t === 'object' ? t.name.toLowerCase() : t.toLowerCase()))}
                           data-stock={product.stockQuantity}>
@@ -1232,10 +1233,15 @@ const parseArray = (val: any) => {
         const name = row.getAttribute('data-name') || '';
         const desc = row.getAttribute('data-desc') || '';
         const categoryId = row.getAttribute('data-category-id') || '';
+        const categoryName = row.getAttribute('data-category-name') || '';
         const tags = JSON.parse(row.getAttribute('data-tags') || '[]');
         const stock = parseInt(row.getAttribute('data-stock') || '0', 10);
 
-        const matchText = !searchVal || name.includes(searchVal) || desc.includes(searchVal);
+        const matchText = !searchVal || 
+                          name.includes(searchVal) || 
+                          desc.includes(searchVal) || 
+                          categoryName.includes(searchVal) || 
+                          tags.some((t: string) => t.includes(searchVal));
         const matchCategory = !catVal || categoryId === catVal;
         const matchTag = !tagVal || tags.includes(tagVal);
 

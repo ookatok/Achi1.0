@@ -1,27 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="PAYMENTS | ACHI Studio" description="Available payment methods and transaction security details.">
+<Layout 
+  title={lang === 'en' ? "PAYMENTS | ACHI Studio" : "การชำระเงิน | ACHI Studio"} 
+  description={lang === 'en' ? "Available payment methods and transaction security details." : "ช่องทางการชำระเงินที่รองรับและรายละเอียดความปลอดภัยของธุรกรรม"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">PAYMENTS</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Supported Payment Options</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "PAYMENTS" : "การชำระเงิน"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Supported Payment Options" : "ช่องทางการชำระเงินที่รองรับ"}
+      </p>
     </div>
 
     <div class="space-y-8 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        To ensure a premium shopping experience, ACHI supports several secure payment options for all orders.
+        {lang === 'en'
+          ? "To ensure a premium shopping experience, ACHI supports several secure payment options for all orders."
+          : "เพื่อความสะดวกสบายและประสบการณ์การช็อปปิ้งระดับพรีเมียม ACHI รองรับช่องทางการชำระเงินที่ปลอดภัยหลายรูปแบบสำหรับทุกคำสั่งซื้อ"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Credit & Debit Cards</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Credit & Debit Cards" : "บัตรเครดิตและบัตรเดบิต"}
+      </h3>
       <p>
-        We accept Visa, Mastercard, and JCB cards. All transactions are securely encrypted using standard SSL connections.
+        {lang === 'en'
+          ? "We accept Visa, Mastercard, and JCB cards. All transactions are securely encrypted using standard SSL connections."
+          : "เรายอมรับบัตร Visa, Mastercard และ JCB ธุรกรรมทั้งหมดได้รับการเข้ารหัสอย่างปลอดภัยสูงสุดด้วยการเชื่อมต่อ SSL มาตรฐานสากล"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Bank Transfer & QR Payment</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Bank Transfer & QR Payment" : "โอนเงินผ่านธนาคาร และสแกน QR Code"}
+      </h3>
       <p>
-        You can make a direct bank transfer or use Thai QR Payment (PromptPay) during the checkout process. PromptPay QR codes are generated instantly.
+        {lang === 'en'
+          ? "You can make a direct bank transfer or use Thai QR Payment (PromptPay) during the checkout process. PromptPay QR codes are generated instantly."
+          : "คุณสามารถเลือกช่องทางโอนเงินเข้าบัญชีธนาคารโดยตรง หรือสแกนจ่ายผ่าน Thai QR Payment (พร้อมเพย์) ได้ในขั้นตอนการเช็คเอาต์ โดยระบบจะสร้างคิวอาร์โค้ดพร้อมเพย์ให้ทันทีอัตโนมัติ"
+        }
       </p>
     </div>
   </div>

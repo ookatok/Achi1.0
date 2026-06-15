@@ -1,10 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
+import { useTranslations, translateProductName } from '../lib/translations';
 
 // Fetch user session for token authorization
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 let cartData = { id: 0, items: [] as any[] };
 let errorMsg = null;
@@ -20,11 +23,11 @@ if (token) {
     if (res.ok) {
       cartData = await res.json();
     } else {
-      errorMsg = 'Could not load cart details. Please try again.';
+      errorMsg = lang === 'en' ? 'Could not load cart details. Please try again.' : 'ไม่สามารถโหลดข้อมูลตะกร้าสินค้าได้ กรุณาลองใหม่อีกครั้ง';
     }
   } catch (err) {
     console.error(err);
-    errorMsg = 'Network error: Backend server is not running.';
+    errorMsg = lang === 'en' ? 'Network error: Backend server is not running.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย: เซิร์ฟเวอร์แบ็คเอนด์ไม่ได้ทำงานอยู่';
   }
 }
 
@@ -33,19 +36,28 @@ const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number
 const cartTotal = subtotal; // Modify if taxes/shipping applies
 ---
 
-<Layout title="Cart | ACHI Studio" description="Review your selected items and checkout.">
+<Layout 
+  title={lang === 'en' ? "Cart | ACHI Studio" : "ตะกร้าสินค้า | ACHI Studio"} 
+  description={lang === 'en' ? "Review your selected items and checkout." : "ตรวจสอบสินค้าที่คุณเลือกและดำเนินการชำระเงิน"}
+>
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     {/* Page Title */}
     <div class="text-center mb-16">
-      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Your Cart</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Confirm selected clothing configurations</p>
+      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">
+        {lang === 'en' ? "Your Cart" : "ตะกร้าสินค้าของคุณ"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Confirm selected clothing configurations" : "ยืนยันรายละเอียดเสื้อผ้าที่คุณเลือกช็อปปิ้ง"}
+      </p>
     </div>
 
     {!token ? (
       <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
-        <p class="text-gray-500 mb-6 font-light">Please sign in to view and manage your shopping cart.</p>
+        <p class="text-gray-500 mb-6 font-light">
+          {lang === 'en' ? "Please sign in to view and manage your shopping cart." : "กรุณาเข้าสู่ระบบเพื่อดูและจัดการตะกร้าสินค้าของคุณ"}
+        </p>
         <a href="/auth/signin?callbackUrl=/cart" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
-          Sign In
+          {t('nav.signin')}
         </a>
       </div>
     ) : errorMsg ? (
@@ -54,9 +66,11 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
       </div>
     ) : cartData.items.length === 0 ? (
       <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
-        <p class="text-gray-500 mb-6 font-light">Your shopping cart is currently empty.</p>
+        <p class="text-gray-500 mb-6 font-light">
+          {lang === 'en' ? "Your shopping cart is currently empty." : "ตะกร้าสินค้าของคุณไม่มีสินค้าในขณะนี้"}
+        </p>
         <a href="/products" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
-          Go Shop
+          {lang === 'en' ? "Go Shop" : "ไปช้อปเลย"}
         </a>
       </div>
     ) : (
@@ -80,11 +94,11 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
                 {/* Card Top: Title */}
                 <div class="text-center">
                   <h3 class="font-serif text-base font-medium text-brand-charcoal uppercase tracking-wider">
-                    {item.productName} {item.quantity} {item.size || ''}
+                    {translateProductName(item.productName, lang)} {item.quantity} {item.size || ''}
                   </h3>
                   {item.color && (
                     <span class="text-[10px] tracking-widest text-gray-400 uppercase font-light mt-1 block">
-                      Color: {item.color}
+                      {lang === 'en' ? 'Color' : 'สี'}: {item.color}
                     </span>
                   )}
                 </div>
@@ -93,7 +107,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
                 <div class="flex-grow flex items-center justify-center my-4 overflow-hidden aspect-[4/3] relative">
                   <img
                     src={item.productImageUrl || '/assets/images/placeholder-product.png'}
-                    alt={item.productName}
+                    alt={translateProductName(item.productName, lang)}
                     class="h-full object-contain mix-blend-multiply"
                   />
                 </div>
@@ -102,7 +116,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
                 <div class="border-t border-gray-100 pt-4 flex items-center justify-between text-xs tracking-wider font-light text-gray-500 uppercase">
                   <span>{item.quantity} X</span>
                   <div class="flex items-center gap-4">
-                    <span class="text-brand-charcoal font-medium">Subtotal</span>
+                    <span class="text-brand-charcoal font-medium">{lang === 'en' ? 'Subtotal' : 'ยอดรวมย่อย'}</span>
                     <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
                   </div>
                 </div>
@@ -116,16 +130,16 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
           {/* Order Summary Block */}
           <div class="border border-gray-200 p-6 rounded-sm bg-white">
             <h2 class="font-serif text-sm uppercase tracking-widest text-center border-b border-gray-100 pb-4 mb-6 font-medium text-brand-charcoal">
-              Order Summary
+              {lang === 'en' ? "Order Summary" : "สรุปใบสั่งซื้อ"}
             </h2>
             <div class="space-y-4 text-xs tracking-widest font-light text-gray-500 uppercase">
               <div class="flex justify-between">
-                <span>Subtotal</span>
+                <span>{lang === 'en' ? "Subtotal" : "ยอดรวมย่อย"}</span>
                 <span class="text-brand-charcoal font-medium">${subtotal}</span>
               </div>
               <hr class="border-gray-100" />
               <div class="flex justify-between text-sm font-medium text-brand-charcoal">
-                <span>Cart total</span>
+                <span>{lang === 'en' ? "Cart total" : "ยอดรวมทั้งหมด"}</span>
                 <span>${cartTotal}</span>
               </div>
             </div>
@@ -134,12 +148,12 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
           {/* Gift Message Block */}
           <div class="border border-gray-200 p-6 rounded-sm bg-white">
             <label htmlFor="gift-message" class="block text-[11px] uppercase tracking-wider font-medium text-brand-charcoal mb-4">
-              Add gift message
+              {lang === 'en' ? "Add gift message" : "เพิ่มข้อความบนการ์ดของขวัญ"}
             </label>
             <textarea
               id="gift-message"
               rows="4"
-              placeholder="Write your custom gift message here..."
+              placeholder={lang === 'en' ? "Write your custom gift message here..." : "ระบุข้อความอวยพรของคุณตรงนี้..."}
               class="w-full p-4 border border-gray-200 rounded-sm focus:border-brand-gold outline-none text-xs font-light resize-none bg-gray-50 focus:bg-white transition-all"
             ></textarea>
           </div>
@@ -149,7 +163,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
             id="checkout-btn"
             class="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all cursor-pointer"
           >
-            Go to Checkout
+            {lang === 'en' ? "Go to Checkout" : "ไปหน้าชำระเงิน"}
           </button>
         </div>
       </div>
@@ -157,14 +171,19 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
   </div>
 
   {/* Client-side script to handle item deletion and checkout redirects */}
-  <script is:inline define:vars={{ token }}>
+  <script is:inline define:vars={{ token, lang }}>
     // Setup listeners for remove buttons
     document.querySelectorAll('.remove-item-btn').forEach(button => {
       button.addEventListener('click', async (e) => {
         const itemId = button.getAttribute('data-item-id');
         if (!itemId || !token) return;
 
-        if (confirm('Are you sure you want to remove this item from your cart?')) {
+        const isEn = lang === 'en';
+        const confirmMsg = isEn 
+          ? 'Are you sure you want to remove this item from your cart?' 
+          : 'คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้ออกจากตะกร้าของคุณ?';
+
+        if (confirm(confirmMsg)) {
           try {
             const res = await fetch(`http://localhost:3001/api/cart/item/${itemId}`, {
               method: 'DELETE',
@@ -174,14 +193,13 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
             });
 
             if (res.ok) {
-              // Reload page to reflect updated total and cart state
               window.location.reload();
             } else {
-              alert('Failed to remove item. Please try again.');
+              alert(isEn ? 'Failed to remove item. Please try again.' : 'ลบสินค้าล้มเหลว กรุณาลองใหม่อีกครั้ง');
             }
           } catch (err) {
             console.error(err);
-            alert('A network error occurred.');
+            alert(isEn ? 'A network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย');
           }
         }
       });
@@ -191,7 +209,6 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
       checkoutBtn.addEventListener('click', () => {
-        // Redirect to a simple checkout page
         window.location.href = '/checkout';
       });
     }

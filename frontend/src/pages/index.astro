@@ -2,6 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import { HeroBanner } from '../components/common/banners';
 import { Heart } from '../components/common/icons';
+import { useTranslations, translateProductName, translateProduct } from '../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
@@ -11,15 +15,28 @@ const resolveImage = (url: string) => {
   if (url.startsWith('http')) return url;
   return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
 };
+
+// Fallback Mock items for "view more" section expansion
+const mockMoreProducts = [
+  { id: 109, name: "generic set 1", price: "499.00", imageUrl: "/assets/images/set1.png" },
+  { id: 110, name: "generic set 2", price: "499.00", imageUrl: "/assets/images/set2.png" },
+  { id: 111, name: "generic set 3", price: "499.00", imageUrl: "/assets/images/set3.png" },
+  { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
+];
+const displayMoreProducts = mockMoreProducts.map(p => translateProduct(p, lang));
 ---
 
-<Layout title="ACHI | ASPIRE to be AUTHENTIC" description="Explore the ACHI 2026 Spring Collection featuring clean cuts, tailored outfits, and premium fabrics." showHeroHeader={true}>
+<Layout 
+  title={lang === 'en' ? "ACHI | ASPIRE to be AUTHENTIC" : "ACHI | แรงบันดาลใจสู่ตัวตนที่แท้จริง"} 
+  description={lang === 'en' ? "Explore the ACHI 2026 Spring Collection featuring clean cuts, tailored outfits, and premium fabrics." : "สำรวจคอลเลกชันฤดูใบไม้ผลิ ACHI 2026 ที่โดดเด่นด้วยดีไซน์เรียบหรู เสื้อผ้าตัดเย็บประณีต และเนื้อผ้าเกรดพรีเมียม"} 
+  showHeroHeader={true}
+>
   <HeroBanner
-    title="ASPIRE to be<br/>AUTHENTIC."
-    subtitle="2026 Spring Collection"
-    description="Minimalist High-Quality - That's the Way We Do Business. Explore apparel designed for daily functionality."
+    title={t('home.hero.title')}
+    subtitle={t('home.hero.subtitle')}
+    description={t('home.hero.description')}
     imageUrl={resolveImage('/assets/images/hero-authentic.png')}
-    ctaText="Shop now"
+    ctaText={t('home.hero.cta')}
     ctaLink="/products"
   />
 
@@ -32,7 +49,7 @@ const resolveImage = (url: string) => {
         <div class="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-all"></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
-            MEN
+            {t('home.men')}
           </h2>
         </div>
       </a>
@@ -43,7 +60,7 @@ const resolveImage = (url: string) => {
         <div class="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-all"></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <h2 class="font-serif text-white text-4xl sm:text-6xl tracking-[0.15em] font-light uppercase group-hover:tracking-[0.2em] transition-all duration-500">
-            WOMEN
+            {t('home.women')}
           </h2>
         </div>
       </a>
@@ -55,7 +72,7 @@ const resolveImage = (url: string) => {
     <div class="max-w-[1440px] mx-auto px-6">
       <div class="text-center mb-16">
         <h2 class="font-serif text-3xl sm:text-4xl tracking-wide font-semibold text-brand-charcoal uppercase">
-          New Arrivals
+          {t('home.new_arrivals')}
         </h2>
       </div>
 
@@ -68,17 +85,17 @@ const resolveImage = (url: string) => {
               class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
               data-favorite-btn
               data-id="105"
-              data-name="generic shirt"
+              data-name={translateProductName("generic shirt", lang)}
               data-price="567"
               data-image="/assets/images/polo-dark.png"
             >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/polo-dark.png')} alt="generic shirt" class="max-h-[85%] object-contain mix-blend-multiply" />
+              <img src={resolveImage('/assets/images/polo-dark.png')} alt={translateProductName("generic shirt", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
             </div>
             <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic shirt</h3>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic shirt", lang)}</h3>
               <span class="text-xs text-gray-500 mt-2 block">$567</span>
             </div>
             <a href="/products/105" class="absolute inset-0 z-10" aria-label="View Product"></a>
@@ -90,17 +107,17 @@ const resolveImage = (url: string) => {
               class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
               data-favorite-btn
               data-id="106"
-              data-name="generic watch"
+              data-name={translateProductName("generic watch", lang)}
               data-price="567"
               data-image="/assets/images/watch-dark.png"
             >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/watch-dark.png')} alt="generic watch" class="max-h-[85%] object-contain mix-blend-multiply" />
+              <img src={resolveImage('/assets/images/watch-dark.png')} alt={translateProductName("generic watch", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
             </div>
             <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic watch</h3>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic watch", lang)}</h3>
               <span class="text-xs text-gray-500 mt-2 block">$567</span>
             </div>
             <a href="/products/106" class="absolute inset-0 z-10" aria-label="View Product"></a>
@@ -120,17 +137,17 @@ const resolveImage = (url: string) => {
               class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
               data-favorite-btn
               data-id="107"
-              data-name="generic pants"
+              data-name={translateProductName("generic pants", lang)}
               data-price="569"
               data-image="/assets/images/pants-cream.png"
             >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/pants-cream.png')} alt="generic pants" class="max-h-[85%] object-contain mix-blend-multiply" />
+              <img src={resolveImage('/assets/images/pants-cream.png')} alt={translateProductName("generic pants", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
             </div>
             <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic pants</h3>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic pants", lang)}</h3>
               <span class="text-xs text-gray-500 mt-2 block">$569</span>
             </div>
             <a href="/products/107" class="absolute inset-0 z-10" aria-label="View Product"></a>
@@ -142,17 +159,17 @@ const resolveImage = (url: string) => {
               class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
               data-favorite-btn
               data-id="108"
-              data-name="generic shoes"
+              data-name={translateProductName("generic shoes", lang)}
               data-price="567"
               data-image="/assets/images/shoes-white.png"
             >
               <Heart />
             </button>
             <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/shoes-white.png')} alt="generic shoes" class="max-h-[85%] object-contain mix-blend-multiply" />
+              <img src={resolveImage('/assets/images/shoes-white.png')} alt={translateProductName("generic shoes", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
             </div>
             <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">generic shoes</h3>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic shoes", lang)}</h3>
               <span class="text-xs text-gray-500 mt-2 block">$567</span>
             </div>
             <a href="/products/108" class="absolute inset-0 z-10" aria-label="View Product"></a>
@@ -160,11 +177,62 @@ const resolveImage = (url: string) => {
         </div>
       </div>
 
-      <div class="text-center mt-16">
-        <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300">
-          view more
-        </a>
+    <!-- More Products Section (Hidden by default, expands vertically) -->
+    <div id="more-products-section" class="max-h-0 overflow-hidden opacity-0 transition-all duration-1000 ease-in-out">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pt-8">
+        {displayMoreProducts.map(product => (
+          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id={product.id}
+              data-name={product.name}
+              data-price={product.price}
+              data-image={product.imageUrl}
+            >
+              <Heart />
+            </button>
+            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
+              <img src={resolveImage(product.imageUrl)} alt={product.name} class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div>
+              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{product.name}</h3>
+              <span class="text-xs text-gray-500 mt-2 block">${Number(product.price).toLocaleString()}</span>
+            </div>
+            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Product"></a>
+          </div>
+        ))}
       </div>
     </div>
-  </section>
+
+    <div class="text-center mt-16">
+      <button 
+        id="view-more-btn" 
+        class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300 cursor-pointer"
+      >
+        {lang === 'en' ? "view more" : "ดูเพิ่มเติม"}
+      </button>
+    </div>
+  </div>
 </Layout>
+
+<script is:inline>
+  const viewMoreBtn = document.getElementById('view-more-btn');
+  const moreProductsSection = document.getElementById('more-products-section');
+
+  if (viewMoreBtn && moreProductsSection) {
+    viewMoreBtn.addEventListener('click', () => {
+      if (moreProductsSection.classList.contains('max-h-0')) {
+        // Expand
+        moreProductsSection.classList.remove('max-h-0', 'opacity-0');
+        moreProductsSection.classList.add('max-h-[1000px]', 'opacity-100');
+        viewMoreBtn.textContent = window.currentLang === 'en' ? 'view less' : 'แสดงน้อยลง';
+      } else {
+        // Collapse
+        moreProductsSection.classList.add('max-h-0', 'opacity-0');
+        moreProductsSection.classList.remove('max-h-[1000px]', 'opacity-100');
+        viewMoreBtn.textContent = window.currentLang === 'en' ? 'view more' : 'ดูเพิ่มเติม';
+      }
+    });
+  }
+</script>

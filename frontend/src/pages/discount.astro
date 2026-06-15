@@ -1,7 +1,10 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { useTranslations, translateProduct } from '../../lib/translations';
-import Pagination from '../../components/common/Pagination.astro';
+import Layout from '../layouts/Layout.astro';
+import { useTranslations, translateProduct } from '../lib/translations';
+import Pagination from '../components/common/Pagination.astro';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
@@ -19,9 +22,6 @@ const maxPrice = Astro.url.searchParams.get('maxPrice') || '';
 const sizes = Astro.url.searchParams.get('sizes') || '';
 const colors = Astro.url.searchParams.get('colors') || '';
 const searchQuery = Astro.url.searchParams.get('query') || '';
-
-const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
-const t = useTranslations(lang);
 
 const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 8;
@@ -48,14 +48,14 @@ try {
   console.error('[NestJS API Error] Fetching products failed. Falling back to mockup items.', err);
 }
 
-// Fallback Mock items matching Figma design screenshot exactly
+// Fallback Mock items
 const mockEditorialProducts = [
   {
     id: 101,
     name: "Generic T-shirt 1",
     price: "499.00",
     imageUrl: "/assets/images/tshirt-1.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"], // Yellow, Navy, Light Blue
+    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
     sizes: ["S", "M", "L"]
   },
   {
@@ -71,7 +71,7 @@ const mockEditorialProducts = [
     name: "Generic T-shirt 3",
     price: "499.00",
     imageUrl: "/assets/images/pants-cream.png",
-    colors: ["#FF0000", "#1A1A1A"], // Red, Black
+    colors: ["#FF0000", "#1A1A1A"],
     sizes: ["OS"]
   },
   {
@@ -79,7 +79,7 @@ const mockEditorialProducts = [
     name: "Generic T-shirt 4",
     price: "499.00",
     imageUrl: "/assets/images/shoes-white.png",
-    colors: ["#7A00FF", "#1A1A1A"], // Purple, Black
+    colors: ["#7A00FF", "#1A1A1A"],
     sizes: ["OS"]
   }
 ];
@@ -95,8 +95,6 @@ const mockStandardProducts = [
   { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
 ];
 
-
-// Determine if we should use mock data (if API is offline or returns nothing, and no filter is active)
 const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
 const useMocks = productsList.length === 0 && !isFiltered;
 const displayRawList = useMocks ? [...mockEditorialProducts, ...mockStandardProducts] : productsList;
@@ -106,6 +104,18 @@ const displayList = displayRawList.map(product => translateProduct(product, lang
 const startIndex = (page - 1) * limit;
 const endIndex = startIndex + limit;
 const pageList = useMocks ? displayList.slice(startIndex, endIndex) : displayList;
+
+// Helper to determine original price and discount percentage
+const getDiscountDetails = (product: any) => {
+  const priceNum = Number(product.price);
+  const percent = product.id % 2 === 0 ? 20 : 30; // 20% or 30% discount
+  const originalPrice = (priceNum / (1 - percent / 100)).toFixed(2);
+  return {
+    originalPrice,
+    salePrice: priceNum.toFixed(2),
+    percent
+  };
+};
 
 const getColorsArray = (colors: any) => {
   if (!colors) return [];
@@ -120,12 +130,12 @@ const getColorsArray = (colors: any) => {
 ---
 
 <Layout 
-  title={lang === 'en' ? "SHOP | ACHI Studio" : "ช้อป | ACHI Studio"} 
-  description={lang === 'en' ? "Explore ACHI's custom tailored outerwear, statement collections, and basic essentials." : "สำรวจคอลเลกชันเสื้อผ้าของ ACHI ทั้งแบบเอาต์เตอร์แวร์คลาสสิก เสื้อยืด และเสื้อเชิ้ตมินิมอล"} 
+  title={lang === 'en' ? "Discounts | ACHI Studio" : "สินค้าลดราคา | ACHI Studio"} 
+  description={lang === 'en' ? "Shop minimalist outerwear, statement collections, and basic essentials on discount." : "ช้อปเสื้อผ้าดีไซน์มินิมอลและเครื่องแต่งกายราคาพิเศษที่ลดราคาพิเศษจาก ACHI"} 
   showHeroHeader={true}
 >
   {/* Editorial Collection Hero Banner */}
-  <section class="w-full relative h-[70vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
+  <section class="w-full relative h-[45vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/collection-hero.png')}');`}></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
@@ -133,14 +143,14 @@ const getColorsArray = (colors: any) => {
       <div class="flex items-end justify-between w-full">
         <div>
           <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">
-            {searchQuery ? (lang === 'en' ? "Search" : "ผลการค้นหา") : "ACHI STUDIO"}
+            {lang === 'en' ? "OFFERS" : "ส่วนลดพิเศษ"}
           </span>
-          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">
-            {searchQuery ? `"${searchQuery}"` : (lang === 'en' ? "THE CATALOG" : "แค็ตตาล็อก")}
+          <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight uppercase leading-none">
+            {t('discount.hero.title')}
           </h1>
         </div>
-        <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
-          {searchQuery ? (lang === 'en' ? "Filtered Results" : "รายการคัดกรอง") : (lang === 'en' ? "ALL PRODUCTS" : "สินค้าทั้งหมด")}
+        <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light max-w-[400px]">
+          {t('discount.hero.subtitle')}
         </div>
       </div>
     </div>
@@ -214,7 +224,7 @@ const getColorsArray = (colors: any) => {
           <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('query'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
         </span>
       )}
-      <a href="/products" class="text-brand-gold font-medium underline underline-offset-4 ml-4">{lang === 'en' ? "Clear All" : "ล้างทั้งหมด"}</a>
+      <a href="/discount" class="text-brand-gold font-medium underline underline-offset-4 ml-4">{lang === 'en' ? "Clear All" : "ล้างทั้งหมด"}</a>
     </div>
   )}
 
@@ -266,58 +276,71 @@ const getColorsArray = (colors: any) => {
     });
   </script>
 
-  <div class="max-w-[1440px] mx-auto px-6 py-16">
-    {/* Clean 4-Column Grid Section of All Products */}
+  <div class="max-w-[1440px] mx-auto px-6 py-24">
+    {/* Clean 4-Column Grid Section of Sale Products */}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {pageList.map((product: any) => (
-        <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
-          {/* Heart Favorite Button */}
-          <button
-            class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
-            data-favorite-btn
-            data-id={product.id}
-            data-name={product.name}
-            data-price={product.price}
-            data-image={product.imageUrl}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
-          </button>
+      {pageList.map((product: any) => {
+        const details = getDiscountDetails(product);
+        return (
+          <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
+            {/* Discount Percentage Badge in top left corner */}
+            <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
+              -{details.percent}%
+            </span>
 
-          {/* Product Image Box */}
-          <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
-            {product.imageUrl ? (
-              <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            ) : (
-              <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
-                [Image: {product.name}]
-              </span>
-            )}
-          </div>
+            {/* Heart Favorite Button */}
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id={product.id}
+              data-name={product.name}
+              data-price={product.price}
+              data-image={product.imageUrl}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+            </button>
 
-          {/* Product Details */}
-          <div>
-            <div class="flex items-center justify-between gap-4">
-              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-                {product.name}
-              </h3>
-              {/* Color swatches */}
-              {getColorsArray(product.colors).length > 0 && (
-                <div class="flex gap-1.5 shrink-0">
-                  {getColorsArray(product.colors).map((color: string) => (
-                    <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
-                  ))}
-                </div>
+            {/* Product Image Box */}
+            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
+              {product.imageUrl ? (
+                <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              ) : (
+                <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
+                  [Image: {product.name}]
+                </span>
               )}
             </div>
-            <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+
+            {/* Product Details */}
+            <div>
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                  {product.name}
+                </h3>
+                {/* Color swatches */}
+                {getColorsArray(product.colors).length > 0 && (
+                  <div class="flex gap-1.5 shrink-0">
+                    {getColorsArray(product.colors).map((color: string) => (
+                      <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <!-- Pricing Row showing Sale and Original prices -->
+              <div class="flex items-center gap-3 mt-2">
+                <span class="text-xs text-red-600 font-bold">${Number(details.salePrice).toLocaleString()}</span>
+                <span class="text-[10px] text-gray-400 line-through font-light">${Number(details.originalPrice).toLocaleString()}</span>
+              </div>
+            </div>
+            
+            {/* Clickable Area Link */}
+            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
           </div>
-          
-          {/* Clickable Area Link */}
-          <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
-        </div>
-      ))}
+        );
+      })}
     </div>
 
     {/* Pagination Component */}

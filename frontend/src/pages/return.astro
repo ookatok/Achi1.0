@@ -1,24 +1,37 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="UNCONDITIONAL RETURN | ACHI Studio" description="14 days unconditional return policy details.">
+<Layout 
+  title={lang === 'en' ? "UNCONDITIONAL RETURN | ACHI Studio" : "การคืนสินค้าโดยไม่มีเงื่อนไข | ACHI Studio"} 
+  description={lang === 'en' ? "14 days unconditional return policy details." : "รายละเอียดนโยบายการคืนสินค้าโดยไม่มีเงื่อนไขภายใน 14 วัน"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">RETURNS</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">14-Days Unconditional Return Policy</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "RETURNS" : "การคืนสินค้า"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "14-Days Unconditional Return Policy" : "นโยบายการคืนสินค้าภายใน 14 วันโดยไม่มีเงื่อนไข"}
+      </p>
     </div>
 
     <div class="space-y-8 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        At ACHI, we stand by the quality of our clothing. If you are not completely satisfied with your purchase, you may return the items unconditionally within 14 days of delivery.
+        {lang === 'en'
+          ? "At ACHI, we stand by the quality of our clothing. If you are not completely satisfied with your purchase, you may return the items unconditionally within 14 days of delivery."
+          : "ที่ ACHI เราใส่ใจและเชื่อมั่นในคุณภาพของเสื้อผ้าเราอย่างสูงสุด หากคุณไม่พึงพอใจในสินค้า คุณสามารถส่งสินค้าคืนกลับมาหาเราได้โดยไม่มีเงื่อนไข ภายในระยะเวลา 14 วันนับจากวันที่ได้รับสินค้า"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Return Conditions</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Return Conditions" : "เงื่อนไขสำหรับการคืนสินค้า"}
+      </h3>
       <ul class="list-disc list-inside space-y-2 text-xs text-gray-500 pl-4">
-        <li>Items must be unworn, unwashed, and undamaged.</li>
-        <li>Original hangtags, packaging, and invoices must be returned together.</li>
-        <li>Return shipping must be booked via our official courier partners.</li>
+        <li>{lang === 'en' ? "Items must be unworn, unwashed, and undamaged." : "สินค้าต้องอยู่ในสภาพเดิม ไม่ผ่านการสวมใส่ ไม่ผ่านการซัก และไม่มีรอยเสียหาย"}</li>
+        <li>{lang === 'en' ? "Original hangtags, packaging, and invoices must be returned together." : "ต้องส่งคืนป้ายสินค้าบรรจุภัณฑ์ และใบเสร็จรับเงินต้นฉบับกลับมาพร้อมกัน"}</li>
+        <li>{lang === 'en' ? "Return shipping must be booked via our official courier partners." : "การส่งคืนสินค้าจะต้องดำเนินการผ่านผู้ให้บริการจัดส่งอย่างเป็นทางการที่กำหนดไว้เท่านั้น"}</li>
       </ul>
     </div>
   </div>

@@ -1,23 +1,31 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { useTranslations } from '../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 ---
 
-<Layout title="Favorites | ACHI Studio" description="View and manage your favorited items." showHeroHeader={false}>
+<Layout 
+  title={t('fav.title') + " | ACHI Studio"} 
+  description={lang === 'en' ? "View and manage your favorited items." : "ดูและจัดการรายการโปรดของคุณ"} 
+  showHeroHeader={false}
+>
   <!-- Title Banner -->
   <section class="border-b border-gray-100 bg-white">
     <div class="max-w-[1440px] mx-auto px-6 py-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div>
         <nav class="flex items-center gap-2 text-[11px] uppercase tracking-wider font-light text-gray-400 mb-3">
-          <a href="/" class="hover:text-brand-charcoal transition-colors">Home</a>
+          <a href="/" class="hover:text-brand-charcoal transition-colors">{t('fav.home')}</a>
           <span>/</span>
-          <span class="text-brand-charcoal">Favorites</span>
+          <span class="text-brand-charcoal">{t('fav.favorites')}</span>
         </nav>
         <h1 class="font-serif text-3xl sm:text-4xl font-semibold text-brand-charcoal uppercase tracking-wide">
-          My Favorites
+          {t('fav.title')}
         </h1>
       </div>
       <span id="favorites-count-label" class="text-xs uppercase tracking-widest text-gray-400 font-light shrink-0">
-        0 items saved
+        {lang === 'en' ? '0 items saved' : 'บันทึกไว้ 0 รายการ'}
       </span>
     </div>
   </section>
@@ -26,10 +34,10 @@ import Layout from '../layouts/Layout.astro';
   <div class="max-w-[1440px] mx-auto px-6 py-16 min-h-[50vh]">
     <!-- Empty State -->
     <div id="favorites-empty" class="hidden text-center py-24">
-      <h2 class="font-serif text-2xl font-semibold text-brand-charcoal mb-4 uppercase tracking-wider">YOUR WISHLIST IS EMPTY</h2>
-      <p class="font-sans text-xs tracking-widest text-gray-400 mb-8 uppercase font-light">Explore our collections to add items to your favorites.</p>
+      <h2 class="font-serif text-2xl font-semibold text-brand-charcoal mb-4 uppercase tracking-wider">{t('fav.empty_title')}</h2>
+      <p class="font-sans text-xs tracking-widest text-gray-400 mb-8 uppercase font-light">{t('fav.empty_desc')}</p>
       <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-10 py-3.5 text-xs uppercase tracking-widest font-medium transition-all duration-300 rounded-sm">
-        Shop now
+        {t('fav.shop_now')}
       </a>
     </div>
     
@@ -60,7 +68,12 @@ import Layout from '../layouts/Layout.astro';
 
         // Update Label
         if (countLabel) {
-          countLabel.textContent = `${favs.length} item${favs.length === 1 ? '' : 's'} saved`;
+          const isEn = document.documentElement.lang === 'en';
+          if (isEn) {
+            countLabel.textContent = `${favs.length} item${favs.length === 1 ? '' : 's'} saved`;
+          } else {
+            countLabel.textContent = `บันทึกไว้ ${favs.length} รายการ`;
+          }
         }
 
         if (favs.length === 0) {

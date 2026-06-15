@@ -1,0 +1,57 @@
+---
+interface Props {
+  totalPages?: number;
+}
+
+const { totalPages = 5 } = Astro.props;
+const currentPage = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+
+const getPageLink = (pageNum: number) => {
+  const params = new URLSearchParams(Astro.url.searchParams);
+  params.set('page', String(pageNum));
+  return `?${params.toString()}`;
+};
+
+const prevPage = currentPage > 1 ? currentPage - 1 : null;
+const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+---
+
+<div class="flex justify-center items-center gap-3 mt-16 font-sans text-xs tracking-widest uppercase pb-12">
+  <!-- Prev Link -->
+  {prevPage ? (
+    <a href={getPageLink(prevPage)} class="hover:bg-brand-charcoal hover:text-white transition-all px-4 py-2 border border-brand-charcoal rounded-sm text-brand-charcoal font-medium">
+      PREV
+    </a>
+  ) : (
+    <span class="opacity-30 cursor-not-allowed px-4 py-2 border border-gray-200 rounded-sm text-gray-400">
+      PREV
+    </span>
+  )}
+
+  <!-- Pages 1 to totalPages -->
+  <div class="flex items-center gap-1.5">
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+      const isCurrent = pageNum === currentPage;
+      return isCurrent ? (
+        <span class="px-3.5 py-2 border border-brand-charcoal bg-brand-charcoal text-white rounded-sm font-semibold">
+          {pageNum}
+        </span>
+      ) : (
+        <a href={getPageLink(pageNum)} class="px-3.5 py-2 border border-gray-200 hover:border-brand-charcoal rounded-sm text-brand-charcoal hover:text-brand-gold transition-all">
+          {pageNum}
+        </a>
+      );
+    })}
+  </div>
+
+  <!-- Next Link -->
+  {nextPage ? (
+    <a href={getPageLink(nextPage)} class="hover:bg-brand-charcoal hover:text-white transition-all px-4 py-2 border border-brand-charcoal rounded-sm text-brand-charcoal font-medium">
+      NEXT
+    </a>
+  ) : (
+    <span class="opacity-30 cursor-not-allowed px-4 py-2 border border-gray-200 rounded-sm text-gray-400">
+      NEXT
+    </span>
+  )}
+</div>

@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
+import { useTranslations, translateProduct } from '../../lib/translations';
 
 // Fetch user session for token authorization
 const session = await getSession(Astro.request);
@@ -44,7 +45,10 @@ const mockProduct = {
   ]
 };
 
-const displayProduct = product || mockProduct;
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const displayProduct = translateProduct(product || mockProduct, lang);
 
 const parseArray = (val: any) => {
   if (!val) return [];
@@ -62,11 +66,16 @@ const displaySizes = parseArray(displayProduct.sizes);
 const displayTags = parseArray(displayProduct.tags);
 ---
 
-<Layout title={`${displayProduct.name} | ACHI Studio`} description={displayProduct.description}>
+<Layout 
+  title={`${displayProduct.name} | ACHI Studio`} 
+  description={displayProduct.description}
+>
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     {/* Breadcrumbs */}
     <nav class="text-xs uppercase tracking-widest text-gray-400 font-light mb-8">
-      <a href="/products" class="hover:text-brand-charcoal transition-colors">Clothing</a>
+      <a href="/products" class="hover:text-brand-charcoal transition-colors">
+        {lang === 'en' ? "Clothing" : "เสื้อผ้า"}
+      </a>
       <span class="mx-2">/</span>
       <span class="text-brand-charcoal">{displayProduct.name}</span>
     </nav>
@@ -85,11 +94,11 @@ const displayTags = parseArray(displayProduct.tags);
 
         {/* Alternate Gray Image Placeholders from Figma design PDP */}
         <div class="w-full bg-gray-100 flex items-center justify-center aspect-[1/1] text-gray-400 font-light uppercase tracking-widest text-sm rounded-sm">
-          image
+          {lang === 'en' ? "image" : "รูปภาพ"}
         </div>
 
         <div class="w-full bg-gray-100 flex items-center justify-center aspect-[1/1] text-gray-400 font-light uppercase tracking-widest text-sm rounded-sm">
-          image
+          {lang === 'en' ? "image" : "รูปภาพ"}
         </div>
       </div>
 
@@ -105,7 +114,10 @@ const displayTags = parseArray(displayProduct.tags);
           </div>
           
           <p class="text-xs text-gray-500 font-light leading-relaxed mb-4">
-            incl. tax. Shipping costs showing post coding: Free returns until 14 days.
+            {lang === 'en' 
+              ? "incl. tax. Shipping costs showing post coding: Free returns until 14 days."
+              : "รวมภาษีมูลค่าเพิ่มแล้ว | ค่าจัดส่งคำนวณขณะชำระเงิน | คืนสินค้าฟรีภายใน 14 วัน"
+            }
           </p>
         </div>
 
@@ -113,7 +125,7 @@ const displayTags = parseArray(displayProduct.tags);
         {displayColors && displayColors.length > 0 && (
           <div>
             <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
-              Product colors
+              {lang === 'en' ? "Product colors" : "สีของผลิตภัณฑ์"}
             </h4>
             <div class="flex gap-3">
               {displayColors.map((color: string, index: number) => (
@@ -133,7 +145,7 @@ const displayTags = parseArray(displayProduct.tags);
             <div class="flex justify-between items-center mb-3">
               {displaySizes && displaySizes.length > 0 && (
                 <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400">
-                  Product size
+                  {lang === 'en' ? "Product size" : "ขนาดไซส์สินค้า"}
                 </h4>
               )}
             </div>
@@ -160,7 +172,7 @@ const displayTags = parseArray(displayProduct.tags);
                 <div class="flex gap-2">
                   {displayTags.map((tag: any) => (
                     <span class="text-[9px] uppercase tracking-widest text-stone-500 border border-stone-200 px-2.5 py-0.5 rounded-full bg-stone-50/50 hover:bg-stone-100 hover:text-brand-charcoal hover:border-brand-charcoal transition-all font-sans font-medium cursor-default">
-                      {typeof tag === 'object' ? tag.name : tag}
+                      {typeof tag === 'object' ? (lang === 'en' ? tag.name : (tag.name === 'summer' ? 'ฤดูร้อน' : tag.name === 'basics' ? 'เบสิก' : tag.name === 'new' ? 'ใหม่' : tag.name)) : tag}
                     </span>
                   ))}
                 </div>
@@ -176,7 +188,7 @@ const displayTags = parseArray(displayProduct.tags);
               id="add-to-cart-btn"
               class="flex-grow bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 cursor-pointer"
             >
-              ADD TO CART
+              {lang === 'en' ? "ADD TO CART" : "เพิ่มลงในตะกร้า"}
             </button>
             <button
               id="favorite-detail-btn"
@@ -200,11 +212,14 @@ const displayTags = parseArray(displayProduct.tags);
           <div class="py-4">
             <details class="group cursor-pointer">
               <summary class="flex justify-between items-center focus:outline-none select-none">
-                <span>Check in-store Availability</span>
+                <span>{lang === 'en' ? "Check in-store Availability" : "ตรวจสอบสินค้าคงเหลือหน้าร้าน"}</span>
                 <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-                Available at ACHI Flagship Studio and selected branches in Bangkok.
+                {lang === 'en'
+                  ? "Available at ACHI Flagship Studio and selected branches in Bangkok."
+                  : "มีจำหน่ายที่ ACHI แฟลกชิป สตูดิโอ และสาขาชั้นนำอื่นๆ ที่กำหนดในกรุงเทพมหานคร"
+                }
               </div>
             </details>
           </div>
@@ -212,11 +227,14 @@ const displayTags = parseArray(displayProduct.tags);
           <div class="py-4">
             <details class="group cursor-pointer">
               <summary class="flex justify-between items-center focus:outline-none select-none">
-                <span>Fit Details</span>
+                <span>{lang === 'en' ? "Fit Details" : "รายละเอียดรูปทรงเสื้อผ้า"}</span>
                 <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-                Relaxed fit contours, designed for everyday minimal chic style. Model is wearing size L.
+                {lang === 'en'
+                  ? "Relaxed fit contours, designed for everyday minimal chic style. Model is wearing size L."
+                  : "รูปทรงทรงหลวมสบาย (Relaxed Fit) ออกแบบมาเพื่อสไตล์มินิมอลเก๋ไก๋ในทุกๆ วัน นายแบบ/นางแบบสวมใส่ขนาดไซส์ L"
+                }
               </div>
             </details>
           </div>
@@ -224,11 +242,14 @@ const displayTags = parseArray(displayProduct.tags);
           <div class="py-4">
             <details class="group cursor-pointer">
               <summary class="flex justify-between items-center focus:outline-none select-none">
-                <span>Materials</span>
+                <span>{lang === 'en' ? "Materials" : "วัสดุและส่วนประกอบ"}</span>
                 <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-                100% premium organic cotton. Clean double-needle stitched seams.
+                {lang === 'en'
+                  ? "100% premium organic cotton. Clean double-needle stitched seams."
+                  : "ผลิตจากฝ้ายออร์แกนิกเกรดพรีเมียม 100% แนวตะเข็บเย็บเข็มคู่ประณีตและเรียบร้อย"
+                }
               </div>
             </details>
           </div>
@@ -236,11 +257,14 @@ const displayTags = parseArray(displayProduct.tags);
           <div class="py-4">
             <details class="group cursor-pointer">
               <summary class="flex justify-between items-center focus:outline-none select-none">
-                <span>Shipping and returns</span>
+                <span>{lang === 'en' ? "Shipping and returns" : "การจัดส่งและการคืนสินค้า"}</span>
                 <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-                Free standard delivery. Easy and unconditional returns up to 14 days.
+                {lang === 'en'
+                  ? "Free standard delivery. Easy and unconditional returns up to 14 days."
+                  : "จัดส่งมาตรฐานฟรี คืนสินค้าได้ง่ายและไม่มีเงื่อนไขภายในระยะเวลา 14 วัน"
+                }
               </div>
             </details>
           </div>
@@ -249,9 +273,10 @@ const displayTags = parseArray(displayProduct.tags);
     </div>
   </div>
 
-  <script is:inline define:vars={{ token, productId: displayProduct.id }}>
+  <script is:inline define:vars={{ token, productId: displayProduct.id, lang }}>
     let selectedColor = '';
     let selectedSize = '';
+    const isEn = lang === 'en';
 
     // Handle option selectors highlights
     const colorButtons = document.querySelectorAll('.color-option-btn');
@@ -291,7 +316,7 @@ const displayTags = parseArray(displayProduct.tags);
         }
 
         addToCartBtn.disabled = true;
-        addToCartBtn.textContent = 'ADDING TO CART...';
+        addToCartBtn.textContent = isEn ? 'ADDING TO CART...' : 'กำลังเพิ่มลงในตะกร้า...';
 
         try {
           const res = await fetch('http://localhost:3001/api/cart/add', {
@@ -312,21 +337,21 @@ const displayTags = parseArray(displayProduct.tags);
 
           if (res.ok) {
             if (cartMsg) {
-              cartMsg.textContent = 'Item added to your cart successfully!';
+              cartMsg.textContent = isEn ? 'Item added to your cart successfully!' : 'เพิ่มสินค้าลงในตะกร้าของคุณเรียบร้อยแล้ว!';
               cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-green-50 border-l-2 border-green-500 text-green-600 block';
             }
           } else {
-            throw new Error(data.message || 'Could not add item');
+            throw new Error(data.message || (isEn ? 'Could not add item' : 'ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้'));
           }
         } catch (err) {
           console.error(err);
           if (cartMsg) {
-            cartMsg.textContent = err.message || 'An error occurred.';
+            cartMsg.textContent = err.message || (isEn ? 'An error occurred.' : 'เกิดข้อผิดพลาดขึ้น');
             cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-red-50 border-l-2 border-red-500 text-red-600 block';
           }
         } finally {
           addToCartBtn.disabled = false;
-          addToCartBtn.textContent = 'ADD TO CART';
+          addToCartBtn.textContent = isEn ? 'ADD TO CART' : 'เพิ่มลงในตะกร้า';
         }
       });
     }

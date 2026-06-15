@@ -1,11 +1,19 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { useTranslations, translateProduct } from '../../lib/translations';
+import Pagination from '../../components/common/Pagination.astro';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const limit = 8;
 
 // Fetch user session for token authorization if needed
 let productsList = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?collection=trending`);
+  const res = await fetch(`${BACKEND_URL}/api/products?collection=trending&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
@@ -21,10 +29,17 @@ const mockTrending = [
   { id: 604, name: "Sleek Cotton Twill Bucket Hat", price: "75.00", imageUrl: "/assets/images/cap-cat-men.png" },
 ];
 
-const displayProducts = productsList.length > 0 ? productsList : mockTrending;
+const useMocks = productsList.length === 0;
+const displayRawList = useMocks ? mockTrending : productsList;
+const displayProducts = displayRawList.map(p => translateProduct(p, lang));
+
+// Paginate in-memory if we are using mocks
+const startIndex = (page - 1) * limit;
+const endIndex = startIndex + limit;
+const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
 ---
 
-<Layout title="Trending Now | ACHI Studio" description="Explore new trending cuts, fits, and daily wear highlights." showHeroHeader={true}>
+<Layout title={lang === 'en' ? "Trending Now | ACHI Studio" : "เทรนด์ตอนนี้ | ACHI Studio"} description={lang === 'en' ? "Explore new trending cuts, fits, and daily wear highlights." : "ร่วมสำรวจสินค้าดีไซน์ยอดนิยม ทรงกางเกงสุดฮิต และสินค้าเด่นสำหรับใส่ทุกวัน"} showHeroHeader={true}>
   <!-- Trending Hero Banner -->
   <section class="w-full relative h-[60vh] bg-[#352F38] flex items-center justify-center text-white overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/editorial-side.png?v=2');"></div>
@@ -33,11 +48,11 @@ const displayProducts = productsList.length > 0 ? productsList : mockTrending;
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
       <div class="flex items-end justify-between w-full">
         <div>
-          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">Trending Now</span>
-          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">New Highlights</h1>
+          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">{lang === 'en' ? "Trending Now" : "เทรนด์ตอนนี้"}</span>
+          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">{lang === 'en' ? "New Highlights" : "ไฮไลต์ใหม่ล่าสุด"}</h1>
         </div>
         <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
-          Active Design Fits
+          {lang === 'en' ? "Active Design Fits" : "ทรงดีไซน์ที่ตอบโจทย์ทุกการเคลื่อนไหว"}
         </div>
       </div>
     </div>
@@ -47,20 +62,20 @@ const displayProducts = productsList.length > 0 ? productsList : mockTrending;
   <section class="border-b border-gray-100 bg-white">
     <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] uppercase tracking-wider font-light text-gray-400">
       <nav class="flex items-center gap-2">
-        <a href="/" class="hover:text-brand-charcoal transition-colors">Home</a>
+        <a href="/" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Home" : "หน้าแรก"}</a>
         <span>/</span>
-        <a href="/products" class="hover:text-brand-charcoal transition-colors">Shop</a>
+        <a href="/products" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Shop" : "ช้อป"}</a>
         <span>/</span>
-        <span class="text-brand-charcoal">Trending Now</span>
+        <span class="text-brand-charcoal">{lang === 'en' ? "Trending Now" : "เทรนด์ตอนนี้"}</span>
       </nav>
-      <span>Showing {displayProducts.length} items</span>
+      <span>{lang === 'en' ? `Showing ${displayProducts.length} items` : `แสดงทั้งหมด ${displayProducts.length} รายการ`}</span>
     </div>
   </section>
 
   <!-- Product Grid -->
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {displayProducts.map((product: any) => (
+      {paginatedList.map((product: any) => (
         <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
           <!-- Heart Favorite Button -->
           <button
@@ -99,6 +114,9 @@ const displayProducts = productsList.length > 0 ? productsList : mockTrending;
           <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
         </div>
       ))}
-    </div>
+        </div>
+
+    <!-- Pagination Component -->
+    <Pagination totalPages={5} />
   </div>
 </Layout>

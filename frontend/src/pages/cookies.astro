@@ -1,22 +1,38 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="COOKIE SETTINGS | ACHI Studio" description="Manage cookie preferences for standard shopping carts and user sessions.">
+<Layout 
+  title={lang === 'en' ? "COOKIE SETTINGS | ACHI Studio" : "การตั้งค่าคุกกี้ | ACHI Studio"} 
+  description={lang === 'en' ? "Manage cookie preferences for standard shopping carts and user sessions." : "จัดการการตั้งค่าคุกกี้สำหรับตะกร้าสินค้าและเซสชันการใช้งานระบบ"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">COOKIES</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Cookie Preferences & Settings</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "COOKIES" : "คุกกี้"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Cookie Preferences & Settings" : "การตั้งค่าและความพึงใจเกี่ยวกับคุกกี้"}
+      </p>
     </div>
 
     <div class="space-y-6 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        We use essential cookies to maintain user authentication sessions (Auth.js) and shopping cart records.
+        {lang === 'en'
+          ? "We use essential cookies to maintain user authentication sessions (Auth.js) and shopping cart records."
+          : "เราใช้งานคุกกี้ที่มีความจำเป็นเพื่อรักษาเซสชันการเข้าสู่ระบบของผู้ใช้งาน (Auth.js) และการบันทึกข้อมูลสินค้าในตะกร้าช็อปปิ้งของคุณ"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Essential Cookies</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Essential Cookies" : "คุกกี้ที่มีความจำเป็นยิ่งยวด"}
+      </h3>
       <p>
-        These cookies are strictly necessary to allow pages (like the Checkout page or Cart page) to function. They cannot be disabled.
+        {lang === 'en'
+          ? "These cookies are strictly necessary to allow pages (like the Checkout page or Cart page) to function. They cannot be disabled."
+          : "คุกกี้ประเภทนี้มีความจำเป็นอย่างยิ่งเพื่อให้เพจต่างๆ (เช่น หน้าเช็คเอาต์ชำระเงิน หรือ หน้าตะกร้าสินค้า) สามารถทำงานได้อย่างถูกต้องสมบูรณ์ โดยไม่สามารถปิดการใช้งานคุกกี้ประเภทนี้ได้"
+        }
       </p>
     </div>
   </div>

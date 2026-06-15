@@ -1,5 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { useTranslations, translateProduct } from '../../lib/translations';
+import Pagination from '../../components/common/Pagination.astro';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const limit = 8;
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
@@ -13,7 +21,7 @@ const resolveImage = (url: string) => {
 let productsList = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=women`);
+  const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=women&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
@@ -29,10 +37,17 @@ const mockProducts = [
   { id: 104, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" }
 ];
 
-const displayProducts = productsList.length > 0 ? productsList : mockProducts;
+const useMocks = productsList.length === 0;
+const displayRawList = useMocks ? mockProducts : productsList;
+const displayProducts = displayRawList.map(p => translateProduct(p, lang));
+
+// Paginate in-memory if we are using mocks
+const startIndex = (page - 1) * limit;
+const endIndex = startIndex + limit;
+const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
 ---
 
-<Layout title="Women's Fashion | ACHI Studio" description="Discover the Summer Collection. Shop ACHI's latest women's clothing, bags, and accessories." showHeroHeader={true}>
+<Layout title={lang === 'en' ? "Women's Fashion | ACHI Studio" : "แฟชั่นผู้หญิง | ACHI Studio"} description={lang === 'en' ? "Discover the Summer Collection. Shop ACHI's latest women's clothing, bags, and accessories." : "ค้นพบคอลเลกชันฤดูร้อน ช้อปเสื้อผ้าผู้หญิง กระเป๋า และเครื่องประดับล่าสุดจาก ACHI"} showHeroHeader={true}>
   <!-- Women's Hero Section -->
   <section class="w-full relative h-[100vh] bg-[#3B3835] flex items-center text-white overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center opacity-65" style={`background-image: url('${resolveImage('/assets/images/women-hero.png')}');`}></div>
@@ -40,15 +55,15 @@ const displayProducts = productsList.length > 0 ? productsList : mockProducts;
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 pt-24 flex flex-col justify-center items-start h-full">
       <h1 class="font-serif text-5xl sm:text-8xl tracking-tight leading-none mb-4 uppercase">
-        Women's<br/>
-        <span class="text-brand-gold italic font-normal">Fashion</span>
+        {lang === 'en' ? "Women's" : "แฟชั่น"}<br/>
+        <span class="text-brand-gold italic font-normal">{lang === 'en' ? "Fashion" : "ผู้หญิง"}</span>
       </h1>
       <p class="font-sans text-xs sm:text-sm tracking-widest font-light mb-10 text-gray-300 uppercase">
-        Discover the Summer Collection.
+        {lang === 'en' ? "Discover the Summer Collection." : "ค้นพบคอลเลกชันฤดูร้อน"}
       </p>
       
       <a href="#women-catalog" class="border border-white hover:bg-white hover:text-brand-charcoal text-white px-10 py-3.5 text-xs uppercase tracking-widest font-medium transition-all duration-300 rounded-sm">
-        Shop now
+        {lang === 'en' ? "Shop now" : "ช้อปเลย"}
       </a>
     </div>
   </section>
@@ -61,7 +76,7 @@ const displayProducts = productsList.length > 0 ? productsList : mockProducts;
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/bag-cat-women.png')}');`}></div>
         <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
-          <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">BAGS</span>
+          <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">{lang === 'en' ? "BAGS" : "กระเป๋า"}</span>
         </div>
       </a>
 
@@ -70,7 +85,7 @@ const displayProducts = productsList.length > 0 ? productsList : mockProducts;
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/cap-cat-women.png')}');`}></div>
         <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
-          <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">CAPS</span>
+          <span class="font-serif text-xl font-medium tracking-widest underline decoration-brand-gold decoration-2 underline-offset-4 font-bold">{lang === 'en' ? "CAPS" : "หมวก"}</span>
         </div>
       </a>
     </div>
@@ -79,12 +94,12 @@ const displayProducts = productsList.length > 0 ? productsList : mockProducts;
     <div class="space-y-12">
       <div class="text-center">
         <h2 class="font-serif text-3xl tracking-wide font-semibold text-brand-charcoal uppercase">
-          Women's Collection
+          {lang === 'en' ? "Women's Collection" : "คอลเลกชันสำหรับผู้หญิง"}
         </h2>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-        {displayProducts.map((product: any) => (
+        {paginatedList.map((product: any) => (
           <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
             {/* Heart Button */}
             <button
@@ -108,6 +123,9 @@ const displayProducts = productsList.length > 0 ? productsList : mockProducts;
           </div>
         ))}
       </div>
+
+      <!-- Pagination Component -->
+      <Pagination totalPages={5} />
     </div>
   </section>
 </Layout>

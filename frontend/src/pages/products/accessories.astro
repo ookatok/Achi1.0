@@ -2,12 +2,20 @@
 import Layout from '../../layouts/Layout.astro';
 import { CollectionBanner } from '../../components/common/banners';
 import { Heart } from '../../components/common/icons';
+import { useTranslations, translateProduct } from '../../lib/translations';
+import Pagination from '../../components/common/Pagination.astro';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const limit = 8;
 
 // Fetch user session for token authorization if needed
 let productsList = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=accessories`);
+  const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=accessories&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
@@ -23,14 +31,21 @@ const mockAccessories = [
   { id: 304, name: "Sterling Silver Chain Necklace", price: "150.00", label: "Necklace", imageUrl: "/assets/images/products/necklace.png" },
 ];
 
-const displayProducts = productsList.length > 0 ? productsList : mockAccessories;
+const useMocks = productsList.length === 0;
+const displayRawList = useMocks ? mockAccessories : productsList;
+const displayProducts = displayRawList.map(p => translateProduct(p, lang));
+
+// Paginate in-memory if we are using mocks
+const startIndex = (page - 1) * limit;
+const endIndex = startIndex + limit;
+const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
 ---
 
-<Layout title="Accessories | ACHI Studio" description="Complete your look with ACHI's curated selection of minimalist accessories." showHeroHeader={true}>
+<Layout title={lang === 'en' ? "Accessories | ACHI Studio" : "เครื่องประดับ | ACHI Studio"} description={lang === 'en' ? "Complete your look with ACHI's curated selection of minimalist accessories." : "เติมเต็มลุคของคุณด้วยเครื่องประดับมินิมอลที่คัดสรรมาอย่างดีจาก ACHI"} showHeroHeader={true}>
   <CollectionBanner
-    title="Accessories"
-    subtitle="Curated Essentials"
-    rightText="Complete Your Look"
+    title={lang === 'en' ? "Accessories" : "เครื่องประดับ"}
+    subtitle={lang === 'en' ? "Curated Essentials" : "ของใช้จำเป็นที่คัดสรรมาอย่างดี"}
+    rightText={lang === 'en' ? "Complete Your Look" : "เติมเต็มลุคของคุณ"}
     imageUrl="/assets/images/banners/accessories.png?v=2"
     bgColor="#2E312F"
   />
@@ -39,20 +54,20 @@ const displayProducts = productsList.length > 0 ? productsList : mockAccessories
   <section class="border-b border-gray-100 bg-white">
     <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] uppercase tracking-wider font-light text-gray-400">
       <nav class="flex items-center gap-2">
-        <a href="/" class="hover:text-brand-charcoal transition-colors">Home</a>
+        <a href="/" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Home" : "หน้าแรก"}</a>
         <span>/</span>
-        <a href="/products" class="hover:text-brand-charcoal transition-colors">Shop</a>
+        <a href="/products" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Shop" : "ช้อป"}</a>
         <span>/</span>
-        <span class="text-brand-charcoal">Accessories</span>
+        <span class="text-brand-charcoal">{lang === 'en' ? "Accessories" : "เครื่องประดับ"}</span>
       </nav>
-      <span>Showing {displayProducts.length} items</span>
+      <span>{lang === 'en' ? `Showing ${displayProducts.length} items` : `แสดงทั้งหมด ${displayProducts.length} รายการ`}</span>
     </div>
   </section>
 
   <!-- Product Grid -->
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {displayProducts.map((product: any) => (
+      {paginatedList.map((product: any) => (
         <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
           <!-- Heart Favorite Button -->
           <button
@@ -89,6 +104,9 @@ const displayProducts = productsList.length > 0 ? productsList : mockAccessories
           <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
         </div>
       ))}
-    </div>
+        </div>
+
+    <!-- Pagination Component -->
+    <Pagination totalPages={5} />
   </div>
 </Layout>

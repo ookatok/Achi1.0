@@ -1,13 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
+import { useTranslations, translateProductName } from '../lib/translations';
 
 // Fetch user session for token authorization
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 if (!token) {
-  return Astro.redirect('/auth/signin?callbackUrl=/checkout');
+  return Astro.redirect(`/auth/signin?callbackUrl=${encodeURIComponent('/checkout')}`);
 }
 
 let cartData = { id: 0, items: [] as any[] };
@@ -23,22 +26,29 @@ try {
   if (res.ok) {
     cartData = await res.json();
   } else {
-    errorMsg = 'Could not load cart details. Please try again.';
+    errorMsg = lang === 'en' ? 'Could not load cart details. Please try again.' : 'ไม่สามารถโหลดข้อมูลตะกร้าสินค้าได้ กรุณาลองใหม่อีกครั้ง';
   }
 } catch (err) {
   console.error(err);
-  errorMsg = 'Network error: Backend server is not running.';
+  errorMsg = lang === 'en' ? 'Network error: Backend server is not running.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย: เซิร์ฟเวอร์แบ็คเอนด์ไม่ได้ทำงานอยู่';
 }
 
 const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number(item.productPrice) * item.quantity), 0);
 const cartTotal = subtotal;
 ---
 
-<Layout title="Checkout | ACHI Studio" description="Specify shipping address and place your order.">
+<Layout 
+  title={lang === 'en' ? "Checkout | ACHI Studio" : "ชำระเงิน | ACHI Studio"} 
+  description={lang === 'en' ? "Specify shipping address and place your order." : "กรอกข้อมูลที่อยู่จัดส่งสินค้าและทำการสั่งซื้อเสื้อผ้าของคุณ"}
+>
   <div class="max-w-[1440px] mx-auto px-6 py-16">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Checkout</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Enter delivery address to place your order</p>
+      <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">
+        {lang === 'en' ? "Checkout" : "ชำระเงิน"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Enter delivery address to place your order" : "ระบุข้อมูลที่อยู่จัดส่งเพื่อเสร็จสิ้นการสั่งซื้อสินค้า"}
+      </p>
     </div>
 
     {errorMsg ? (
@@ -47,29 +57,31 @@ const cartTotal = subtotal;
       </div>
     ) : cartData.items.length === 0 ? (
       <div class="text-center py-20 border border-dashed border-gray-200 max-w-xl mx-auto rounded-sm">
-        <p class="text-gray-500 mb-6 font-light">Your shopping cart is empty. Cannot checkout.</p>
+        <p class="text-gray-500 mb-6 font-light">
+          {lang === 'en' ? "Your shopping cart is empty. Cannot checkout." : "ตะกร้าสินค้าของคุณว่างเปล่า ไม่สามารถดำเนินรายการชำระเงินได้"}
+        </p>
         <a href="/products" class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-3 rounded-sm text-xs uppercase tracking-wider font-semibold transition-all">
-          Go Shop
+          {lang === 'en' ? "Go Shop" : "ไปช้อปเลย"}
         </a>
       </div>
     ) : (
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-[1100px] mx-auto">
-        <!-- Left Side: Shipping Address Form -->
+        {/* Left Side: Shipping Address Form */}
         <div class="lg:col-span-2 space-y-8 bg-white border border-gray-200 p-8 rounded-sm">
           <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal mb-6 pb-2 border-b border-gray-100">
-            Shipping Information
+            {lang === 'en' ? "Shipping Information" : "ข้อมูลจัดส่งพัสดุ"}
           </h2>
 
           <div class="space-y-6">
             <div>
               <label htmlFor="address" class="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">
-                Delivery Address
+                {lang === 'en' ? "Delivery Address" : "ที่อยู่จัดส่งสินค้า"}
               </label>
               <textarea
                 id="address"
                 rows="4"
                 required
-                placeholder="Street address, City, Province, ZIP code"
+                placeholder={lang === 'en' ? "Street address, City, Province, ZIP code" : "ระบุบ้านเลขที่, ถนน, ตำบล/แขวง, อำเภอ/เขต, จังหวัด, รหัสไปรษณีย์"}
                 class="w-full p-4 border border-gray-200 rounded-sm focus:border-brand-gold outline-none text-xs font-light resize-none bg-gray-50 focus:bg-white transition-all"
               ></textarea>
             </div>
@@ -78,24 +90,24 @@ const cartTotal = subtotal;
             </div>
             
             <div id="checkout-success" class="hidden p-4 bg-green-50 border-l-2 border-green-500 text-green-600 text-xs font-medium rounded-sm">
-              Order placed successfully! Redirecting...
+              {lang === 'en' ? "Order placed successfully! Redirecting..." : "สั่งซื้อสินค้าเสร็จสิ้นแล้ว! กำลังนำทางไปต่อ..."}
             </div>
           </div>
         </div>
 
-        <!-- Right Side: Order Summary -->
+        {/* Right Side: Order Summary */}
         <div class="space-y-6">
           <div class="border border-gray-200 p-6 rounded-sm bg-white">
             <h2 class="font-serif text-sm uppercase tracking-widest text-center border-b border-gray-100 pb-4 mb-6 font-medium text-brand-charcoal">
-              Order Items
+              {lang === 'en' ? "Order Items" : "รายการสั่งซื้อ"}
             </h2>
             
             <div class="divide-y divide-gray-100 max-h-[250px] overflow-y-auto pr-2 mb-6">
               {cartData.items.map((item: any) => (
                 <div class="py-3 flex justify-between text-xs tracking-wider font-light text-gray-500 uppercase">
                   <div>
-                    <span class="text-brand-charcoal font-medium">{item.productName}</span>
-                    <span class="block text-[10px] text-gray-400">Qty: {item.quantity} | {item.size || ''}</span>
+                    <span class="text-brand-charcoal font-medium">{translateProductName(item.productName, lang)}</span>
+                    <span class="block text-[10px] text-gray-400">{lang === 'en' ? 'Qty' : 'จำนวน'}: {item.quantity} | {item.size || ''}</span>
                   </div>
                   <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
                 </div>
@@ -104,12 +116,12 @@ const cartTotal = subtotal;
 
             <div class="border-t border-gray-100 pt-4 space-y-4 text-xs tracking-widest font-light text-gray-500 uppercase">
               <div class="flex justify-between">
-                <span>Subtotal</span>
+                <span>{lang === 'en' ? "Subtotal" : "ยอดรวมย่อย"}</span>
                 <span class="text-brand-charcoal font-medium">${subtotal}</span>
               </div>
               <hr class="border-gray-100" />
               <div class="flex justify-between text-sm font-medium text-brand-charcoal">
-                <span>Total Due</span>
+                <span>{lang === 'en' ? "Total Due" : "ยอดเงินรวมทั้งสิ้น"}</span>
                 <span>${cartTotal}</span>
               </div>
             </div>
@@ -119,18 +131,19 @@ const cartTotal = subtotal;
             id="place-order-btn"
             class="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all cursor-pointer"
           >
-            Place Order
+            {lang === 'en' ? "Place Order" : "ยืนยันการสั่งซื้อ"}
           </button>
         </div>
       </div>
     )}
   </div>
 
-  <script is:inline define:vars={{ token }}>
+  <script is:inline define:vars={{ token, lang }}>
     const placeOrderBtn = document.getElementById('place-order-btn');
     const addressInput = document.getElementById('address');
     const errorDiv = document.getElementById('checkout-error');
     const successDiv = document.getElementById('checkout-success');
+    const isEn = lang === 'en';
 
     if (placeOrderBtn) {
       placeOrderBtn.addEventListener('click', async () => {
@@ -138,7 +151,9 @@ const cartTotal = subtotal;
 
         if (!shippingAddress || shippingAddress.length < 5) {
           if (errorDiv) {
-            errorDiv.textContent = 'Please enter a valid shipping address (at least 5 characters).';
+            errorDiv.textContent = isEn 
+              ? 'Please enter a valid shipping address (at least 5 characters).' 
+              : 'กรุณาระบุที่อยู่จัดส่งพัสดุที่ถูกต้อง (อย่างน้อย 5 ตัวอักษร)';
             errorDiv.classList.remove('hidden');
           }
           return;
@@ -146,7 +161,7 @@ const cartTotal = subtotal;
 
         if (errorDiv) errorDiv.classList.add('hidden');
         placeOrderBtn.disabled = true;
-        placeOrderBtn.textContent = 'Placing Order...';
+        placeOrderBtn.textContent = isEn ? 'Placing Order...' : 'กำลังดำเนินการสั่งซื้อ...';
 
         try {
           const res = await fetch('http://localhost:3001/api/orders/checkout', {
@@ -166,16 +181,16 @@ const cartTotal = subtotal;
               window.location.href = `/order-success?orderId=${data.orderId}`;
             }, 1500);
           } else {
-            throw new Error(data.message || 'Checkout failed');
+            throw new Error(data.message || (isEn ? 'Checkout failed' : 'การสั่งซื้อล้มเหลว'));
           }
         } catch (err) {
           console.error(err);
           if (errorDiv) {
-            errorDiv.textContent = err.message || 'Checkout failed. Please try again.';
+            errorDiv.textContent = err.message || (isEn ? 'Checkout failed. Please try again.' : 'ชำระเงินล้มเหลว กรุณาลองใหม่อีกครั้ง');
             errorDiv.classList.remove('hidden');
           }
           placeOrderBtn.disabled = false;
-          placeOrderBtn.textContent = 'Place Order';
+          placeOrderBtn.textContent = isEn ? 'Place Order' : 'ยืนยันการสั่งซื้อ';
         }
       });
     }

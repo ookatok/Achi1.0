@@ -3,7 +3,7 @@ import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { products } from '../../db/schema/product.schema';
 import { categories } from '../../db/schema/category.schema';
 import { tags, productTags } from '../../db/schema/tag.schema';
-import { eq, and, gte, lte, sql, like, or } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, like, or, desc } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { CreateProductDto, GetProductsQueryDto } from './dto/product.dto';
 
@@ -156,6 +156,7 @@ export class ProductRepository {
           INNER JOIN tags t ON pt.tag_id = t.id
           WHERE pt.product_id = products.id
         )`.as('tags'),
+        categoryId: products.categoryId,
         categoryName: categories.name,
         categorySlug: categories.slug,
       })
@@ -168,6 +169,7 @@ export class ProductRepository {
 
     const results = await baseQuery
       .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(products.createdAt))
       .limit(query.limit)
       .offset(offset);
 

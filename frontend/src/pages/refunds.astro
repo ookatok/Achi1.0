@@ -1,26 +1,42 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="RETURN & REFUNDS | ACHI Studio" description="Steps to initiate returns and process refunds.">
+<Layout 
+  title={lang === 'en' ? "RETURN & REFUNDS | ACHI Studio" : "การคืนสินค้าและคืนเงิน | ACHI Studio"} 
+  description={lang === 'en' ? "Steps to initiate returns and process refunds." : "ขั้นตอนการขอคืนสินค้าและการดำเนินการคืนเงินคืนให้กับลูกค้า"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">REFUNDS</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Return and Refund Operations</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "REFUNDS" : "การคืนเงิน"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Return and Refund Operations" : "ขั้นตอนและเงื่อนไขการคืนเงินสำหรับสินค้าที่ส่งคืน"}
+      </p>
     </div>
 
     <div class="space-y-8 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        Refunds are processed promptly after our quality control team receives and inspects the returned merchandise.
+        {lang === 'en'
+          ? "Refunds are processed promptly after our quality control team receives and inspects the returned merchandise."
+          : "กระบวนการคืนเงินจะเริ่มต้นขึ้นทันทีหลังจากที่ทีมงานตรวจสอบคุณภาพของเราได้รับและดำเนินการตรวจสอบสภาพสินค้าที่ถูกส่งคืนเรียบร้อยแล้ว"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Refund Methods</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Refund Methods" : "วิธีการคืนเงิน"}
+      </h3>
       <p>
-        Refunds will be processed back to your original payment method:
+        {lang === 'en'
+          ? "Refunds will be processed back to your original payment method:"
+          : "เงินจะถูกโอนคืนกลับไปยังช่องทางการชำระเงินเดิมที่คุณทำรายการซื้อสินค้าเข้ามา:"
+        }
       </p>
       <ul class="list-disc list-inside space-y-2 text-xs text-gray-500 pl-4">
-        <li><strong>Credit Card:</strong> 7-15 billing days (depending on your bank card issuer).</li>
-        <li><strong>Bank Transfer / PromptPay:</strong> 2-3 business days.</li>
+        <li><strong>{lang === 'en' ? "Credit Card:" : "บัตรเครดิต:"}</strong> {lang === 'en' ? "7-15 billing days (depending on your bank card issuer)." : "7 - 15 วันทำการ (ขึ้นอยู่กับรอบบิลธนาคารผู้ออกบัตรของคุณ)"}</li>
+        <li><strong>{lang === 'en' ? "Bank Transfer / PromptPay:" : "โอนเงินผ่านธนาคาร / พร้อมเพย์:"}</strong> {lang === 'en' ? "2-3 business days." : "2 - 3 วันทำการ"}</li>
       </ul>
     </div>
   </div>

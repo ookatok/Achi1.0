@@ -1,13 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
+import { useTranslations } from '../lib/translations';
 
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 
 if (!token) {
-  return Astro.redirect('/auth/signin?callbackUrl=/profile');
+  return Astro.redirect(`/auth/signin?callbackUrl=${encodeURIComponent('/profile')}`);
 }
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 const role = (session?.user as any)?.role || 'customer';
 let orders = [] as any[];
@@ -26,22 +30,29 @@ if (role === 'customer') {
     }
   } catch (err) {
     console.error('[NestJS API Error] Fetching orders failed.', err);
-    errorMsg = 'Could not load orders history. Backend server may be offline.';
+    errorMsg = lang === 'en' ? 'Could not load orders history. Backend server may be offline.' : 'ไม่สามารถโหลดประวัติการสั่งซื้อได้ เนื่องจากเซิร์ฟเวอร์ออฟไลน์';
   }
 }
 ---
 
-<Layout title="Your Account | ACHI Studio" description="Manage your ACHI customer profile and track orders.">
+<Layout 
+  title={lang === 'en' ? "Your Account | ACHI Studio" : "บัญชีของคุณ | ACHI Studio"} 
+  description={lang === 'en' ? "Manage your ACHI customer profile and track orders." : "จัดการประวัติข้อมูลโปรไฟล์ลูกค้าของ ACHI และติดตามคำสั่งซื้อสินค้า"}
+>
   <!-- Top Minimalist Banner -->
   <section class="bg-stone-50 border-b border-stone-200/60 py-16">
     <div class="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
       <div>
-        <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">Welcome, {session?.user?.name}</h1>
-        <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">ACHI Premium {role === 'admin' ? 'Administrator' : 'Member'}</p>
+        <h1 class="font-serif text-3xl tracking-widest text-brand-charcoal uppercase leading-tight">
+          {lang === 'en' ? "Welcome" : "ยินดีต้อนรับ"}, {session?.user?.name}
+        </h1>
+        <p class="text-[10px] tracking-[0.2em] uppercase text-stone-400 mt-1 font-light">
+          ACHI Premium {role === 'admin' ? (lang === 'en' ? 'Administrator' : 'ผู้ดูแลระบบ') : (lang === 'en' ? 'Member' : 'สมาชิก')}
+        </p>
       </div>
       <div>
         <a href="/products" class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-8 py-3 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all duration-300">
-          Continue Shopping
+          {lang === 'en' ? "Continue Shopping" : "ช้อปปิ้งต่อ"}
         </a>
       </div>
     </div>
@@ -61,18 +72,22 @@ if (role === 'customer') {
               {session?.user?.name ? session.user.name.substring(0, 2).toUpperCase() : 'AC'}
             </div>
             <span class="text-[9px] tracking-[0.3em] font-medium text-brand-gold uppercase bg-amber-50/50 border border-brand-gold/20 px-2.5 py-0.5 rounded-full">
-              {role}
+              {role === 'admin' ? (lang === 'en' ? 'Admin' : 'แอดมิน') : (lang === 'en' ? 'Member' : 'สมาชิก')}
             </span>
           </div>
 
           <div class="space-y-4">
             <div>
-              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Name</span>
+              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Name" : "ชื่อ"}
+              </span>
               <span class="text-sm font-serif font-semibold text-brand-charcoal">{session?.user?.name}</span>
             </div>
             
             <div>
-              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Email Account</span>
+              <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Email Account" : "บัญชีอีเมล"}
+              </span>
               <span class="text-xs font-light text-stone-500">{session?.user?.email}</span>
             </div>
           </div>
@@ -83,7 +98,7 @@ if (role === 'customer') {
             id="signout-btn"
             class="w-full border border-stone-300 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
           >
-            Sign Out
+            {t('nav.signout')}
           </button>
         </div>
       </div>
@@ -94,7 +109,7 @@ if (role === 'customer') {
         <div class="bg-white border border-stone-200/80 p-8 rounded-sm shadow-sm space-y-6">
           <div class="pb-2 border-b border-stone-100">
             <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
-              Manage Profile Settings
+              {lang === 'en' ? "Manage Profile Settings" : "การจัดการข้อมูลโปรไฟล์"}
             </h2>
           </div>
 
@@ -103,7 +118,9 @@ if (role === 'customer') {
 
           <form id="profile-edit-form" class="space-y-6">
             <div>
-              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Full Name</label>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Full Name" : "ชื่อ-นามสกุล"}
+              </label>
               <input 
                 type="text" 
                 id="profile-name" 
@@ -115,7 +132,9 @@ if (role === 'customer') {
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">New Password (leave blank to keep current)</label>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                  {lang === 'en' ? "New Password (leave blank to keep current)" : "รหัสผ่านใหม่ (ปล่อยว่างหากต้องการใช้รหัสผ่านเดิม)"}
+                </label>
                 <input 
                   type="password" 
                   id="profile-password" 
@@ -123,7 +142,9 @@ if (role === 'customer') {
                 />
               </div>
               <div>
-                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Confirm New Password</label>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                  {lang === 'en' ? "Confirm New Password" : "ยืนยันรหัสผ่านใหม่"}
+                </label>
                 <input 
                   type="password" 
                   id="profile-confirm-password" 
@@ -136,7 +157,7 @@ if (role === 'customer') {
               type="submit" 
               class="bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
             >
-              Save Profile Changes
+              {lang === 'en' ? "Save Profile Changes" : "บันทึกการเปลี่ยนแปลงโปรไฟล์"}
             </button>
           </form>
         </div>
@@ -145,14 +166,17 @@ if (role === 'customer') {
           <!-- Admin Control panel Quick Access -->
           <div class="bg-stone-50 border border-stone-200/80 p-8 rounded-sm shadow-sm space-y-4">
             <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-stone-200">
-              Admin Dashboard Access
+              {lang === 'en' ? "Admin Dashboard Access" : "การเข้าถึงแดชบอร์ดแอดมิน"}
             </h3>
             <p class="text-[11px] text-stone-500 font-light leading-relaxed">
-              As an Administrator, you have full access to management tools including catalog additions, order tracking, categories configuration, and blogging engine.
+              {lang === 'en'
+                ? "As an Administrator, you have full access to management tools including catalog additions, order tracking, categories configuration, and blogging engine."
+                : "ในฐานะผู้ดูแลระบบ คุณมีสิทธิ์เข้าถึงเครื่องมือการจัดการอย่างเต็มรูปแบบ รวมถึงการเพิ่มรายการสินค้า การติดตามสินค้า คอนฟิกหมวดหมู่ และเครื่องมือบล็อกโพสต์"
+              }
             </p>
             <div class="pt-2">
               <a href="/admin" class="inline-block bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300">
-                Go to Admin Panel
+                {lang === 'en' ? "Go to Admin Panel" : "ไปยังระบบควบคุมผู้ดูแลระบบ"}
               </a>
             </div>
           </div>
@@ -161,9 +185,11 @@ if (role === 'customer') {
           <div class="space-y-8">
             <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
               <h2 class="font-serif text-lg uppercase tracking-wider text-brand-charcoal font-semibold">
-                Order History Logs
+                {lang === 'en' ? "Order History Logs" : "ประวัติรายการสั่งซื้อสินค้า"}
               </h2>
-              <span class="text-[10px] uppercase tracking-widest text-stone-400 font-light font-sans">{orders.length} Orders Total</span>
+              <span class="text-[10px] uppercase tracking-widest text-stone-400 font-light font-sans">
+                {lang === 'en' ? `${orders.length} Orders Total` : `คำสั่งซื้อทั้งหมด ${orders.length} รายการ`}
+              </span>
             </div>
 
             {errorMsg && (
@@ -174,7 +200,7 @@ if (role === 'customer') {
 
             {orders.length === 0 ? (
               <div class="text-center py-20 border border-dashed border-stone-200 text-stone-400 text-xs font-light rounded-sm bg-stone-50/30">
-                No orders found under this account.
+                {lang === 'en' ? "No orders found under this account." : "ไม่พบประวัติคำสั่งซื้อภายใต้บัญชีใช้งานนี้"}
               </div>
             ) : (
               <div class="space-y-6">
@@ -187,13 +213,15 @@ if (role === 'customer') {
                           ACHI-ORD-{String(order.id).padStart(5, '0')}
                         </span>
                         <span class="text-[9px] text-stone-400 font-light block uppercase mt-1 tracking-wider">
-                          Placed: {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          {lang === 'en' ? "Placed:" : "สั่งซื้อเมื่อ:"} {new Date(order.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}
                         </span>
                       </div>
                       
                       <div class="flex items-center gap-4">
                         <div class="text-right">
-                          <span class="text-xs text-stone-400 uppercase tracking-widest font-light block">Total</span>
+                          <span class="text-xs text-stone-400 uppercase tracking-widest font-light block">
+                            {lang === 'en' ? "Total" : "ยอดเงินรวมทั้งสิ้น"}
+                          </span>
                           <span class="font-semibold text-brand-charcoal text-sm">${Number(order.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                         </div>
                         
@@ -202,7 +230,10 @@ if (role === 'customer') {
                             ? 'text-amber-600 bg-amber-50/50 border-amber-200/60' 
                             : 'text-green-600 bg-green-50/50 border-green-200/60'
                         }`}>
-                          {order.status}
+                          {order.status === 'pending' 
+                            ? (lang === 'en' ? 'pending' : 'รอดำเนินการ') 
+                            : (lang === 'en' ? 'completed' : 'เสร็จสมบูรณ์')
+                          }
                         </span>
                       </div>
                     </div>
@@ -210,7 +241,9 @@ if (role === 'customer') {
                     <!-- Order Shipping Details -->
                     <div class="bg-stone-50 p-4 rounded-sm border border-stone-100 flex flex-col sm:flex-row justify-between gap-4 text-xs font-light text-stone-500">
                       <div>
-                        <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Shipping Address</span>
+                        <span class="block text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                          {lang === 'en' ? "Shipping Address" : "ที่อยู่สำหรับจัดส่งพัสดุ"}
+                        </span>
                         <span class="text-xs text-stone-600 leading-relaxed block">{order.shippingAddress}</span>
                       </div>
                     </div>
@@ -244,6 +277,8 @@ if (role === 'customer') {
     if (profileForm) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const isEn = document.documentElement.lang === 'en';
+        
         if (profileError) profileError.classList.add('hidden');
         if (profileSuccess) profileSuccess.classList.add('hidden');
         
@@ -257,7 +292,7 @@ if (role === 'customer') {
         
         if (password && password !== confirmPassword) {
           if (profileError) {
-            profileError.textContent = 'Passwords do not match.';
+            profileError.textContent = isEn ? 'Passwords do not match.' : 'รหัสผ่านไม่ตรงกัน';
             profileError.classList.remove('hidden');
           }
           return;
@@ -281,7 +316,9 @@ if (role === 'customer') {
           
           if (res.ok) {
             if (profileSuccess) {
-              profileSuccess.textContent = 'Profile updated successfully. Please re-sign in for changes to reflect in your header name.';
+              profileSuccess.textContent = isEn 
+                ? 'Profile updated successfully. Please re-sign in for changes to reflect in your header name.'
+                : 'อัปเดตข้อมูลบัญชีเสร็จสมบูรณ์ กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อให้ชื่อแสดงผลถูกต้องที่แถบเมนูด้านบน';
               profileSuccess.classList.remove('hidden');
             }
             if (passwordInput) passwordInput.value = '';
@@ -289,14 +326,14 @@ if (role === 'customer') {
           } else {
             const err = await res.json();
             if (profileError) {
-              profileError.textContent = err.message || 'Failed to update profile.';
+              profileError.textContent = err.message || (isEn ? 'Failed to update profile.' : 'อัปเดตโปรไฟล์ล้มเหลว');
               profileError.classList.remove('hidden');
             }
           }
         } catch (err) {
           console.error(err);
           if (profileError) {
-            profileError.textContent = 'Backend server error or network issue.';
+            profileError.textContent = isEn ? 'Backend server error or network issue.' : 'ระบบเกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
             profileError.classList.remove('hidden');
           }
         }

@@ -1,0 +1,383 @@
+export const translations = {
+  en: {
+    // Navigation / Header
+    "nav.home": "HOME",
+    "nav.shop": "SHOP",
+    "nav.new_arrivals": "NEW ARRIVALS",
+    "nav.discount": "DISCOUNTS",
+    "nav.blog": "BLOG",
+    "nav.dashboard": "DASHBOARD",
+    "nav.orders": "ORDERS",
+    "nav.products": "PRODUCTS",
+    "nav.blogs": "BLOGS",
+    "nav.contacts": "CONTACTS",
+    "nav.signin": "SIGN IN",
+    "nav.signout": "SIGN OUT",
+    "nav.profile": "PROFILE",
+    "nav.search": "SEARCH",
+    "nav.favorites": "FAVORITES",
+    "nav.cart": "CART",
+    
+    // Mega Menu
+    "menu.category": "Category",
+    "menu.clothing": "Clothing",
+    "menu.male": "MALE",
+    "menu.female": "FEMALE",
+    "menu.accessories": "Accessories",
+    "menu.gifts": "Gifts",
+    "menu.shop_all": "Shop All",
+    "menu.featured": "Featured",
+    "menu.best_sellers": "Best Sellers",
+    "menu.trending": "Trending Now",
+    "menu.collections": "Collections",
+    "menu.recommend": "Recommend",
+    "menu.online_exclusives": "Online Exclusives",
+    "menu.total_looks": "Total Looks",
+    "menu.basics": "Basics",
+    "menu.spring": "Spring",
+    "menu.summer": "Summer",
+    "menu.fall": "Fall",
+    "menu.winter": "Winter",
+
+    // Home Page
+    "home.hero.title": "ASPIRE to be<br/>AUTHENTIC.",
+    "home.hero.subtitle": "2026 Spring Collection",
+    "home.hero.description": "Minimalist High-Quality - That's the Way We Do Business. Explore apparel designed for daily functionality.",
+    "home.hero.cta": "Shop now",
+    "home.men": "MEN",
+    "home.women": "WOMEN",
+    "home.new_arrivals": "New Arrivals",
+
+    // Search
+    "search.placeholder": "Search",
+    "search.no_results": "No products found matching your search",
+    "search.suggestions": "Suggestions: T-shirt, Denim, Jacket, Shades",
+    "search.products": "Products",
+
+    // Footer
+    "footer.company": "THE COMPANY",
+    "footer.about": "ABOUT US",
+    "footer.service": "CUSTOMER SERVICE",
+    "footer.contact": "CONTACT US",
+    "footer.stores": "STORE LOCATOR",
+    "footer.delivery": "DELIVERY INFORMATION",
+    "footer.payments": "PAYMENTS",
+    "footer.return": "UNCONDITIONAL RETURN",
+    "footer.refunds": "RETURN & REFUNDS",
+    "footer.product_care": "PRODUCT CARE",
+    "footer.size_guide": "SIZE GUIDE",
+    "footer.faq": "FAQ",
+    "footer.fact_sheet": "REQUEST A FACT SHEET",
+    "footer.legal": "LEGAL",
+    "footer.privacy": "PRIVACY POLICY",
+    "footer.terms": "TERMS & CONDITIONS",
+    "footer.cookies": "COOKIE SETTINGS",
+    "footer.follow": "FOLLOW US",
+    "footer.facebook": "FACEBOOK",
+    "footer.line": "LINE OFFICIAL",
+    "footer.instagram": "INSTAGRAM",
+    "footer.pinterest": "PINTEREST",
+    "footer.twitter": "TWITTER",
+    "footer.spotify": "SPOTIFY",
+
+    // Favorites page
+    "fav.home": "Home",
+    "fav.favorites": "Favorites",
+    "fav.title": "My Favorites",
+    "fav.items_saved": "items saved",
+    "fav.item_saved": "item saved",
+    "fav.empty_title": "YOUR WISHLIST IS EMPTY",
+    "fav.empty_desc": "Explore our collections to add items to your favorites.",
+    "fav.shop_now": "Shop now",
+
+    // Discount Page
+    "discount.hero.title": "SPECIAL OFFERS",
+    "discount.hero.subtitle": "Exclusive codes, seasonal promotions, and membership vouchers.",
+    "discount.filter.all": "ALL OFFERS",
+    "discount.filter.active": "ACTIVE CODES",
+    "discount.filter.expired": "PAST OFFERS",
+    "discount.status.active": "ACTIVE",
+    "discount.status.expired": "EXPIRED",
+    "discount.btn.copy": "COPY CODE",
+    "discount.btn.copied": "COPIED!",
+    "discount.btn.shop": "SHOP COLLECTION",
+    "discount.reveal.title": "EXCLUSIVE MYSTERY VOUCHER",
+    "discount.reveal.desc": "Click the card below to reveal a unique 20% discount code for your next order.",
+    "discount.reveal.btn": "REVEAL CODE",
+    "discount.reveal.success": "YOUR CODE IS REVEALED!"
+  },
+  th: {
+    // Navigation / Header
+    "nav.home": "หน้าแรก",
+    "nav.shop": "ช้อป",
+    "nav.new_arrivals": "สินค้ามาใหม่",
+    "nav.discount": "ส่วนลด",
+    "nav.blog": "บล็อก",
+    "nav.dashboard": "แดชบอร์ด",
+    "nav.orders": "คำสั่งซื้อ",
+    "nav.products": "สินค้า",
+    "nav.blogs": "บล็อก",
+    "nav.contacts": "การติดต่อ",
+    "nav.signin": "เข้าสู่ระบบ",
+    "nav.signout": "ออกจากระบบ",
+    "nav.profile": "โปรไฟล์",
+    "nav.search": "ค้นหา",
+    "nav.favorites": "รายการโปรด",
+    "nav.cart": "ตะกร้าสินค้า",
+
+    // Mega Menu
+    "menu.category": "หมวดหมู่",
+    "menu.clothing": "เสื้อผ้า",
+    "menu.male": "ผู้ชาย",
+    "menu.female": "ผู้หญิง",
+    "menu.accessories": "เครื่องประดับ",
+    "menu.gifts": "ของขวัญ",
+    "menu.shop_all": "ช้อปทั้งหมด",
+    "menu.featured": "สินค้าแนะนำ",
+    "menu.best_sellers": "สินค้าขายดี",
+    "menu.trending": "เทรนด์ตอนนี้",
+    "menu.collections": "คอลเลกชัน",
+    "menu.recommend": "แนะนำสำหรับคุณ",
+    "menu.online_exclusives": "เฉพาะออนไลน์",
+    "menu.total_looks": "ลุคทั้งหมด",
+    "menu.basics": "เบสิก",
+    "menu.spring": "ฤดูใบไม้ผลิ",
+    "menu.summer": "ฤดูร้อน",
+    "menu.fall": "ฤดูใบไม้ร่วง",
+    "menu.winter": "ฤดูหนาว",
+
+    // Home Page
+    "home.hero.title": "ปรารถนาที่จะเป็น<br/>ตัวจริงของคุณ",
+    "home.hero.subtitle": "คอลเลกชันฤดูใบไม้ผลิ 2026",
+    "home.hero.description": "ดีไซน์มินิมอล คุณภาพระดับพรีเมียม - นั่นคือวิถีการทำธุรกิจของเรา ร่วมสำรวจเสื้อผ้าที่ออกแบบมาเพื่อตอบโจทย์ทุกการใช้งานในทุกวัน",
+    "home.hero.cta": "ช้อปเลย",
+    "home.men": "ผู้ชาย",
+    "home.women": "ผู้หญิง",
+    "home.new_arrivals": "สินค้ามาใหม่",
+
+    // Search
+    "search.placeholder": "ค้นหา",
+    "search.no_results": "ไม่พบสินค้าที่ตรงกับการค้นหาของคุณ",
+    "search.suggestions": "คำแนะนำ: เสื้อยืด, ยีนส์, แจ็กเก็ต, แว่นกันแดด",
+    "search.products": "สินค้า",
+
+    // Footer
+    "footer.company": "บริษัท",
+    "footer.about": "เกี่ยวกับเรา",
+    "footer.service": "บริการลูกค้า",
+    "footer.contact": "ติดต่อเรา",
+    "footer.stores": "ค้นหาร้านค้า",
+    "footer.delivery": "ข้อมูลการจัดส่ง",
+    "footer.payments": "การชำระเงิน",
+    "footer.return": "การคืนสินค้าโดยไม่มีเงื่อนไข",
+    "footer.refunds": "การคืนสินค้าและคืนเงิน",
+    "footer.product_care": "การดูแลรักษาผลิตภัณฑ์",
+    "footer.size_guide": "คู่มือขนาด",
+    "footer.faq": "คำถามที่พบบ่อย",
+    "footer.fact_sheet": "ขอข้อมูลสินค้า",
+    "footer.legal": "กฎหมาย",
+    "footer.privacy": "นโยบายความเป็นส่วนตัว",
+    "footer.terms": "ข้อกำหนดและเงื่อนไข",
+    "footer.cookies": "การตั้งค่าคุกกี้",
+    "footer.follow": "ติดตามเรา",
+    "footer.facebook": "เฟซบุ๊ก",
+    "footer.line": "ไลน์",
+    "footer.instagram": "อินสตาแกรม",
+    "footer.pinterest": "พินเทอเรสต์",
+    "footer.twitter": "ทวิตเตอร์",
+    "footer.spotify": "สปอติฟาย",
+
+    // Favorites page
+    "fav.home": "หน้าแรก",
+    "fav.favorites": "รายการโปรด",
+    "fav.title": "รายการโปรดของฉัน",
+    "fav.items_saved": "รายการที่บันทึกไว้",
+    "fav.item_saved": "รายการที่บันทึกไว้",
+    "fav.empty_title": "รายการโปรดของคุณยังว่างอยู่",
+    "fav.empty_desc": "ร่วมสำรวจคอลเลกชันของเราเพื่อเพิ่มสินค้าในรายการโปรด",
+    "fav.shop_now": "ช้อปเลย",
+
+    // Discount Page
+    "discount.hero.title": "ข้อเสนอพิเศษ",
+    "discount.hero.subtitle": "รหัสส่วนลดพิเศษ โปรโมชั่นตามฤดูกาล และคูปองสำหรับสมาชิก",
+    "discount.filter.all": "ข้อเสนอทั้งหมด",
+    "discount.filter.active": "รหัสที่ใช้งานได้",
+    "discount.filter.expired": "ข้อเสนอที่หมดอายุ",
+    "discount.status.active": "ใช้งานได้",
+    "discount.status.expired": "หมดอายุแล้ว",
+    "discount.btn.copy": "คัดลอกรหัส",
+    "discount.btn.copied": "คัดลอกแล้ว!",
+    "discount.btn.shop": "ไปที่หน้าสินค้า",
+    "discount.reveal.title": "คูปองพิเศษแบบสุ่ม",
+    "discount.reveal.desc": "คลิกการ์ดด้านล่างเพื่อเปิดเผยรหัสส่วนลด 20% พิเศษสำหรับคำสั่งซื้อถัดไปของคุณ",
+    "discount.reveal.btn": "เปิดเผยรหัส",
+    "discount.reveal.success": "เปิดเผยรหัสส่วนลดของคุณแล้ว!"
+  }
+};
+
+export type Language = 'th' | 'en';
+
+export function useTranslations(lang: Language) {
+  return function t(key: keyof typeof translations.en): string {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+}
+
+export function translateProductName(name: string, lang: Language): string {
+  if (!name) return name;
+  if (lang === 'en') {
+    return name.replace(/\b\w/g, c => c.toUpperCase());
+  }
+  const key = name.toLowerCase().trim();
+  const thNames: Record<string, string> = {
+    "generic shirt": "เสื้อเชิ้ตดีไซน์คลาสสิก",
+    "generic watch": "นาฬิกาข้อมือมินิมอล",
+    "generic pants": "กางเกงสแล็กทรงสลิม",
+    "generic shoes": "รองเท้าผ้าใบสีขาวพรีเมียม",
+    "generic t-shirt 1": "เสื้อยืดคอกลมมินิมอล 1",
+    "generic t-shirt 2": "เสื้อโปโลผ้าทอลาย 2",
+    "generic t-shirt 3": "กางเกงชิโน่ขาเต่อ 3",
+    "generic t-shirt 4": "รองเท้าคลาสสิกสนีกเกอร์ 4",
+    "generic set 1": "ชุดเซ็ตเสื้อผ้าเข้าชุด 1",
+    "generic set 2": "ชุดเซ็ตเสื้อผ้าเข้าชุด 2",
+    "generic set 3": "ชุดเซ็ตเสื้อผ้าเข้าชุด 3",
+    "minimalist leather belt": "เข็มขัดหนังมินิมอล",
+    "chic acetate sunglasses": "แว่นกันแดดอะซิเตทสุดชิค",
+    "premium canvas tote bag": "กระเป๋าโท้ทผ้าแคนวาสพรีเมียม",
+    "sterling silver chain necklace": "สร้อยคอเงินแท้",
+    "organic cotton crew neck tee": "เสื้อยืดคอกลมผ้าฝ้ายออร์แกนิก",
+    "heavyweight fleece hoodie": "เสื้อฮู้ดดี้ผ้าฟลีซเนื้อหนา",
+    "relaxed drawstring sweatpants": "กางเกงจ็อกเกอร์ขาปล่อยมีเชือกผูก",
+    "premium ribbed tank top": "เสื้อกล้ามผ้าลอนพรีเมียม",
+    "classic cotton trench coat": "เสื้อโค้ทเทรนช์ผ้าฝ้ายคลาสสิก",
+    "tailored wool trouser set": "เซ็ตสแล็กผ้าขนสัตว์เข้ารูป",
+    "oversized soft cashmere sweater": "เสื้อหนาวผ้าแคชเมียร์นุ่มทรงโอเวอร์ไซส์",
+    "premium tailored cotton shirt": "เสื้อเชิ้ตผ้าฝ้ายตัดเย็บพรีเมียม",
+    "oversized wool cardigan": "เสื้อคาร์ดิแกนผ้าขนสัตว์โอเวอร์ไซส์",
+    "corduroy utility overshirt": "เสื้อเชิ้ตลูกฟูกสไตล์ยูทิลิตี้",
+    "tailored suede trousers": "กางเกงหนังกลับเข้ารูป",
+    "merino wool beanie": "หมวกบีนนี่ผ้าขนสัตว์เมอริโน",
+    "premium scented candle set": "เซ็ตเทียนหอมเกรดพรีเมียม",
+    "leather travel organizer": "กระเป๋าจัดระเบียบหนังสำหรับการเดินทาง",
+    "silk sleep mask & pillowcase set": "เซ็ตผ้าปิดตาและปลอกหมอนผ้าไหม",
+    "achi studio e-gift card": "อีบัตรของขวัญ ACHI Studio",
+    "limited edition leather jacket": "แจ็กเก็ตหนังรุ่นลิมิเต็ด",
+    "exquisite knit midi dress": "เดรสถักมิดิสุดหรู",
+    "asymmetric collar shirt": "เสื้อเชิ้ตปกอสมมาตร",
+    "online exclusive sunglasses": "แว่นกันแดดเฉพาะออนไลน์",
+    "signature wool coat": "เสื้อโค้ทผ้าขนสัตว์อันเป็นเอกลักษณ์",
+    "tailored pleated skirt": "กระโปรงพลีทเข้ารูป",
+    "silk button-up blouse": "เสื้อบลูส์ผ้าไหมกระดุมหน้า",
+    "leather shoulder bag": "กระเป๋าสะพายไหล่หนัง",
+    "spring linen trench coat": "เสื้อโค้ทเทรนช์ผ้าลินินฤดูใบไม้ผลิ",
+    "lightweight floral silk scarf": "ผ้าพันคอผ้าไหมพิมพ์ลายดอกไม้เนื้อบางเบา",
+    "breathable knit pullover": "เสื้อสเวตเตอร์ถักระบายอากาศได้ดี",
+    "relaxed fit cotton chinos": "กางเกงชิโน่ผ้าฝ้ายทรงหลวม",
+    "breezy linen button-down": "เสื้อเชิ้ตผ้าลินินระบายอากาศ",
+    "relaxed tailored linen shorts": "กางเกงขาสั้นผ้าลินินเข้ารูปทรงหลวม",
+    "lightweight cotton sun dress": "เดรสรับลมร้อนผ้าฝ้ายเนื้อเบา",
+    "straw woven bucket hat": "หมวกบักเก็ตสานจากฟาง",
+    "the monochromatic linen set": "เซ็ตผ้าลินินสีคุมโทน",
+    "modern utility overall suit": "ชุดเอี๊ยมสไตล์ยูทิลิตี้ทันสมัย",
+    "premium relaxed loungewear set": "เซ็ตชุดลำลองพรีเมียมสวมใส่สบาย",
+    "classic tailored three-piece suit": "ชุดสูทสามชิ้นตัดเย็บคลาสสิก",
+    "cropped daily utility jacket": "แจ็กเก็ตครอปสไตล์ยูทิลิตี้ใส่ได้ทุกวัน",
+    "relaxed linen single blazer": "เสื้อเบลเซอร์ผ้าลินินทรงหลวมกระดุมเดี่ยว",
+    "retro sporty leather sneaker": "รองเท้าผ้าใบหนังย้อนยุคแนวสปอร์ต",
+    "sleek cotton twill bucket hat": "หมวกบักเก็ตผ้าทวิลฝ้ายสุดเรียบหรู",
+    "heavy down parka coat": "เสื้อโค้ทพาร์กาขนเป็ดกันหนาวพิเศษ",
+    "thick cable-knit sweater": "เสื้อสเวตเตอร์ถักลายเคเบิลเนื้อหนา",
+    "double-faced cashmere scarf": "ผ้าพันคอผ้าแคชเมียร์ทอสองหน้า",
+    "waterproof leather boots": "รองเท้าบูทหนังกันน้ำ",
+  };
+  return thNames[key] || name;
+}
+
+export function translateProductDescription(desc: string, lang: Language): string {
+  if (!desc) return desc;
+  if (lang === 'en') return desc;
+  const key = desc.toLowerCase().trim();
+  const thDescs: Record<string, string> = {
+    "minimalist cotton crewneck t-shirt with contrasting neck ribbing.": "เสื้อยืดคอกลมผ้าฝ้ายมินิมอล ตกแต่งด้วยยางยืดขอบคอสีตัดกันเป็นเอกลักษณ์",
+  };
+  return thDescs[key] || desc;
+}
+
+export function translateProduct<T extends { name: string; description?: string }>(product: T, lang: Language): T {
+  if (!product) return product;
+  return {
+    ...product,
+    name: translateProductName(product.name, lang),
+    description: product.description ? translateProductDescription(product.description, lang) : product.description
+  };
+}
+
+export function translateBlogTitle(title: string, lang: Language): string {
+  if (!title || lang === 'en') return title;
+  const key = title.toLowerCase().trim();
+  const thTitles: Record<string, string> = {
+    "the art of minimalist layering": "ศิลปะการแต่งตัวแบบเลเยอร์สไตล์มินิมอล",
+    "neutral color palettes for summer": "โทนสีธรรมชาติสำหรับฤดูร้อน",
+    "the essential fabric guide: linen & cotton": "คู่มือวัสดุเนื้อผ้าที่สำคัญ: ผ้าลินินและผ้าฝ้าย",
+    "designing the perfect trench coat": "การออกแบบเสื้อโค้ทเทรนช์ที่สมบูรณ์แบบ",
+    "monochrome styling rules": "กฎเกณฑ์การจัดแต่งสไตล์ขาวดำและโมโนโครม",
+    "crafting the perfect basic tee": "การสร้างสรรค์เสื้อยืดเบสิกที่สมบูรณ์แบบ",
+    "a guide to sustainable smart casual": "คู่มือการแต่งตัวสไตล์สมาร์ทแคชชวลที่ยั่งยืน",
+    "the capsule wardrobe concept": "แนวคิดการจัดแต่งตู้เสื้อผ้าแบบแคปซูล",
+  };
+  return thTitles[key] || title;
+}
+
+export function translateBlogSummary(summary: string, lang: Language): string {
+  if (!summary || lang === 'en') return summary;
+  const key = summary.toLowerCase().trim();
+  const thSummaries: Record<string, string> = {
+    "explore the essential guidelines for assembling light, premium outfits that hold depth and style in any climate.": "ร่วมสำรวจแนวทางสำคัญในการแต่งตัวด้วยเสื้อผ้าเนื้อเบาเกรดพรีเมียม ที่ให้มิติและสไตล์ที่ลงตัวในทุกสภาพอากาศ",
+    "how to match cream, sand, and charcoal tones to create a cohesive summer wardrobe that feels warm yet light.": "วิธีจับคู่โทนสีครีม สีทราย และสีชาร์โคล เพื่อสร้างตู้เสื้อผ้าฤดูร้อนที่ดูเข้ากันอย่างลงตัว ให้ความรู้สึกอบอุ่นทว่าเบาสบาย",
+    "explore why breathable, natural fibres are at the core of our summer design philosophy.": "ร่วมสำรวจเหตุผลว่าทำไมเส้นใยธรรมชาติที่ระบายอากาศได้ดีจึงเป็นหัวใจหลักในปรัชญาการออกแบบฤดูร้อนของเรา",
+    "a deep dive into structural tailoring, fabrics, and drape of our signature outerwear.": "เจาะลึกถึงโครงสร้างการตัดเย็บ เนื้อผ้า และการทิ้งตัวของเสื้อตัวนอกที่เป็นเอกลักษณ์ของเรา",
+    "how to master single-tone styling with subtle differences in fabric textures.": "วิธีเชี่ยวชาญการแต่งตัวคุมโทนสีเดียวด้วยการใช้ความต่างของผิวสัมผัสผ้าที่ละเอียดอ่อน",
+    "behind the scenes of selecting weight, cut, and seam spacing for comfort.": "เบื้องหลังการเลือกน้ำหนักผ้า รูปทรงการตัดเย็บ และระยะการเย็บเพื่อความสบายสูงสุด",
+    "transition from professional meetings to evening dinners with ease and elegance.": "เปลี่ยนผ่านจากห้องประชุมอย่างเป็นทางการสู่ดินเนอร์ยามเย็นได้อย่างเรียบง่ายและสง่างาม",
+    "curate a high-utility, minimal collection of garments for everyday wear.": "คัดสรรคอลเลกชันเสื้อผ้าที่ใช้งานได้หลากหลายและมินิมอลสำหรับการแต่งตัวในทุกๆ วัน",
+  };
+  return thSummaries[key] || summary;
+}
+
+export function translateBlogAuthor(author: string, lang: Language): string {
+  if (!author || lang === 'en') return author;
+  const key = author.toLowerCase().trim();
+  const thAuthors: Record<string, string> = {
+    "achi editorial": "ทีมบรรณาธิการ ACHI",
+    "achi stylist": "สไตลิสต์ ACHI",
+  };
+  return thAuthors[key] || author;
+}
+
+export function translateBlogContent(content: string, lang: Language): string {
+  if (!content || lang === 'en') return content;
+  
+  const trimmed = content.trim();
+  
+  if (trimmed.startsWith("Layering is often associated")) {
+    return `การแต่งตัวแบบเลเยอร์มักจะถูกเชื่อมโยงกับเสื้อผ้าฤดูหนาวที่หนาเทอะทะ แต่ศิลปะของการแต่งเลเยอร์สไตล์มินิมอลคือการสร้างสรรค์ผิวสัมผัส ความลึก และสัดส่วนโดยไม่ทำให้ดูหนาขึ้น ในสไตล์ชีตที่เน้นโทนสีธรรมชาติอย่าง ACHI การเชี่ยวชาญเทคนิคนี้จะแยกความแต่งตัวเรียบๆ ทั่วไป ออกจากการมีภาพลักษณ์ที่ประณีตและคัดสรรมาอย่างดี<br/><br/><h3>1. เลือกชิ้นฐานที่มีน้ำหนักเบา</h3>เริ่มต้นด้วยรากฐานที่มีคุณภาพสูงและระบายอากาศได้ดีเสมอ เสื้อยืดคอกลมผ้าฝ้ายเนื้อนุ่มหรือเสื้อลินินเนื้อละเอียดเป็นตัวเลือกที่สมบูรณ์แบบ ควรมีความพอดีตัวโดยไม่รู้สึกอึดอัด<br/><br/><h3>2. เพิ่มความตัดกันของผิวสัมผัส</h3>ความลับของความสำเร็จในการแต่งตัวแบบเลเยอร์อยู่ที่ผิวสัมผัสผ้า จับคู่เสื้อยืดเนื้อเรียบกับเสื้อถักลายรังผึ้งที่มีผิวสัมผัสชัดเจน หรือเสื้อเชิ้ตลินินที่มีโครงสร้าง ความตัดกันของผิวสัมผัสช่วยเพิ่มความน่าสนใจให้กับการแต่งตัวคุมโทนสีเดียว<br/><br/><h3>3. เล่นกับสัดส่วนเสื้อผ้า</h3>ปล่อยให้ชายเสื้อของชิ้นฐานโผล่ออกมาใต้เสื้อสเวตเตอร์หรือเสื้อแจ็กเก็ต แถบสีบางๆ นี้ (มักจะเป็นสีขาวหรือสีครีม) จะสร้างเส้นแนวนอนที่ชัดเจน ช่วยตัดการแบ่งส่วนเสื้อผ้าและแสดงถึงการจัดสไตล์อย่างตั้งใจ<br/><br/><h3>4. เลือกซื้อเสื้อตัวนอกที่ไม่มีโครงแข็ง</h3>เสื้อเบลเซอร์ที่ไม่มีโครงเสริมไหล่หรือเสื้อโค้ทเทรนช์น้ำหนักเบาจะช่วยรวบรวมทุกลุคเข้าด้วยกันอย่างลงตัว การปราศจากฟองน้ำเสริมไหล่หรือซับในที่หนาหนัก จะช่วยให้ผ้าทิ้งตัวอย่างเป็นธรรมชาติตามการแต่งตัวเลเยอร์ของคุณ รักษาทรวดทรงที่ดูเพรียวบางและผ่อนคลาย`;
+  }
+  
+  if (trimmed.startsWith("Summer styling is often dominated")) {
+    return `การแต่งตัวในฤดูร้อนมักจะถูกครอบงำด้วยลวดลายที่สดใสและสีสันที่จัดจ้าน อย่างไรก็ตาม พาเลทสีที่ได้รับการคัดสรรของโทนสีธรรมชาติที่อบอุ่นก็นำเสนอทางเลือกที่ซับซ้อนและไร้กาลเวลา ช่วยให้คุณมีรูปลักษณ์ที่ดูเย็นสบายและสง่างาม<br/><br/><h3>กลุ่มสีหลักที่ยึดลุค</h3>ทุกพาเลทสีจำเป็นต้องมีจุดยึด สำหรับฤดูร้อน เราเน้นไปที่สามหมวดหมู่หลัก:<br/><ul><li><b>สีอลาบาสเตอร์และสีครีม</b>: สีเหล่านี้สะท้อนแสงแดดและช่วยให้คุณรู้สึกเย็นสบาย ทำหน้าที่เป็นผืนผ้าใบหลักสำหรับลุคของคุณ</li><li><b>สีทรายทะเลทรายและสีโทป</b>: โทนสีกลางแนวเอิร์ธโทนที่อ้างอิงถึงผิวสัมผัสตามธรรมชาติ เช่น หญ้าแห้ง หิน และผ้าลินินดิบ</li><li><b>สีชาร์โคลและสีโอนิกซ์</b>: องค์ประกอบสีเข้มที่ใช้ในสัดส่วนเล็กน้อยเพื่อเน้นทรวดทรง ยึดโทนสีสว่าง และเพิ่มความคอนทราสต์ที่ดูทันสมัยคมชัด</li></ul><br/><h3>การเลือกเนื้อผ้าเป็นหัวใจสำคัญ</h3>โทนสีกลางจะประสบความสำเร็จได้ก็ต่อเมื่อจับคู่กับเนื้อผ้าเกรดพรีเมียมเท่านั้น ผ้าลินิน ผ้าไหมฝ้าย และผ้าถักแบบเปิดช่วยให้ผิวสัมผัสได้แสดงเอกลักษณ์ในตัวเอง เสื้อเชิ้ตผ้าลินินสีทรายทะเลทรายคู่กับกางเกงขายาวผ้าฝ้ายสีชาร์โคลคือทรวดทรงฤดูร้อนที่เรียบง่ายแต่ดูโดดเด่นสะดุดตา`;
+  }
+  
+  return content;
+}
+
+export function translateBlog<T extends { title: string; summary?: string; content?: string; authorName?: string }>(blog: T, lang: Language): T {
+  if (!blog) return blog;
+  return {
+    ...blog,
+    title: translateBlogTitle(blog.title, lang),
+    summary: blog.summary ? translateBlogSummary(blog.summary, lang) : blog.summary,
+    content: blog.content ? translateBlogContent(blog.content, lang) : blog.content,
+    authorName: blog.authorName ? translateBlogAuthor(blog.authorName, lang) : blog.authorName
+  };
+}
+

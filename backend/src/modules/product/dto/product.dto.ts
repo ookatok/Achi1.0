@@ -15,7 +15,7 @@ export const CreateProductSchema = z.object({
 
 export const GetProductsQuerySchema = z.object({
   page: z.string().optional().transform((val) => (val ? Math.max(1, parseInt(val, 10)) : 1)),
-  limit: z.string().optional().transform((val) => (val ? Math.max(1, parseInt(val, 10)) : 10)),
+  limit: z.string().optional().transform((val) => (val ? Math.max(1, parseInt(val, 10)) : 100)),
   categorySlug: z.string().optional(),
   collection: z.string().optional(),
   minPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),

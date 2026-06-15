@@ -1,27 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 ---
 
-<Layout title="TERMS & CONDITIONS | ACHI Studio" description="ACHI's website usage terms and order cancellation conditions.">
+<Layout 
+  title={lang === 'en' ? "TERMS & CONDITIONS | ACHI Studio" : "ข้อตกลงและเงื่อนไข | ACHI Studio"} 
+  description={lang === 'en' ? "ACHI's website usage terms and order cancellation conditions." : "ข้อตกลงการใช้งานเว็บไซต์และเงื่อนไขการยกเลิกสินค้าของ ACHI"}
+>
   <div class="max-w-[800px] mx-auto px-6 py-24">
     <div class="text-center mb-16">
-      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">TERMS & CONDITIONS</h1>
-      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">Terms of service and purchasing rules</p>
+      <h1 class="font-serif text-4xl tracking-widest uppercase text-brand-charcoal">
+        {lang === 'en' ? "TERMS & CONDITIONS" : "ข้อกำหนดและเงื่อนไข"}
+      </h1>
+      <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">
+        {lang === 'en' ? "Terms of service and purchasing rules" : "เงื่อนไขการใช้บริการและกฎการสั่งซื้อสินค้า"}
+      </p>
     </div>
 
     <div class="space-y-6 text-sm font-light text-gray-600 leading-relaxed">
       <p>
-        Welcome to the ACHI e-commerce store. By accessing our site and purchasing our clothing collections, you agree to comply with the terms below.
+        {lang === 'en'
+          ? "Welcome to the ACHI e-commerce store. By accessing our site and purchasing our clothing collections, you agree to comply with the terms below."
+          : "ยินดีต้อนรับสู่ร้านค้าออนไลน์ของ ACHI เมื่อคุณเข้าใช้งานเว็บไซต์และเลือกสั่งซื้อสินค้าคอลเลกชันเครื่องแต่งกายของเรา ถือว่าคุณยอมรับข้อตกลงและข้อกำหนดดังต่อไปนี้"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Orders & Stock</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Orders & Stock" : "การสั่งซื้อและคลังสินค้า"}
+      </h3>
       <p>
-        Stock quantities are updated dynamically. If an item becomes unavailable after payment validation due to a system lag, we will contact you immediately to process a full refund or swap items.
+        {lang === 'en'
+          ? "Stock quantities are updated dynamically. If an item becomes unavailable after payment validation due to a system lag, we will contact you immediately to process a full refund or swap items."
+          : "จำนวนสินค้าคงคลังจะมีการอัปเดตแบบเรียลไทม์ หากสินค้าเกิดข้อผิดพลาดในการขายและไม่พร้อมจำหน่ายหลังการยืนยันการชำระเงินเนื่องจากความล่าช้าของระบบ เราจะรีบติดต่อคุณทันทีเพื่อคืนเงินเต็มจำนวน หรือเสนอการเปลี่ยนสินค้าทางเลือกอื่น"
+        }
       </p>
 
-      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">Intellectual Property</h3>
+      <h3 class="font-serif text-base uppercase tracking-wider text-brand-charcoal font-medium mt-8 mb-4">
+        {lang === 'en' ? "Intellectual Property" : "ทรัพย์สินทางปัญญา"}
+      </h3>
       <p>
-        All site templates, typography layout, campaign photography assets, and logos are properties of ACHI Studio.
+        {lang === 'en'
+          ? "All site templates, typography layout, campaign photography assets, and logos are properties of ACHI Studio."
+          : "การออกแบบเทมเพลตเว็บไซต์ รูปแบบการจัดวางตัวอักษร ภาพถ่ายประกอบแคมเปญ และโลโก้แบรนด์ทั้งหมด ถือเป็นทรัพย์สินทางปัญญาและลิขสิทธิ์ของ ACHI Studio แต่เพียงผู้เดียว"
+        }
       </p>
     </div>
   </div>
