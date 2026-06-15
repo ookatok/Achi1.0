@@ -15,6 +15,25 @@ const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, is
 const session = await getSession(Astro.request);
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
+
+const token = (session as any)?.accessToken || '';
+let cartCount = 0;
+
+if (token) {
+  try {
+    const res = await fetch('http://localhost:3001/api/cart', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (res.ok) {
+      const cartData = await res.json();
+      cartCount = cartData.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+    }
+  } catch (err) {
+    console.error('[NestJS API Error] Fetching cart in Layout failed.', err);
+  }
+}
 ---
 
 <!DOCTYPE html>
@@ -211,6 +230,7 @@ const t = useTranslations(lang);
           <!-- Cart Icon Button -->
           <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
             <Cart />
+            <span id="cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
           </a>
 
           <!-- Language Selector -->
@@ -336,6 +356,7 @@ const t = useTranslations(lang);
           <!-- Cart Icon Button -->
           <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
             <Cart />
+            <span id="search-cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
           </a>
 
           <!-- Language Selector -->
@@ -803,6 +824,45 @@ const t = useTranslations(lang);
           window.location.reload();
         });
       });
+    </script>
+
+    <!-- Client-side script for Cart Badge syncing -->
+    <script is:inline define:vars={{ token }}>
+      (function() {
+        if (!token) return;
+
+        const updateCartBadges = async () => {
+          try {
+            const res = await fetch('http://localhost:3001/api/cart', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            if (res.ok) {
+              const cartData = await res.json();
+              const count = cartData.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+              
+              const badges = [document.getElementById('cart-badge'), document.getElementById('search-cart-badge')];
+              badges.forEach(badge => {
+                if (!badge) return;
+                badge.textContent = count;
+                if (count > 0) {
+                  badge.classList.remove('scale-0');
+                  badge.classList.add('scale-100');
+                } else {
+                  badge.classList.remove('scale-100');
+                  badge.classList.add('scale-0');
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Failed to update cart badge', e);
+          }
+        };
+
+        // Listen for cart update event
+        window.addEventListener('cart-updated', updateCartBadges);
+      })();
     </script>
   </body>
 </html>

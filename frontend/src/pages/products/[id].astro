@@ -340,6 +340,8 @@ const displayTags = parseArray(displayProduct.tags);
               cartMsg.textContent = isEn ? 'Item added to your cart successfully!' : 'เพิ่มสินค้าลงในตะกร้าของคุณเรียบร้อยแล้ว!';
               cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-green-50 border-l-2 border-green-500 text-green-600 block';
             }
+            // Dispatch event to update the cart badge count in navigation
+            window.dispatchEvent(new CustomEvent('cart-updated'));
           } else {
             throw new Error(data.message || (isEn ? 'Could not add item' : 'ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้'));
           }
