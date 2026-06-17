@@ -6,11 +6,12 @@ import { useTranslations } from '../lib/translations';
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+
 if (!token) {
-  return Astro.redirect(`/auth/signin?callbackUrl=${encodeURIComponent('/profile')}`);
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=${encodeURIComponent(`/${lang}/profile`)}`);
 }
 
-const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
 
 const role = (session?.user as any)?.role || 'customer';
@@ -163,7 +164,6 @@ if (role === 'customer') {
         </div>
 
         {role === 'admin' ? (
-          <!-- Admin Control panel Quick Access -->
           <div class="bg-stone-50 border border-stone-200/80 p-8 rounded-sm shadow-sm space-y-4">
             <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-stone-200">
               {lang === 'en' ? "Admin Dashboard Access" : "การเข้าถึงแดชบอร์ดแอดมิน"}
@@ -181,7 +181,6 @@ if (role === 'customer') {
             </div>
           </div>
         ) : (
-          <!-- Customer Orders History -->
           <div class="space-y-8">
             <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
               <h2 class="font-serif text-lg uppercase tracking-wider text-brand-charcoal font-semibold">
@@ -265,7 +264,7 @@ if (role === 'customer') {
     const signoutBtn = document.getElementById('signout-btn');
     if (signoutBtn) {
       signoutBtn.addEventListener('click', () => {
-        signOut({ callbackUrl: '/' });
+        signOut({ callbackUrl: '/' } as any);
       });
     }
 

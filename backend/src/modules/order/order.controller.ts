@@ -20,12 +20,14 @@ export class OrderController {
   @Get()
   async findAll(@Req() req: any) {
     const userId = req.user.id;
-    return this.orderService.findAll(userId);
+    const role = req.user.role;
+    return this.orderService.findAll(userId, role);
   }
 
   @Get(':id')
   async findOne(@Req() req: any, @Param('id', ParseIntPipe) orderId: number) {
     const userId = req.user.id;
-    return this.orderService.findOne(userId, orderId);
+    const role = req.user.role;
+    return this.orderService.findOne(userId, orderId, role);
   }
 }

@@ -1,0 +1,143 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { useTranslations } from '../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http')) return url;
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+};
+
+const collectionsList = [
+  {
+    id: 'spring',
+    titleEn: 'Spring Collection 2026',
+    titleTh: 'คอลเลกชันฤดูใบไม้ผลิ 2026',
+    descEn: 'Minimalist pastel shades and lightweight textures, designed for the fresh transition of the season.',
+    descTh: 'เฉดสีพาสเทลมินิมอลและเนื้อสัมผัสบางเบา ออกแบบมาสำหรับการเปลี่ยนผ่านฤดูกาลอันสดชื่น',
+    imageUrl: '/assets/images/hero-authentic.png',
+    link: '/products/spring'
+  },
+  {
+    id: 'summer',
+    titleEn: 'Summer Collection',
+    titleTh: 'คอลเลกชันฤดูร้อน',
+    descEn: 'Breathable linen, relaxed cuts, and sun-soaked aesthetics for the ultimate warm-weather look.',
+    descTh: 'ผ้าลินินระบายอากาศ รูปทรงผ่อนคลาย และสุนทรียภาพแห่งแสงแดดเพื่อลุคฤดูร้อนที่สมบูรณ์แบบ',
+    imageUrl: '/assets/images/women-hero.png',
+    link: '/products/summer'
+  },
+  {
+    id: 'fall',
+    titleEn: 'Fall Collection',
+    titleTh: 'คอลเลกชันฤดูใบไม้ร่วง',
+    descEn: 'Layering essentials, warm earthy tones, and structured outerwear designed for cooler days.',
+    descTh: 'เสื้อผ้าสำหรับการเลเยอร์ โทนสีเอิร์ธโทนอันอบอุ่น และเสื้อตัวนอกที่มีโครงสร้างชัดเจนสำหรับวันสบายๆ',
+    imageUrl: '/assets/images/men-hero.png',
+    link: '/products/fall'
+  },
+  {
+    id: 'winter',
+    titleEn: 'Winter Collection',
+    titleTh: 'คอลเลกชันฤดูหนาว',
+    descEn: 'Cosy knitwear, heavy-duty coats, and refined tailoring to keep you warm and elegant.',
+    descTh: 'เสื้อถักที่แสนอบอุ่น เสื้อโค้ทกันหนาว และการตัดเย็บที่ประณีตเพื่อความอบอุ่นและสง่างาม',
+    imageUrl: '/assets/images/collage-model.png',
+    link: '/products/winter'
+  },
+  {
+    id: 'total-looks',
+    titleEn: 'Total Looks',
+    titleTh: 'ลุคทั้งหมด',
+    descEn: 'Coordinated sets and curated outfits designed to elevate your everyday confidence effortlessly.',
+    descTh: 'ชุดเซ็ตที่เข้าคู่และเสื้อผ้าที่คัดสรรมาเป็นพิเศษเพื่อเพิ่มความมั่นใจในทุกๆ วันของคุณอย่างง่ายดาย',
+    imageUrl: '/assets/images/set1.png',
+    link: '/products/total-looks'
+  },
+  {
+    id: 'basics',
+    titleEn: 'Basics Collection',
+    titleTh: 'คอลเลกชันเบสิก',
+    descEn: 'Timeless silhouettes, premium organic cotton, and the foundations of a modern minimalist wardrobe.',
+    descTh: 'รูปทรงเหนือกาลเวลา ผ้าฝ้ายออร์แกนิกเกรดพรีเมียม และพื้นฐานของตู้เสื้อผ้ามินิมอลสไตล์โมเดิร์น',
+    imageUrl: '/assets/images/tshirt-1.png',
+    link: '/products/basics'
+  }
+];
+---
+
+<Layout 
+  title={lang === 'en' ? "Collections | ACHI Studio" : "คอลเลกชัน | ACHI Studio"} 
+  description={lang === 'en' ? "Shop minimalist seasonal collections and basic essentials from ACHI." : "สำรวจคอลเลกชันฤดูการต่างๆ และเครื่องแต่งกายจาก ACHI"} 
+  showHeroHeader={true}
+>
+  {/* Editorial Collection Hero Banner */}
+  <section class="w-full relative h-[45vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/collection-hero.png')}');`}></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+    
+    <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
+      <div class="flex items-end justify-between w-full">
+        <div>
+          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">
+            {lang === 'en' ? "EXPLORE" : "สำรวจ"}
+          </span>
+          <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight uppercase leading-none">
+            {t('collections.hero.title')}
+          </h1>
+          <p class="text-xs sm:text-sm tracking-widest font-light text-gray-300 max-w-xl mt-4 uppercase leading-relaxed">
+            {t('collections.hero.subtitle')}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Collections Grid */}
+  <section class="max-w-[1440px] mx-auto px-6 py-24 bg-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+      {collectionsList.map((col) => (
+        <div class="flex flex-col group">
+          {/* Card Image Container */}
+          <a href={col.link} class="relative aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm block">
+            <img 
+              src={resolveImage(col.imageUrl)} 
+              alt={lang === 'en' ? col.titleEn : col.titleTh} 
+              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all duration-300"></div>
+            
+            {/* Floating Category Label */}
+            <div class="absolute top-6 left-6">
+              <span class="bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[9px] tracking-[0.2em] uppercase font-light text-brand-charcoal rounded-sm shadow-sm">
+                {lang === 'en' ? 'VIEW COLLECTION' : 'ดูคอลเลกชัน'}
+              </span>
+            </div>
+          </a>
+          
+          {/* Card Details */}
+          <div class="mt-6 flex flex-col items-start">
+            <h3 class="font-serif text-xl sm:text-2xl font-normal tracking-wide text-brand-charcoal uppercase group-hover:text-brand-gold transition-colors duration-300">
+              <a href={col.link}>{lang === 'en' ? col.titleEn : col.titleTh}</a>
+            </h3>
+            <p class="text-xs text-gray-500 font-light tracking-wide mt-2 sm:mt-3 leading-relaxed uppercase">
+              {lang === 'en' ? col.descEn : col.descTh}
+            </p>
+            <a href={col.link} class="text-[11px] tracking-[0.2em] font-medium text-brand-charcoal uppercase mt-4 inline-flex items-center gap-1.5 border-b border-brand-charcoal/30 pb-0.5 group-hover:border-brand-gold group-hover:text-brand-gold transition-all duration-300">
+              {lang === 'en' ? 'SHOP NOW' : 'ช้อปเลย'}
+              <svg class="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>

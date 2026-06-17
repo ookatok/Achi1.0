@@ -147,7 +147,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
 
           {/* Gift Message Block */}
           <div class="border border-gray-200 p-6 rounded-sm bg-white">
-            <label htmlFor="gift-message" class="block text-[11px] uppercase tracking-wider font-medium text-brand-charcoal mb-4">
+            <label for="gift-message" class="block text-[11px] uppercase tracking-wider font-medium text-brand-charcoal mb-4">
               {lang === 'en' ? "Add gift message" : "เพิ่มข้อความบนการ์ดของขวัญ"}
             </label>
             <textarea
@@ -174,7 +174,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
   <script is:inline define:vars={{ token, lang }}>
     // Setup listeners for remove buttons
     document.querySelectorAll('.remove-item-btn').forEach(button => {
-      button.addEventListener('click', async (e) => {
+      button.addEventListener('click', async () => {
         const itemId = button.getAttribute('data-item-id');
         if (!itemId || !token) return;
 

@@ -1,8 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { HeroBanner } from '../components/common/banners';
-import { Heart } from '../components/common/icons';
-import { useTranslations, translateProductName, translateProduct } from '../lib/translations';
+import { useTranslations } from '../lib/translations';
 
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
@@ -15,15 +14,6 @@ const resolveImage = (url: string) => {
   if (url.startsWith('http')) return url;
   return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
 };
-
-// Fallback Mock items for "view more" section expansion
-const mockMoreProducts = [
-  { id: 109, name: "generic set 1", price: "499.00", imageUrl: "/assets/images/set1.png" },
-  { id: 110, name: "generic set 2", price: "499.00", imageUrl: "/assets/images/set2.png" },
-  { id: 111, name: "generic set 3", price: "499.00", imageUrl: "/assets/images/set3.png" },
-  { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
-];
-const displayMoreProducts = mockMoreProducts.map(p => translateProduct(p, lang));
 ---
 
 <Layout 
@@ -39,6 +29,57 @@ const displayMoreProducts = mockMoreProducts.map(p => translateProduct(p, lang))
     ctaText={t('home.hero.cta')}
     ctaLink="/products"
   />
+
+  <!-- New Arrivals Magazine Grid -->
+  <section class="bg-white py-24 border-y border-gray-100">
+    <div class="max-w-[1440px] mx-auto px-6 mb-12">
+      <h2 class="font-sans text-5xl sm:text-6xl font-bold tracking-tighter text-brand-charcoal uppercase">
+        {t('home.new_arrivals')}
+      </h2>
+    </div>
+
+    <!-- Full width edge-to-edge grid with zero gap -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
+      <!-- Card 1: PREMIUM -->
+      <a href="/products/new-arrivals" class="group relative aspect-[3/4] overflow-hidden bg-gray-100 block transition-all duration-500 ease-out hover:scale-115 hover:z-10 hover:shadow-[0_25px_60px_rgba(0,0,0,0.2)]">
+        <img 
+          src={resolveImage('/assets/images/new-arrival-premium.png')} 
+          alt="New Arrival Premium" 
+          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+        />
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-500"></div>
+      </a>
+
+      <!-- Card 2: HARBOUR -->
+      <a href="/products/new-arrivals" class="group relative aspect-[3/4] overflow-hidden bg-gray-100 block transition-all duration-500 ease-out hover:scale-115 hover:z-10 hover:shadow-[0_25px_60px_rgba(0,0,0,0.2)]">
+        <img 
+          src={resolveImage('/assets/images/new-arrival-harbour.png')} 
+          alt="New Arrival Harbour" 
+          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+        />
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-500"></div>
+      </a>
+
+      <!-- Card 3: STORM -->
+      <a href="/products/new-arrivals" class="group relative aspect-[3/4] overflow-hidden bg-gray-100 block transition-all duration-500 ease-out hover:scale-115 hover:z-10 hover:shadow-[0_25px_60px_rgba(0,0,0,0.2)]">
+        <img 
+          src={resolveImage('/assets/images/new-arrival-storm.png')} 
+          alt="New Arrival Storm" 
+          class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+        />
+        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-500"></div>
+      </a>
+    </div>
+
+    <div class="max-w-[1440px] mx-auto px-6 text-center mt-16">
+      <a 
+        href="/collections" 
+        class="inline-block border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300 cursor-pointer"
+      >
+        {lang === 'en' ? "View collection" : "ดูคอลเลกชัน"}
+      </a>
+    </div>
+  </section>
 
   <!-- Side-by-Side Category Banners (MEN & WOMEN) -->
   <section class="w-full py-16 bg-white">
@@ -66,173 +107,5 @@ const displayMoreProducts = mockMoreProducts.map(p => translateProduct(p, lang))
       </a>
     </div>
   </section>
-
-  <!-- New Arrivals Collage Grid -->
-  <section class="bg-[#F2F4F8] py-24 border-y border-gray-100">
-    <div class="max-w-[1440px] mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="font-serif text-3xl sm:text-4xl tracking-wide font-semibold text-brand-charcoal uppercase">
-          {t('home.new_arrivals')}
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
-        <!-- Col 1: Item 1 & Item 2 Stack -->
-        <div class="flex flex-col gap-8 justify-between">
-          <!-- Item 1: Polo -->
-          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id="105"
-              data-name={translateProductName("generic shirt", lang)}
-              data-price="567"
-              data-image="/assets/images/polo-dark.png"
-            >
-              <Heart />
-            </button>
-            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/polo-dark.png')} alt={translateProductName("generic shirt", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
-            </div>
-            <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic shirt", lang)}</h3>
-              <span class="text-xs text-gray-500 mt-2 block">$567</span>
-            </div>
-            <a href="/products/105" class="absolute inset-0 z-10" aria-label="View Product"></a>
-          </div>
-          
-          <!-- Item 2: Watch -->
-          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id="106"
-              data-name={translateProductName("generic watch", lang)}
-              data-price="567"
-              data-image="/assets/images/watch-dark.png"
-            >
-              <Heart />
-            </button>
-            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/watch-dark.png')} alt={translateProductName("generic watch", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
-            </div>
-            <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic watch", lang)}</h3>
-              <span class="text-xs text-gray-500 mt-2 block">$567</span>
-            </div>
-            <a href="/products/106" class="absolute inset-0 z-10" aria-label="View Product"></a>
-          </div>
-        </div>
-
-        <!-- Col 2: Tall vertical Model Photo (Col 2 & Col 3 middle) -->
-        <div class="md:col-span-2 relative aspect-[3/4] md:aspect-auto overflow-hidden bg-gray-200 rounded-sm">
-          <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${resolveImage('/assets/images/collage-model.png')}');`}></div>
-        </div>
-
-        <!-- Col 3: Item 3 & Item 4 Stack -->
-        <div class="flex flex-col gap-8 justify-between">
-          <!-- Item 3: Pants -->
-          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id="107"
-              data-name={translateProductName("generic pants", lang)}
-              data-price="569"
-              data-image="/assets/images/pants-cream.png"
-            >
-              <Heart />
-            </button>
-            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/pants-cream.png')} alt={translateProductName("generic pants", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
-            </div>
-            <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic pants", lang)}</h3>
-              <span class="text-xs text-gray-500 mt-2 block">$569</span>
-            </div>
-            <a href="/products/107" class="absolute inset-0 z-10" aria-label="View Product"></a>
-          </div>
-
-          <!-- Item 4: Shoes -->
-          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id="108"
-              data-name={translateProductName("generic shoes", lang)}
-              data-price="567"
-              data-image="/assets/images/shoes-white.png"
-            >
-              <Heart />
-            </button>
-            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage('/assets/images/shoes-white.png')} alt={translateProductName("generic shoes", lang)} class="max-h-[85%] object-contain mix-blend-multiply" />
-            </div>
-            <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{translateProductName("generic shoes", lang)}</h3>
-              <span class="text-xs text-gray-500 mt-2 block">$567</span>
-            </div>
-            <a href="/products/108" class="absolute inset-0 z-10" aria-label="View Product"></a>
-          </div>
-        </div>
-      </div>
-
-    <!-- More Products Section (Hidden by default, expands vertically) -->
-    <div id="more-products-section" class="max-h-0 overflow-hidden opacity-0 transition-all duration-1000 ease-in-out">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pt-8">
-        {displayMoreProducts.map(product => (
-          <div class="bg-white p-6 border border-gray-100 rounded-sm relative flex flex-col justify-between aspect-[1/1] product-card-hover group">
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id={product.id}
-              data-name={product.name}
-              data-price={product.price}
-              data-image={product.imageUrl}
-            >
-              <Heart />
-            </button>
-            <div class="flex-grow flex items-center justify-center overflow-hidden aspect-[4/3] relative my-4">
-              <img src={resolveImage(product.imageUrl)} alt={product.name} class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" />
-            </div>
-            <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{product.name}</h3>
-              <span class="text-xs text-gray-500 mt-2 block">${Number(product.price).toLocaleString()}</span>
-            </div>
-            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Product"></a>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div class="text-center mt-16">
-      <button 
-        id="view-more-btn" 
-        class="border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white px-12 py-3.5 rounded-full text-xs uppercase tracking-widest font-medium transition-all duration-300 cursor-pointer"
-      >
-        {lang === 'en' ? "view more" : "ดูเพิ่มเติม"}
-      </button>
-    </div>
-  </div>
 </Layout>
 
-<script is:inline>
-  const viewMoreBtn = document.getElementById('view-more-btn');
-  const moreProductsSection = document.getElementById('more-products-section');
-
-  if (viewMoreBtn && moreProductsSection) {
-    viewMoreBtn.addEventListener('click', () => {
-      if (moreProductsSection.classList.contains('max-h-0')) {
-        // Expand
-        moreProductsSection.classList.remove('max-h-0', 'opacity-0');
-        moreProductsSection.classList.add('max-h-[1000px]', 'opacity-100');
-        viewMoreBtn.textContent = window.currentLang === 'en' ? 'view less' : 'แสดงน้อยลง';
-      } else {
-        // Collapse
-        moreProductsSection.classList.add('max-h-0', 'opacity-0');
-        moreProductsSection.classList.remove('max-h-[1000px]', 'opacity-100');
-        viewMoreBtn.textContent = window.currentLang === 'en' ? 'view more' : 'ดูเพิ่มเติม';
-      }
-    });
-  }
-</script>

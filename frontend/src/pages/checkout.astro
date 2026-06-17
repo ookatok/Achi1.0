@@ -1,17 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
-import { useTranslations, translateProductName } from '../lib/translations';
+import { translateProductName } from '../lib/translations';
 
 // Fetch user session for token authorization
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
-const t = useTranslations(lang);
 
 if (!token) {
-  return Astro.redirect(`/auth/signin?callbackUrl=${encodeURIComponent('/checkout')}`);
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=${encodeURIComponent(`/${lang}/checkout`)}`);
 }
+
 
 let cartData = { id: 0, items: [] as any[] };
 let errorMsg = null;
@@ -74,7 +74,7 @@ const cartTotal = subtotal;
 
           <div class="space-y-6">
             <div>
-              <label htmlFor="address" class="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">
+              <label for="address" class="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">
                 {lang === 'en' ? "Delivery Address" : "ที่อยู่จัดส่งสินค้า"}
               </label>
               <textarea

@@ -12,7 +12,9 @@
     "db:studio": "npm run db:studio --prefix backend",
     "frontend:dev": "npm run dev --prefix frontend",
     "frontend:build": "npm run build --prefix frontend",
-    "gen:api": "npm run gen:api --prefix frontend"
+    "gen:api": "npm run gen:api --prefix frontend",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend",
+    "check": "npm run check --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

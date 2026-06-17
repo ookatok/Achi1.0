@@ -5,11 +5,11 @@ import { getSession } from 'auth-astro/server';
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 
-if (!token) {
-  return Astro.redirect('/auth/signin');
-}
-
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin`);
+}
 
 // Get orderId from query parameter
 const orderId = Astro.url.searchParams.get('orderId') || '';

@@ -3,10 +3,12 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import auth from 'auth-astro';
 import node from '@astrojs/node';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [react(), auth()],
+  site: 'http://localhost:4321',
+  integrations: [react(), auth(), sitemap()],
   adapter: node({
     mode: 'standalone',
   }),

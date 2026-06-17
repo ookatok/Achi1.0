@@ -78,17 +78,20 @@ export class OrderService {
     });
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: number, role: string) {
+    if (role === 'admin') {
+      return await this.orderRepo.findAllOrdersForAdmin();
+    }
     return await this.orderRepo.findAllOrders(userId);
   }
 
-  async findOne(userId: number, orderId: number) {
+  async findOne(userId: number, orderId: number, role: string) {
     const order = await this.orderRepo.findOrderById(orderId);
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found`);
     }
 
-    if (order.userId !== userId) {
+    if (role !== 'admin' && order.userId !== userId) {
       throw new ForbiddenException('You do not own this order');
     }
 

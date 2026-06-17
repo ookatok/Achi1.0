@@ -35,6 +35,18 @@ export class OrderRepository {
       .where(eq(orders.userId, userId));
   }
 
+  async findAllOrdersForAdmin() {
+    return await this.db
+      .select({
+        id: orders.id,
+        status: orders.status,
+        totalPrice: orders.totalPrice,
+        shippingAddress: orders.shippingAddress,
+        createdAt: orders.createdAt,
+      })
+      .from(orders);
+  }
+
   async findOrderById(orderId: number) {
     const results = await this.db
       .select()

@@ -8,11 +8,14 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "gen:api": "openapi-typescript http://localhost:3001/docs-json -o src/lib/api/schema.gen.ts"
+    "gen:api": "openapi-typescript http://localhost:3001/docs-json -o src/lib/api/schema.gen.ts",
+    "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx,.astro",
+    "check": "astro check"
   },
   "dependencies": {
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^3.0.0",
+    "@astrojs/sitemap": "^3.6.0",
     "@auth/core": "^0.37.3",
     "@tiptap/core": "^3.26.0",
     "@tiptap/pm": "^3.26.0",
@@ -27,9 +30,17 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.3.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "astro-eslint-parser": "^0.16.3",
+    "eslint": "^8.56.0",
+    "eslint-plugin-astro": "^0.31.4",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "openapi-typescript": "^6.7.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.1.3"

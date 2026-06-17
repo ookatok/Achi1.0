@@ -22,7 +22,7 @@ export default function SignInForm() {
         password,
         callbackUrl,
         redirect: false,
-      });
+      } as any) as any;
       
       if (result?.error) {
         setError('Invalid email or password. Please try again.');

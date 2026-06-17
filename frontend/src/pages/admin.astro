@@ -1,12 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
+import { useTranslations } from '../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
 
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 
 if (!token) {
-  return Astro.redirect('/auth/signin?callbackUrl=/admin');
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
 }
 
 // Security double check (just in case middleware is bypassed)
@@ -90,20 +94,20 @@ const parseArray = (val: any) => {
 };
 ---
 
-<Layout title="Admin Panel | ACHI Studio" description="ACHI E-Commerce administrative console." isAdminPanel={true}>
-  <div id="admin-container" data-token={token} class="max-w-[1000px] mx-auto px-6 py-24">
+<Layout title={`${t('admin.title')} | ACHI Studio`} description={t('admin.console')} isAdminPanel={true} pendingOrdersCount={orders.filter((o: any) => o.status === 'pending').length}>
+  <div id="admin-container" data-token={token} data-lang={lang} class="max-w-[1000px] mx-auto px-6 py-24">
     {/* Page Header */}
     <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-4 border-b border-stone-100 pb-8">
       <div class="text-center md:text-left">
-        <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">Admin Panel</h1>
-        <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">E-Commerce Management Console</p>
+        <h1 class="font-serif text-3xl tracking-widest font-bold uppercase text-brand-charcoal">{t('admin.title')}</h1>
+        <p class="text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 font-light">{t('admin.console')}</p>
       </div>
       <div>
         <button
           id="signout-btn"
           class="border border-stone-300 text-stone-600 hover:border-brand-charcoal hover:text-brand-charcoal px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
         >
-          Sign Out
+          {t('admin.signout')}
         </button>
       </div>
     </div>
@@ -118,42 +122,42 @@ const parseArray = (val: any) => {
     <div id="dashboard-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-8 mb-8">
       <div class="pb-2 border-b border-stone-100">
         <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
-          Dashboard Overview
+          {t('admin.overview')}
         </h2>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Card 1: Products Count -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Products</span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.total_products')}</span>
           <span class="text-3xl font-serif font-bold text-brand-charcoal">{productsCount}</span>
         </div>
 
         <!-- Card 2: Orders Count -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Orders</span>
-          <span class="text-3xl font-serif font-bold text-brand-charcoal">{orders.length}</span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.total_orders')}</span>
+          <span id="admin-total-orders-count" class="text-3xl font-serif font-bold text-brand-charcoal">{orders.length}</span>
         </div>
 
         <!-- Card 3: Blogs Count -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Total Blogs</span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.total_blogs')}</span>
           <span class="text-3xl font-serif font-bold text-brand-charcoal">{blogs.length}</span>
         </div>
 
         <!-- Card 4: Server Status -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
-          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">Server Status</span>
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.server_status')}</span>
           <span class="text-xs font-semibold text-green-600 uppercase tracking-widest bg-green-50 px-2.5 py-1.5 rounded-full border border-green-100 inline-block mt-1">
-            Online
+            {t('admin.status_online')}
           </span>
         </div>
       </div>
 
       <!-- Welcome Note -->
       <div class="p-6 bg-stone-50 border border-stone-100 rounded-sm">
-        <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-2">Welcome to ACHI Studio Console</h3>
+        <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-2">{t('admin.welcome_title')}</h3>
         <p class="text-[11px] text-stone-500 font-light leading-relaxed">
-          From this panel, you can manage orders, products, and categories, as well as create and edit blog posts. Use the navigation links at the top of the page to switch between modules.
+          {t('admin.welcome_desc')}
         </p>
       </div>
     </div>
@@ -161,21 +165,21 @@ const parseArray = (val: any) => {
     <!-- Section: Orders Management -->
     <div id="orders-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
       <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium pb-2 border-b border-stone-100">
-        System Orders List
+        {t('admin.orders_title')}
       </h2>
 
       {orders.length === 0 ? (
         <div class="text-center py-12 text-gray-400 text-xs font-light">
-          No orders found in the database.
+          {t('admin.no_orders')}
         </div>
       ) : (
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-500 border-collapse border border-gray-100">
             <thead>
               <tr class="bg-gray-50 text-brand-charcoal uppercase font-semibold">
-                <th class="p-3 border border-gray-100">Order ID</th>
-                <th class="p-3 border border-gray-100">Date</th>
-                <th class="p-3 border border-gray-100">Shipping Address</th>
+                <th class="p-3 border border-gray-100">{t('admin.order_id')}</th>
+                <th class="p-3 border border-gray-100">{t('admin.date')}</th>
+                <th class="p-3 border border-gray-100">{t('admin.shipping_address')}</th>
                 <th class="p-3 border border-gray-100 text-right">Amount</th>
                 <th class="p-3 border border-gray-100 text-center">Status</th>
               </tr>
@@ -206,13 +210,13 @@ const parseArray = (val: any) => {
     <div id="products-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
       <div class="flex justify-between items-center pb-2 border-b border-stone-100">
         <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
-          Products Management
+          {t('admin.products_title')}
         </h2>
         <button
           id="open-add-dialog-btn"
           class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
         >
-          Add Product
+          {t('admin.add_product')}
         </button>
       </div>
 
@@ -222,67 +226,67 @@ const parseArray = (val: any) => {
           <!-- Filters Bar -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-stone-50 border border-stone-100 rounded-sm">
             <div>
-              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Search</label>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('nav.search')}</label>
               <input
                 type="text"
                 id="admin-product-search"
-                placeholder="Search name, description..."
+                placeholder={t('admin.search_placeholder')}
                 class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
               />
             </div>
             <div>
-              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
               <select
                 id="admin-product-category-filter"
                 class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
               >
-                <option value="">All Categories</option>
+                <option value="">{t('admin.filter_category')}</option>
                 {productCategories.map((cat: any) => (
                   <option value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Tag</label>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_tags')}</label>
               <select
                 id="admin-product-tag-filter"
                 class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
               >
-                <option value="">All Tags</option>
+                <option value="">{t('admin.filter_tag')}</option>
                 {productTagsList.map((tag: any) => (
                   <option value={tag.name.toLowerCase()}>{tag.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Status</label>
+              <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.filter_stock')}</label>
               <select
                 id="admin-product-stock-filter"
                 class="w-full border border-stone-200 px-3 py-2 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white"
               >
-                <option value="">All Stock Status</option>
-                <option value="out">Out of Stock (0)</option>
-                <option value="low">Low Stock (1-10)</option>
-                <option value="in">In Stock (>10)</option>
+                <option value="">{t('admin.filter_stock')}</option>
+                <option value="out">{t('admin.stock_outofstock')}</option>
+                <option value="low">{t('admin.stock_lowstock')}</option>
+                <option value="in">{t('admin.stock_instock')}</option>
               </select>
             </div>
           </div>
 
           {products.length === 0 ? (
             <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
-              No products found in the database.
+              {lang === 'en' ? 'No products found.' : 'ไม่พบสินค้าในระบบ'}
             </div>
           ) : (
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
                 <thead>
                   <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
-                    <th class="p-4 border border-stone-100 w-16">Image</th>
-                    <th class="p-4 border border-stone-100">Product Info</th>
-                    <th class="p-4 border border-stone-100 w-24">Price</th>
-                    <th class="p-4 border border-stone-100 w-20">Stock</th>
-                    <th class="p-4 border border-stone-100">Sizes & Colors</th>
-                    <th class="p-4 border border-stone-100 text-center w-32">Actions</th>
+                    <th class="p-4 border border-stone-100 w-16">{t('admin.th_image')}</th>
+                    <th class="p-4 border border-stone-100">{lang === 'en' ? 'Product Info' : 'ข้อมูลสินค้า'}</th>
+                    <th class="p-4 border border-stone-100 w-24">{t('admin.th_price')}</th>
+                    <th class="p-4 border border-stone-100 w-20">{t('admin.th_stock')}</th>
+                    <th class="p-4 border border-stone-100">{lang === 'en' ? 'Sizes & Colors' : 'ไซส์และสี'}</th>
+                    <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -302,13 +306,13 @@ const parseArray = (val: any) => {
                           {product.imageUrl ? (
                             <img src={product.imageUrl} alt={product.name} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
                           ) : (
-                            <div class="w-12 h-14 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">No img</div>
+                            <div class="w-12 h-14 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">{lang === 'en' ? 'No img' : 'ไม่มีรูป'}</div>
                           )}
                         </td>
                         <td class="p-4 border border-stone-100">
                           <div class="font-medium text-brand-charcoal text-sm">{product.name}</div>
                           <div class="text-[10px] text-stone-400 mt-0.5 tracking-wider">slug: {product.slug}</div>
-                          <div class="text-[9px] uppercase tracking-widest text-stone-400 mt-1 font-semibold">{product.categoryName || 'Clothing'}</div>
+                          <div class="text-[9px] uppercase tracking-widest text-stone-400 mt-1 font-semibold">{product.categoryName || (lang === 'en' ? 'Clothing' : 'เสื้อผ้า')}</div>
                         </td>
                         <td class="p-4 border border-stone-100 font-medium text-brand-charcoal">
                           ${Number(product.price).toLocaleString()}
@@ -322,7 +326,7 @@ const parseArray = (val: any) => {
                           <div class="space-y-1">
                             {prodSizes.length > 0 && (
                               <div class="flex flex-wrap gap-1">
-                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Sizes:</span>
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">{lang === 'en' ? 'Sizes:' : 'ไซส์:'}</span>
                                 {prodSizes.map((size: string) => (
                                   <span class="text-[9px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono font-bold">{size}</span>
                                 ))}
@@ -330,7 +334,7 @@ const parseArray = (val: any) => {
                             )}
                             {prodColors.length > 0 && (
                               <div class="flex flex-wrap gap-1">
-                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Colors:</span>
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">{lang === 'en' ? 'Colors:' : 'สี:'}</span>
                                 {prodColors.map((color: string) => (
                                   <span class="text-[9px] bg-stone-50 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-sans">{color}</span>
                                 ))}
@@ -338,7 +342,7 @@ const parseArray = (val: any) => {
                             )}
                             {prodTags.length > 0 && (
                               <div class="flex flex-wrap gap-1">
-                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">Tags:</span>
+                                <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">{lang === 'en' ? 'Tags:' : 'แท็ก:'}</span>
                                 {prodTags.map((tag: any) => (
                                   <span class="text-[9px] bg-stone-100/60 border border-dashed border-stone-200 text-stone-500 px-1.5 py-0.5 rounded font-sans">{typeof tag === 'object' ? tag.name : tag}</span>
                                 ))}
@@ -362,14 +366,14 @@ const parseArray = (val: any) => {
                               data-tags={JSON.stringify(prodTags.map((t: any) => typeof t === 'object' ? t.name : t))}
                               data-category={product.categoryId}
                             >
-                              Edit
+                              {t('admin.btn_edit')}
                             </button>
                             <button
                               class="delete-prod-btn border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-500 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
                               data-id={product.id}
                               data-name={product.name}
                             >
-                              Delete
+                              {t('admin.btn_delete')}
                             </button>
                           </div>
                         </td>
@@ -386,18 +390,18 @@ const parseArray = (val: any) => {
         <div class="border border-stone-200 p-6 rounded-sm bg-stone-50/50 space-y-6 self-start shadow-sm">
           <div>
             <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
-              Product Categories
+              {lang === 'en' ? 'Product Categories' : 'หมวดหมู่สินค้า'}
             </h3>
             
             {productCategories.length === 0 ? (
-              <p class="text-[10px] text-stone-400 font-light">No categories created yet.</p>
+              <p class="text-[10px] text-stone-400 font-light">{lang === 'en' ? 'No categories created yet.' : 'ยังไม่มีหมวดหมู่สินค้าในระบบ'}</p>
             ) : (
               <ul id="product-categories-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                 {productCategories.map((cat: any) => (
                   <li class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100">
                     <div class="flex flex-col">
                       <span class="font-medium text-brand-charcoal font-mono text-[11px]">{cat.name}</span>
-                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{cat.productCount} product{cat.productCount !== 1 ? 's' : ''}</span>
+                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{cat.productCount} {lang === 'en' ? `product${cat.productCount !== 1 ? 's' : ''}` : 'รายการ'}</span>
                     </div>
                     <button 
                       type="button" 
@@ -405,7 +409,7 @@ const parseArray = (val: any) => {
                       data-id={cat.id}
                       data-name={cat.name}
                     >
-                      Delete
+                      {t('admin.btn_delete')}
                     </button>
                   </li>
                 ))}
@@ -415,11 +419,11 @@ const parseArray = (val: any) => {
 
           <div class="pt-4 border-t border-stone-200">
             <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
-              Create New Category
+              {lang === 'en' ? 'Create New Category' : 'สร้างหมวดหมู่ใหม่'}
             </h4>
             <form id="create-prod-cat-form" class="space-y-3">
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Category Name</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Category Name' : 'ชื่อหมวดหมู่'}</label>
                 <input 
                   type="text" 
                   id="new-prod-cat-name" 
@@ -429,7 +433,7 @@ const parseArray = (val: any) => {
                 />
               </div>
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Slug' : 'สลัก (Slug)'}</label>
                 <input 
                   type="text" 
                   id="new-prod-cat-slug" 
@@ -442,7 +446,7 @@ const parseArray = (val: any) => {
                 type="submit" 
                 class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
               >
-                Add Category
+                {lang === 'en' ? 'Add Category' : 'เพิ่มหมวดหมู่'}
               </button>
             </form>
           </div>
@@ -450,18 +454,18 @@ const parseArray = (val: any) => {
           <!-- Product Tags Section -->
           <div class="pt-6 border-t border-stone-200">
             <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
-              Product Tags
+              {lang === 'en' ? 'Product Tags' : 'ป้ายแท็กสินค้า'}
             </h3>
             
             {productTagsList.length === 0 ? (
-              <p class="text-[10px] text-stone-400 font-light">No tags created yet.</p>
+              <p class="text-[10px] text-stone-400 font-light">{lang === 'en' ? 'No tags created yet.' : 'ยังไม่มีป้ายแท็กสินค้าในระบบ'}</p>
             ) : (
               <ul id="product-tags-list" class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                 {productTagsList.map((tag: any) => (
                   <li class="flex items-center justify-between text-xs py-1.5 border-b border-stone-100">
                     <div class="flex flex-col">
                       <span class="font-medium text-brand-charcoal font-mono text-[11px]">{tag.name}</span>
-                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{tag.productCount} product{tag.productCount !== 1 ? 's' : ''}</span>
+                      <span class="text-[9px] text-stone-400 font-light mt-0.5">{tag.productCount} {lang === 'en' ? `product${tag.productCount !== 1 ? 's' : ''}` : 'รายการ'}</span>
                     </div>
                     <button 
                       type="button" 
@@ -469,7 +473,7 @@ const parseArray = (val: any) => {
                       data-id={tag.id}
                       data-name={tag.name}
                     >
-                      Delete
+                      {t('admin.btn_delete')}
                     </button>
                   </li>
                 ))}
@@ -479,11 +483,11 @@ const parseArray = (val: any) => {
 
           <div class="pt-4 border-t border-stone-200">
             <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
-              Create New Tag
+              {lang === 'en' ? 'Create New Tag' : 'สร้างป้ายแท็กใหม่'}
             </h4>
             <form id="create-prod-tag-form" class="space-y-3">
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Tag Name</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Tag Name' : 'ชื่อป้ายแท็ก'}</label>
                 <input 
                   type="text" 
                   id="new-prod-tag-name" 
@@ -493,7 +497,7 @@ const parseArray = (val: any) => {
                 />
               </div>
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Slug' : 'สลัก (Slug)'}</label>
                 <input 
                   type="text" 
                   id="new-prod-tag-slug" 
@@ -506,7 +510,7 @@ const parseArray = (val: any) => {
                 type="submit" 
                 class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
               >
-                Add Tag
+                {lang === 'en' ? 'Add Tag' : 'เพิ่มป้ายแท็ก'}
               </button>
             </form>
           </div>
@@ -518,13 +522,13 @@ const parseArray = (val: any) => {
     <div id="blogs-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
       <div class="flex justify-between items-center pb-2 border-b border-stone-100">
         <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
-          Blog Management
+          {t('admin.blogs_title')}
         </h2>
         <button
           id="open-add-blog-btn"
           class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
         >
-          Add Post
+          {t('admin.add_blog')}
         </button>
       </div>
 
@@ -533,18 +537,18 @@ const parseArray = (val: any) => {
         <div class="lg:col-span-3 space-y-6">
           {blogs.length === 0 ? (
             <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
-              No blog posts found in the database.
+              {t('admin.no_orders')}
             </div>
           ) : (
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
                 <thead>
                   <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
-                    <th class="p-4 border border-stone-100 w-16">Banner</th>
-                    <th class="p-4 border border-stone-100 w-48">Article Info</th>
-                    <th class="p-4 border border-stone-100">Summary</th>
-                    <th class="p-4 border border-stone-100 w-24">Date</th>
-                    <th class="p-4 border border-stone-100 text-center w-32">Actions</th>
+                    <th class="p-4 border border-stone-100 w-16">{lang === 'en' ? 'Banner' : 'แบนเนอร์'}</th>
+                    <th class="p-4 border border-stone-100 w-48">{t('admin.th_title')}</th>
+                    <th class="p-4 border border-stone-100">{t('admin.th_summary')}</th>
+                    <th class="p-4 border border-stone-100 w-24">{t('admin.th_date')}</th>
+                    <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -554,14 +558,14 @@ const parseArray = (val: any) => {
                         {blog.imageUrl ? (
                           <img src={blog.imageUrl.startsWith('http') ? blog.imageUrl : `http://localhost:3001${blog.imageUrl}`} alt={blog.title} class="w-12 h-12 object-cover rounded-sm border border-stone-100" />
                         ) : (
-                          <div class="w-12 h-12 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">No img</div>
+                          <div class="w-12 h-12 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">{lang === 'en' ? 'No img' : 'ไม่มีรูป'}</div>
                         )}
                       </td>
                       <td class="p-4 border border-stone-100">
                         <div class="font-medium text-brand-charcoal text-sm">{blog.title}</div>
                         <div class="text-[10px] text-stone-400 mt-0.5 tracking-wider">slug: {blog.slug}</div>
                         <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                          <span class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Author: {blog.authorName || 'Admin'}</span>
+                          <span class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Author' : 'ผู้เขียน'}: {blog.authorName || 'Admin'}</span>
                           {blog.categoryName && (
                             <>
                               <span class="text-stone-300 text-[9px]">•</span>
@@ -571,7 +575,7 @@ const parseArray = (val: any) => {
                         </div>
                       </td>
                       <td class="p-4 border border-stone-100 max-w-[250px] truncate">
-                        {blog.summary || 'No summary'}
+                        {blog.summary || (lang === 'en' ? 'No summary' : 'ไม่มีสรุปเนื้อหา')}
                       </td>
                       <td class="p-4 border border-stone-100 text-stone-400">
                         {new Date(blog.createdAt).toLocaleDateString()}
@@ -588,14 +592,14 @@ const parseArray = (val: any) => {
                             data-image={blog.imageUrl}
                             data-category={blog.categoryId || ''}
                           >
-                            Edit
+                            {t('admin.btn_edit')}
                           </button>
                           <button
                             class="delete-blog-btn border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-500 px-3 py-1.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer"
                             data-id={blog.id}
                             data-title={blog.title}
                           >
-                            Delete
+                            {t('admin.btn_delete')}
                           </button>
                         </div>
                       </td>
@@ -611,11 +615,11 @@ const parseArray = (val: any) => {
         <div class="border border-stone-200 p-6 rounded-sm bg-stone-50/50 space-y-6 self-start shadow-sm">
           <div>
             <h3 class="font-serif text-xs tracking-widest uppercase text-brand-charcoal font-semibold mb-3 pb-2 border-b border-stone-200">
-              Blog Categories
+              {lang === 'en' ? 'Blog Categories' : 'หมวดหมู่บล็อก'}
             </h3>
             
             {blogCategories.length === 0 ? (
-              <p class="text-[10px] text-stone-400 font-light">No categories created yet.</p>
+              <p class="text-[10px] text-stone-400 font-light">{lang === 'en' ? 'No categories created yet.' : 'ยังไม่มีหมวดหมู่บล็อกในระบบ'}</p>
             ) : (
               <ul class="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                 {blogCategories.map((cat: any) => (
@@ -627,7 +631,7 @@ const parseArray = (val: any) => {
                       data-id={cat.id}
                       data-name={cat.name}
                     >
-                      Delete
+                      {t('admin.btn_delete')}
                     </button>
                   </li>
                 ))}
@@ -637,11 +641,11 @@ const parseArray = (val: any) => {
 
           <div class="pt-4 border-t border-stone-200">
             <h4 class="font-serif text-[10px] tracking-widest uppercase text-stone-400 font-semibold mb-2">
-              Create New Category
+              {lang === 'en' ? 'Create New Category' : 'สร้างหมวดหมู่ใหม่'}
             </h4>
             <form id="create-blog-cat-form" class="space-y-3">
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Category Name</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Category Name' : 'ชื่อหมวดหมู่'}</label>
                 <input 
                   type="text" 
                   id="new-blog-cat-name" 
@@ -651,7 +655,7 @@ const parseArray = (val: any) => {
                 />
               </div>
               <div>
-                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">Slug</label>
+                <label class="block text-[8px] uppercase tracking-widest text-stone-400 font-semibold mb-0.5">{lang === 'en' ? 'Slug' : 'สลัก (Slug)'}</label>
                 <input 
                   type="text" 
                   id="new-blog-cat-slug" 
@@ -664,7 +668,7 @@ const parseArray = (val: any) => {
                 type="submit" 
                 class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold transition-all cursor-pointer shadow-sm"
               >
-                Add Category
+                {lang === 'en' ? 'Add Category' : 'เพิ่มหมวดหมู่'}
               </button>
             </form>
           </div>
@@ -676,24 +680,24 @@ const parseArray = (val: any) => {
     <div id="contacts-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
       <div class="flex justify-between items-center pb-2 border-b border-stone-100">
         <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
-          Contact Requests
+          {t('admin.contacts_title')}
         </h2>
       </div>
 
       <div class="space-y-6">
         {contacts.length === 0 ? (
           <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
-            No contact requests found.
+            {t('admin.no_contacts')}
           </div>
         ) : (
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
               <thead>
                 <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
-                  <th class="p-4 border border-stone-100">Date</th>
-                  <th class="p-4 border border-stone-100">Customer Info</th>
-                  <th class="p-4 border border-stone-100">Topic</th>
-                  <th class="p-4 border border-stone-100">Description</th>
+                  <th class="p-4 border border-stone-100">{t('admin.date')}</th>
+                  <th class="p-4 border border-stone-100">{lang === 'en' ? 'Customer Info' : 'ข้อมูลลูกค้า'}</th>
+                  <th class="p-4 border border-stone-100">{lang === 'en' ? 'Topic' : 'หัวเรื่อง'}</th>
+                  <th class="p-4 border border-stone-100">{lang === 'en' ? 'Description' : 'รายละเอียดข้อความ'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -719,10 +723,10 @@ const parseArray = (val: any) => {
                             {req.description}
                           </span>
                           <span class="text-[9px] text-stone-400 font-semibold uppercase tracking-widest shrink-0 border border-stone-200 px-1.5 py-0.5 rounded-sm hover:border-brand-charcoal hover:text-brand-charcoal group-open:hidden transition-colors">
-                            Read
+                            {lang === 'en' ? 'Read' : 'อ่านเพิ่มเติม'}
                           </span>
                           <span class="text-[9px] text-stone-400 font-semibold uppercase tracking-widest shrink-0 border border-stone-200 px-1.5 py-0.5 rounded-sm hover:border-brand-charcoal hover:text-brand-charcoal hidden group-open:inline-block transition-colors">
-                            Close
+                            {lang === 'en' ? 'Close' : 'ปิด'}
                           </span>
                         </summary>
                         <div class="mt-2.5 p-3.5 bg-stone-50 border border-stone-200 rounded-sm text-stone-600 font-light leading-relaxed normal-case tracking-normal whitespace-pre-wrap text-[11px] break-words">
@@ -743,103 +747,102 @@ const parseArray = (val: any) => {
   <!-- Add Product Dialog -->
   <dialog id="add-product-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
     <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
-      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Add Product</h3>
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.add_product')}</h3>
       <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
     </div>
     <div id="add-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
     <form id="add-product-form" class="space-y-4">
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Product Name</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_name')}</label>
         <input type="text" id="add-name" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
         <input type="text" id="add-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Price ($)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.price_usd')}</label>
           <input type="number" id="add-price" step="0.01" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Quantity</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.stock_qty')}</label>
           <input type="number" id="add-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Image URL</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.image_url')}</label>
         <input type="text" id="add-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="https://example.com/image.jpg" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Description</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
         <textarea id="add-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Sizes (Comma-separated)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.sizes_comma')}</label>
           <input type="text" id="add-sizes" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="S, M, L" />
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.colors_comma')}</label>
           <input type="text" id="add-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="Black, White" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1 flex justify-between items-center">
-          <span>Tags</span>
-          <button type="button" id="btn-create-tag-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Tag Inline">+</button>
-        </label>
-        
-        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="add-tags-checkboxes-container">
-          {productTagsList.map((tag: any) => (
-            <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
-              <input type="checkbox" value={tag.name} class="tag-checkbox-add border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
-              <span>{tag.name}</span>
-            </label>
-          ))}
-          {productTagsList.length === 0 && (
-            <span class="text-[10px] text-stone-400 font-light">No tags available. Click + to add one.</span>
-          )}
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_tags')}</label>
+        <div class="flex gap-2">
+          <div class="w-full flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="add-tags-checkboxes-container">
+            {productTagsList.map((tag: any) => (
+              <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
+                <input type="checkbox" value={tag.name} class="tag-checkbox-add border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+                <span>{tag.name}</span>
+              </label>
+            ))}
+            {productTagsList.length === 0 && (
+              <span class="text-[10px] text-stone-400 font-light">{t('admin.no_tags_available')}</span>
+            )}
+          </div>
+          <button type="button" id="btn-create-tag-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer flex items-center justify-center shrink-0 min-h-[38px]" title="Create New Tag Inline">+</button>
         </div>
 
         <!-- Inline Tag Form -->
         <div id="inline-tag-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
-          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Tag</div>
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_tag')}</div>
           <div class="flex gap-2">
-            <input type="text" id="inline-tag-name-add" placeholder="Tag Name (e.g. Sale)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
-            <button type="button" id="btn-submit-tag-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
-            <button type="button" id="btn-cancel-tag-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+            <input type="text" id="inline-tag-name-add" placeholder={t('admin.tag_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-tag-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+            <button type="button" id="btn-cancel-tag-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
           </div>
           <div id="inline-tag-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
         <div class="flex gap-2">
           <select id="add-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
             {productCategories.map((cat: any) => (
               <option value={cat.id}>{cat.name}</option>
             ))}
             {productCategories.length === 0 && (
-              <option value="">No categories available - please create one first</option>
+              <option value="">{t('admin.no_categories_available')}</option>
             )}
           </select>
           <button type="button" id="btn-create-category-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Category Inline">+</button>
         </div>
         <!-- Inline Category Form -->
         <div id="inline-category-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
-          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Category</div>
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_category')}</div>
           <div class="flex gap-2">
-            <input type="text" id="inline-category-name-add" placeholder="Category Name (e.g. Jeans)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
-            <button type="button" id="btn-submit-category-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
-            <button type="button" id="btn-cancel-category-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+            <input type="text" id="inline-category-name-add" placeholder={t('admin.category_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-category-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+            <button type="button" id="btn-cancel-category-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
           </div>
           <div id="inline-category-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
-        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
-        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Product</button>
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_save')}</button>
       </div>
     </form>
   </dialog>
@@ -847,104 +850,103 @@ const parseArray = (val: any) => {
   <!-- Edit Product Dialog -->
   <dialog id="edit-product-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
     <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
-      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Edit Product</h3>
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.edit_product')}</h3>
       <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
     </div>
     <div id="edit-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
     <form id="edit-product-form" class="space-y-4">
       <input type="hidden" id="edit-id" />
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Product Name</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_name')}</label>
         <input type="text" id="edit-name" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
         <input type="text" id="edit-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Price ($)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.price_usd')}</label>
           <input type="number" id="edit-price" step="0.01" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Stock Quantity</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.stock_qty')}</label>
           <input type="number" id="edit-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Image URL</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.image_url')}</label>
         <input type="text" id="edit-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Description</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
         <textarea id="edit-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Sizes (Comma-separated)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.sizes_comma')}</label>
           <input type="text" id="edit-sizes" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Colors (Comma-separated)</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.colors_comma')}</label>
           <input type="text" id="edit-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1 flex justify-between items-center">
-          <span>Tags</span>
-          <button type="button" id="btn-create-tag-inline-edit" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Tag Inline">+</button>
-        </label>
-        
-        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="edit-tags-checkboxes-container">
-          {productTagsList.map((tag: any) => (
-            <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
-              <input type="checkbox" value={tag.name} class="tag-checkbox-edit border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
-              <span>{tag.name}</span>
-            </label>
-          ))}
-          {productTagsList.length === 0 && (
-            <span class="text-[10px] text-stone-400 font-light">No tags available. Click + to add one.</span>
-          )}
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_tags')}</label>
+        <div class="flex gap-2">
+          <div class="w-full flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="edit-tags-checkboxes-container">
+            {productTagsList.map((tag: any) => (
+              <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
+                <input type="checkbox" value={tag.name} class="tag-checkbox-edit border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+                <span>{tag.name}</span>
+              </label>
+            ))}
+            {productTagsList.length === 0 && (
+              <span class="text-[10px] text-stone-400 font-light">{t('admin.no_tags_available')}</span>
+            )}
+          </div>
+          <button type="button" id="btn-create-tag-inline-edit" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer flex items-center justify-center shrink-0 min-h-[38px]" title="Create New Tag Inline">+</button>
         </div>
 
         <!-- Inline Tag Form -->
         <div id="inline-tag-form-edit" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
-          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Tag</div>
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_tag')}</div>
           <div class="flex gap-2">
-            <input type="text" id="inline-tag-name-edit" placeholder="Tag Name (e.g. Sale)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
-            <button type="button" id="btn-submit-tag-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
-            <button type="button" id="btn-cancel-tag-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+            <input type="text" id="inline-tag-name-edit" placeholder={t('admin.tag_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-tag-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+            <button type="button" id="btn-cancel-tag-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
           </div>
           <div id="inline-tag-error-edit" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
         <div class="flex gap-2">
           <select id="edit-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
             {productCategories.map((cat: any) => (
               <option value={cat.id}>{cat.name}</option>
             ))}
             {productCategories.length === 0 && (
-              <option value="">No categories available - please create one first</option>
+              <option value="">{t('admin.no_categories_available')}</option>
             )}
           </select>
           <button type="button" id="btn-create-category-inline-edit" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Category Inline">+</button>
         </div>
         <!-- Inline Category Form -->
         <div id="inline-category-form-edit" class="hidden mt-2 border border-stone-100 p-3 bg-stone-50 space-y-2 rounded-sm">
-          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">Create New Category</div>
+          <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_category')}</div>
           <div class="flex gap-2">
-            <input type="text" id="inline-category-name-edit" placeholder="Category Name (e.g. Jeans)" class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
-            <button type="button" id="btn-submit-category-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">Add</button>
-            <button type="button" id="btn-cancel-category-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">Cancel</button>
+            <input type="text" id="inline-category-name-edit" placeholder={t('admin.category_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+            <button type="button" id="btn-submit-category-inline-edit" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+            <button type="button" id="btn-cancel-category-inline-edit" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
           </div>
           <div id="inline-category-error-edit" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
-        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
-        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Changes</button>
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_edit')}</button>
       </div>
     </form>
   </dialog>
@@ -952,40 +954,40 @@ const parseArray = (val: any) => {
   <!-- Add Blog Dialog -->
   <dialog id="add-blog-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-xl w-full">
     <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
-      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Add Blog Post</h3>
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.add_blog_post')}</h3>
       <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
     </div>
     <div id="add-blog-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
     <form id="add-blog-form" class="space-y-4">
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Article Title</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.article_title')}</label>
         <input type="text" id="add-blog-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
         <input type="text" id="add-blog-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Summary (Short Preview)</label>
-        <input type="text" id="add-blog-summary" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="A brief preview of the post..." />
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.summary_preview')}</label>
+        <input type="text" id="add-blog-summary" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder={t('admin.summary_placeholder')} />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
           <select id="add-blog-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
-            <option value="">Select Category (Optional)</option>
+            <option value="">{t('admin.select_category_opt')}</option>
             {blogCategories.map((cat: any) => (
               <option value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image File</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_file')}</label>
           <input type="file" id="add-blog-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image URL (or uploaded path)</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_url')}</label>
         <div class="flex gap-2">
           <input type="text" id="add-blog-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
           <div id="add-blog-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
@@ -995,7 +997,7 @@ const parseArray = (val: any) => {
         <div id="add-blog-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Content</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.content')}</label>
         <div class="border border-stone-200 rounded-sm">
           <div class="flex flex-wrap items-center gap-0.5 p-1 bg-stone-50 border-b border-stone-200 text-xs" id="add-blog-toolbar">
             <button type="button" data-cmd="h1" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H1</button>
@@ -1012,8 +1014,8 @@ const parseArray = (val: any) => {
         </div>
       </div>
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
-        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
-        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Publish Post</button>
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.publish_post')}</button>
       </div>
     </form>
   </dialog>
@@ -1021,41 +1023,41 @@ const parseArray = (val: any) => {
   <!-- Edit Blog Dialog -->
   <dialog id="edit-blog-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-xl w-full">
     <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
-      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">Edit Blog Post</h3>
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.edit_blog_post')}</h3>
       <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
     </div>
     <div id="edit-blog-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
     <form id="edit-blog-form" class="space-y-4">
       <input type="hidden" id="edit-blog-id" />
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Article Title</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.article_title')}</label>
         <input type="text" id="edit-blog-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Slug</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
         <input type="text" id="edit-blog-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Summary (Short Preview)</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.summary_preview')}</label>
         <input type="text" id="edit-blog-summary" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Category</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
           <select id="edit-blog-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
-            <option value="">Select Category (Optional)</option>
+            <option value="">{t('admin.select_category_opt')}</option>
             {blogCategories.map((cat: any) => (
               <option value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
         <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image File</label>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_file')}</label>
           <input type="file" id="edit-blog-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
         </div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Banner Image URL (or uploaded path)</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_url')}</label>
         <div class="flex gap-2">
           <input type="text" id="edit-blog-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
           <div id="edit-blog-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
@@ -1065,7 +1067,7 @@ const parseArray = (val: any) => {
         <div id="edit-blog-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
       </div>
       <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Content</label>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.content')}</label>
         <div class="border border-stone-200 rounded-sm">
           <div class="flex flex-wrap items-center gap-0.5 p-1 bg-stone-50 border-b border-stone-200 text-xs" id="edit-blog-toolbar">
             <button type="button" data-cmd="h1" class="px-2.5 py-1 hover:bg-stone-200 rounded-sm font-bold text-[11px] border border-stone-200 bg-white shadow-sm cursor-pointer transition-all">H1</button>
@@ -1082,8 +1084,8 @@ const parseArray = (val: any) => {
         </div>
       </div>
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
-        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">Cancel</button>
-        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">Save Changes</button>
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_edit_blog')}</button>
       </div>
     </form>
   </dialog>
@@ -1096,6 +1098,11 @@ const parseArray = (val: any) => {
     dialog {
       border: none;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
     }
     
     /* Tiptap ProseMirror styling */
@@ -1159,62 +1166,194 @@ const parseArray = (val: any) => {
     import StarterKit from '@tiptap/starter-kit';
 
     // Auth setup
-    const signoutBtn = document.getElementById('signout-btn');
-    if (signoutBtn) {
-      signoutBtn.addEventListener('click', () => {
-        signOut({ callbackUrl: '/' });
-      });
+    try {
+      const signoutBtn = document.getElementById('signout-btn');
+      if (signoutBtn) {
+        signoutBtn.addEventListener('click', () => {
+          signOut({ callbackUrl: '/' } as any);
+        });
+      }
+    } catch (e) {
+      console.error('Error setting up signout button:', e);
     }
 
     // Token retrieval
     const container = document.getElementById('admin-container');
     const token = container ? container.dataset.token : '';
 
-    // Tab switcher using top navigation
-    const navDashboard = document.getElementById('nav-tab-dashboard');
-    const navOrders = document.getElementById('nav-tab-orders');
-    const navProducts = document.getElementById('nav-tab-products');
-    const navBlogs = document.getElementById('nav-tab-blogs');
-    const navContacts = document.getElementById('nav-tab-contacts');
-
-    const dashboardSection = document.getElementById('dashboard-section');
-    const ordersSection = document.getElementById('orders-section');
-    const productsSection = document.getElementById('products-section');
-    const blogsSection = document.getElementById('blogs-section');
-    const contactsSection = document.getElementById('contacts-section');
-
-    const switchTab = (activeNavBtn, activeSection) => {
-      [navDashboard, navOrders, navProducts, navBlogs, navContacts].forEach(btn => {
-        if (btn) {
-          if (btn === activeNavBtn) {
-            btn.classList.add('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
-            btn.classList.remove('border-transparent', 'text-gray-400', 'font-light');
-          } else {
-            btn.classList.remove('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
-            btn.classList.add('border-transparent', 'text-gray-400', 'font-light');
-          }
-        }
-      });
-
-      [dashboardSection, ordersSection, productsSection, blogsSection, contactsSection].forEach(section => {
-        if (section) {
-          if (section === activeSection) {
-            section.classList.remove('hidden');
-          } else {
-            section.classList.add('hidden');
-          }
-        }
-      });
+    // Browser-side translation helper
+    const lang = container ? (container.dataset.lang || 'th') : 'th';
+    const msgs: Record<string, Record<string, string>> = {
+      en: {
+        confirmDeleteProduct: 'Are you sure you want to delete product "{name}"?',
+        failedDeleteProduct: 'Failed to delete product.',
+        failedConnectBackend: 'Could not connect to the backend server.',
+        confirmDeleteBlog: 'Are you sure you want to delete blog post "{title}"?',
+        failedDeleteBlog: 'Failed to delete blog post.',
+        confirmDeleteBlogCat: 'Are you sure you want to delete blog category "{name}"? Blogs in this category will be uncategorized.',
+        failedCreateCategory: 'Failed to create category.',
+        failedDeleteCategory: 'Failed to delete category.',
+        failedConnectServer: 'Could not connect to server.',
+        confirmDeleteProductCat: 'Are you sure you want to delete product category "{name}"? Products in this category will be uncategorized.',
+        confirmDeleteProductTag: 'Are you sure you want to delete product tag "{name}"? This will untag all associated products.',
+        failedCreateTag: 'Failed to create tag.',
+        failedDeleteTag: 'Failed to delete tag.',
+        failedCreateProduct: 'Failed to create product.',
+        failedUpdateProduct: 'Failed to update product.',
+        failedCreateBlogPost: 'Failed to create blog post.',
+        failedUpdateBlogPost: 'Failed to update blog post.',
+        categoryNameRequired: 'Category name is required',
+        tagNameRequired: 'Tag name is required',
+        uploadingImage: 'Uploading image...',
+        uploadSuccess: 'Upload successful!',
+        uploadFailed: 'Upload failed.',
+        networkErrorUpload: 'Network error during upload.'
+      },
+      th: {
+        confirmDeleteProduct: 'คุณแน่ใจหรือไม่ที่จะลบสินค้า "{name}"?',
+        failedDeleteProduct: 'ลบสินค้าไม่สำเร็จ',
+        failedConnectBackend: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์แบ็คเอนด์ได้',
+        confirmDeleteBlog: 'คุณแน่ใจหรือไม่ที่จะลบบล็อก "{title}"?',
+        failedDeleteBlog: 'ลบบล็อกไม่สำเร็จ',
+        confirmDeleteBlogCat: 'คุณแน่ใจหรือไม่ที่จะลบหมวดหมู่บล็อก "{name}"? บล็อกในหมวดหมู่นี้จะกลายเป็นไม่มีหมวดหมู่',
+        failedCreateCategory: 'สร้างหมวดหมู่ไม่สำเร็จ',
+        failedDeleteCategory: 'ลบหมวดหมู่ไม่สำเร็จ',
+        failedConnectServer: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
+        confirmDeleteProductCat: 'คุณแน่ใจหรือไม่ที่จะลบหมวดหมู่สินค้า "{name}"? สินค้าในหมวดหมู่นี้จะกลายเป็นไม่มีหมวดหมู่',
+        confirmDeleteProductTag: 'คุณแน่ใจหรือไม่ที่จะลบป้ายแท็กสินค้า "{name}"? การลบป้ายแท็กนี้จะลบป้ายแท็กออกจากสินค้าที่เกี่ยวข้องทั้งหมด',
+        failedCreateTag: 'สร้างป้ายแท็กไม่สำเร็จ',
+        failedDeleteTag: 'ลบป้ายแท็กไม่สำเร็จ',
+        failedCreateProduct: 'สร้างสินค้าไม่สำเร็จ',
+        failedUpdateProduct: 'อัปเดตสินค้าไม่สำเร็จ',
+        failedCreateBlogPost: 'สร้างบล็อกไม่สำเร็จ',
+        failedUpdateBlogPost: 'อัปเดตบล็อกไม่สำเร็จ',
+        categoryNameRequired: 'กรุณากรอกชื่อหมวดหมู่',
+        tagNameRequired: 'กรุณากรอกชื่อป้ายแท็ก',
+        uploadingImage: 'กำลังอัปโหลดรูปภาพ...',
+        uploadSuccess: 'อัปโหลดสำเร็จ!',
+        uploadFailed: 'อัปโหลดล้มเหลว',
+        networkErrorUpload: 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายระหว่างอัปโหลด'
+      }
     };
 
-    navDashboard?.addEventListener('click', () => switchTab(navDashboard, dashboardSection));
-    navOrders?.addEventListener('click', () => switchTab(navOrders, ordersSection));
-    navProducts?.addEventListener('click', () => switchTab(navProducts, productsSection));
-    navBlogs?.addEventListener('click', () => switchTab(navBlogs, blogsSection));
-    navContacts?.addEventListener('click', () => switchTab(navContacts, contactsSection));
+    const getMsg = (key: string, replacements: Record<string, string> = {}) => {
+      let msg = msgs[lang]?.[key] || msgs.en[key] || '';
+      for (const [k, v] of Object.entries(replacements)) {
+        msg = msg.replace(`{${k}}`, v);
+      }
+      return msg;
+    };
 
-    // Initialize the default tab
-    switchTab(navDashboard, dashboardSection);
+    // Real-time pending orders count polling
+    const updatePendingOrdersBadge = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch('http://localhost:3001/api/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const ordersList = await res.json();
+          const pendingCount = ordersList.filter((o: any) => o.status === 'pending').length;
+          
+          // Update navigation tab badge
+          const badge = document.getElementById('nav-orders-badge');
+          if (badge) {
+            badge.textContent = String(pendingCount);
+            if (pendingCount > 0) {
+              badge.classList.remove('hidden');
+            } else {
+              badge.classList.add('hidden');
+            }
+          }
+
+          // Update Dashboard Overview "Total Orders" Card
+          const totalOrdersCard = document.getElementById('admin-total-orders-count');
+          if (totalOrdersCard) {
+            totalOrdersCard.textContent = String(ordersList.length);
+          }
+        }
+      } catch (err) {
+        console.error('Error polling pending orders count:', err);
+      }
+    };
+
+    try {
+      // Poll every 10 seconds
+      setInterval(updatePendingOrdersBadge, 10000);
+      // Initial fetch to ensure up-to-date
+      updatePendingOrdersBadge();
+    } catch (e) {
+      console.error('Error running pending orders badge polling:', e);
+    }
+
+    // Tab switcher using top navigation
+    try {
+      console.log('[Admin Tabs] Initializing tab switcher...');
+      const navDashboard = document.getElementById('nav-tab-dashboard');
+      const navOrders = document.getElementById('nav-tab-orders');
+      const navProducts = document.getElementById('nav-tab-products');
+      const navBlogs = document.getElementById('nav-tab-blogs');
+      const navContacts = document.getElementById('nav-tab-contacts');
+
+      const dashboardSection = document.getElementById('dashboard-section');
+      const ordersSection = document.getElementById('orders-section');
+      const productsSection = document.getElementById('products-section');
+      const blogsSection = document.getElementById('blogs-section');
+      const contactsSection = document.getElementById('contacts-section');
+
+      console.log('[Admin Tabs] Elements found:', {
+        navDashboard: !!navDashboard,
+        navOrders: !!navOrders,
+        navProducts: !!navProducts,
+        navBlogs: !!navBlogs,
+        navContacts: !!navContacts,
+        dashboardSection: !!dashboardSection,
+        ordersSection: !!ordersSection,
+        productsSection: !!productsSection,
+        blogsSection: !!blogsSection,
+        contactsSection: !!contactsSection
+      });
+
+      const switchTab = (activeNavBtn: any, activeSection: any) => {
+        console.log('[Admin Tabs] Switching tab to:', activeSection?.id);
+        [navDashboard, navOrders, navProducts, navBlogs, navContacts].forEach(btn => {
+          if (btn) {
+            if (btn === activeNavBtn) {
+              btn.classList.add('active');
+              btn.classList.add('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
+              btn.classList.remove('border-transparent', 'text-gray-400', 'font-light');
+            } else {
+              btn.classList.remove('active');
+              btn.classList.remove('border-brand-charcoal', 'text-brand-charcoal', 'font-semibold');
+              btn.classList.add('border-transparent', 'text-gray-400', 'font-light');
+            }
+          }
+        });
+
+        [dashboardSection, ordersSection, productsSection, blogsSection, contactsSection].forEach(section => {
+          if (section) {
+            if (section === activeSection) {
+              section.classList.remove('hidden');
+            } else {
+              section.classList.add('hidden');
+            }
+          }
+        });
+      };
+
+      navDashboard?.addEventListener('click', () => switchTab(navDashboard, dashboardSection));
+      navOrders?.addEventListener('click', () => switchTab(navOrders, ordersSection));
+      navProducts?.addEventListener('click', () => switchTab(navProducts, productsSection));
+      navBlogs?.addEventListener('click', () => switchTab(navBlogs, blogsSection));
+      navContacts?.addEventListener('click', () => switchTab(navContacts, contactsSection));
+
+      // Initialize the default tab
+      switchTab(navDashboard, dashboardSection);
+    } catch (e) {
+      console.error('[Admin Tabs] Error initializing tab switcher:', e);
+    }
 
     // Products table filtering logic
     const prodSearch = document.getElementById('admin-product-search') as HTMLInputElement | null;
@@ -1268,8 +1407,8 @@ const parseArray = (val: any) => {
     prodStockFilter?.addEventListener('change', filterProducts);
 
     // Modal Setup helper
-    const setupDialog = (dialogId, openBtnId, onOpen = null) => {
-      const dialog = document.getElementById(dialogId);
+    const setupDialog = (dialogId: string, openBtnId?: string | null, onOpen: (() => void) | null = null) => {
+      const dialog = document.getElementById(dialogId) as HTMLDialogElement | null;
       if (!dialog) return;
 
       if (openBtnId) {
@@ -1288,7 +1427,7 @@ const parseArray = (val: any) => {
     };
 
     // Helper for generating slugs
-    const slugify = (text) => {
+    const slugify = (text: string) => {
       return text
         .toLowerCase()
         .trim()
@@ -1298,34 +1437,42 @@ const parseArray = (val: any) => {
     };
 
     // Initialize Tiptap Editors
-    let addEditor = null;
-    let editEditor = null;
+    let addEditor: any = null;
+    let editEditor: any = null;
 
-    const addEditorEl = document.getElementById('add-blog-editor');
-    if (addEditorEl) {
-      addEditor = new Editor({
-        element: addEditorEl,
-        extensions: [StarterKit],
-        content: '',
-      });
+    try {
+      const addEditorEl = document.getElementById('add-blog-editor');
+      if (addEditorEl) {
+        addEditor = new Editor({
+          element: addEditorEl,
+          extensions: [StarterKit],
+          content: '',
+        });
+      }
+    } catch (e) {
+      console.error('Failed to initialize add-blog TipTap editor:', e);
     }
 
-    const editEditorEl = document.getElementById('edit-blog-editor');
-    if (editEditorEl) {
-      editEditor = new Editor({
-        element: editEditorEl,
-        extensions: [StarterKit],
-        content: '',
-      });
+    try {
+      const editEditorEl = document.getElementById('edit-blog-editor');
+      if (editEditorEl) {
+        editEditor = new Editor({
+          element: editEditorEl,
+          extensions: [StarterKit],
+          content: '',
+        });
+      }
+    } catch (e) {
+      console.error('Failed to initialize edit-blog TipTap editor:', e);
     }
 
     // Toolbar logic helper
-    const setupToolbar = (toolbarId, editorInstance) => {
+    const setupToolbar = (toolbarId: string, editorInstance: Editor | null) => {
       const toolbar = document.getElementById(toolbarId);
       if (!toolbar || !editorInstance) return;
 
-      toolbar.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
+        btn.addEventListener('click', (e: any) => {
           e.preventDefault();
           const cmd = btn.dataset.cmd;
           if (!cmd) return;
@@ -1354,8 +1501,8 @@ const parseArray = (val: any) => {
       editorInstance.on('transaction', () => updateButtonStates(toolbar, editorInstance));
     };
 
-    const updateButtonStates = (toolbar, editorInstance) => {
-      toolbar.querySelectorAll('button').forEach(btn => {
+    const updateButtonStates = (toolbar: any, editorInstance: any) => {
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
         const cmd = btn.dataset.cmd;
         let isActive = false;
 
@@ -1396,11 +1543,11 @@ const parseArray = (val: any) => {
     setupDialog('edit-blog-dialog');
 
     // Image Upload helper
-    const setupImageUpload = (fileInputId, textInputId, previewContainerId, previewId, statusId) => {
-      const fileInput = document.getElementById(fileInputId);
-      const textInput = document.getElementById(textInputId);
+    const setupImageUpload = (fileInputId: string, textInputId: string, previewContainerId: string, previewId: string, statusId: string) => {
+      const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null;
+      const textInput = document.getElementById(textInputId) as HTMLInputElement | null;
       const previewContainer = document.getElementById(previewContainerId);
-      const preview = document.getElementById(previewId);
+      const preview = document.getElementById(previewId) as HTMLImageElement | null;
       const status = document.getElementById(statusId);
 
       if (!fileInput || !textInput) return;
@@ -1410,7 +1557,7 @@ const parseArray = (val: any) => {
         if (!file) return;
 
         if (status) {
-          status.textContent = 'Uploading image...';
+          status.textContent = getMsg('uploadingImage');
           status.classList.remove('hidden', 'text-red-500', 'text-green-600');
           status.classList.add('text-stone-500');
         }
@@ -1437,14 +1584,14 @@ const parseArray = (val: any) => {
             }
 
             if (status) {
-              status.textContent = 'Upload successful!';
+              status.textContent = getMsg('uploadSuccess');
               status.classList.remove('text-stone-500', 'text-red-500');
               status.classList.add('text-green-600');
             }
           } else {
             const data = await res.json();
             if (status) {
-              status.textContent = data.message || 'Upload failed.';
+              status.textContent = data.message || getMsg('uploadFailed');
               status.classList.remove('text-stone-500', 'text-green-600');
               status.classList.add('text-red-500');
             }
@@ -1452,7 +1599,7 @@ const parseArray = (val: any) => {
         } catch (err) {
           console.error(err);
           if (status) {
-            status.textContent = 'Network error during upload.';
+            status.textContent = getMsg('networkErrorUpload');
             status.classList.remove('text-stone-500', 'text-green-600');
             status.classList.add('text-red-500');
           }
@@ -1482,16 +1629,16 @@ const parseArray = (val: any) => {
     setupImageUpload('edit-blog-image-file', 'edit-blog-image', 'edit-blog-image-preview-container', 'edit-blog-image-preview', 'edit-blog-upload-status');
 
     // Add auto-slug generation to forms (Products)
-    const addName = document.getElementById('add-name');
-    const addSlug = document.getElementById('add-slug');
+    const addName = document.getElementById('add-name') as HTMLInputElement | null;
+    const addSlug = document.getElementById('add-slug') as HTMLInputElement | null;
     if (addName && addSlug) {
       addName.addEventListener('input', () => {
         addSlug.value = slugify(addName.value);
       });
     }
 
-    const editName = document.getElementById('edit-name');
-    const editSlug = document.getElementById('edit-slug');
+    const editName = document.getElementById('edit-name') as HTMLInputElement | null;
+    const editSlug = document.getElementById('edit-slug') as HTMLInputElement | null;
     if (editName && editSlug) {
       editName.addEventListener('input', () => {
         editSlug.value = slugify(editName.value);
@@ -1499,16 +1646,16 @@ const parseArray = (val: any) => {
     }
 
     // Add auto-slug generation to forms (Blogs)
-    const addBlogTitle = document.getElementById('add-blog-title');
-    const addBlogSlug = document.getElementById('add-blog-slug');
+    const addBlogTitle = document.getElementById('add-blog-title') as HTMLInputElement | null;
+    const addBlogSlug = document.getElementById('add-blog-slug') as HTMLInputElement | null;
     if (addBlogTitle && addBlogSlug) {
       addBlogTitle.addEventListener('input', () => {
         addBlogSlug.value = slugify(addBlogTitle.value);
       });
     }
 
-    const editBlogTitle = document.getElementById('edit-blog-title');
-    const editBlogSlug = document.getElementById('edit-blog-slug');
+    const editBlogTitle = document.getElementById('edit-blog-title') as HTMLInputElement | null;
+    const editBlogSlug = document.getElementById('edit-blog-slug') as HTMLInputElement | null;
     if (editBlogTitle && editBlogSlug) {
       editBlogTitle.addEventListener('input', () => {
         editBlogSlug.value = slugify(editBlogTitle.value);
@@ -1523,25 +1670,25 @@ const parseArray = (val: any) => {
       e.preventDefault();
       if (addError) addError.classList.add('hidden');
 
-      const name = document.getElementById('add-name').value;
-      const slug = document.getElementById('add-slug').value;
-      const price = parseFloat(document.getElementById('add-price').value);
-      const stockQuantity = parseInt(document.getElementById('add-stock').value, 10);
-      const imageUrl = document.getElementById('add-image').value;
-      const description = document.getElementById('add-desc').value;
+      const name = (document.getElementById('add-name') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-slug') as HTMLInputElement).value;
+      const price = parseFloat((document.getElementById('add-price') as HTMLInputElement).value);
+      const stockQuantity = parseInt((document.getElementById('add-stock') as HTMLInputElement).value, 10);
+      const imageUrl = (document.getElementById('add-image') as HTMLInputElement).value;
+      const description = (document.getElementById('add-desc') as HTMLInputElement).value;
       
-      const sizesStr = document.getElementById('add-sizes').value;
-      const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
+      const sizesStr = (document.getElementById('add-sizes') as HTMLInputElement).value;
+      const sizes = sizesStr.split(',').map((s: string) => s.trim()).filter(Boolean);
       
-      const colorsStr = document.getElementById('add-colors').value;
-      const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
+      const colorsStr = (document.getElementById('add-colors') as HTMLInputElement).value;
+      const colors = colorsStr.split(',').map((c: string) => c.trim()).filter(Boolean);
 
       const tags: string[] = [];
       document.querySelectorAll('.tag-checkbox-add:checked').forEach((cb) => {
         tags.push((cb as HTMLInputElement).value);
       });
 
-      const categoryId = parseInt(document.getElementById('add-category').value, 10);
+      const categoryId = parseInt((document.getElementById('add-category') as HTMLInputElement).value, 10);
 
       const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
 
@@ -1560,25 +1707,25 @@ const parseArray = (val: any) => {
         } else {
           const data = await res.json();
           if (addError) {
-            addError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to create product.');
+            addError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || getMsg('failedCreateProduct'));
             addError.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error(err);
         if (addError) {
-          addError.textContent = 'Could not connect to the backend server.';
+          addError.textContent = getMsg('failedConnectBackend');
           addError.classList.remove('hidden');
         }
       }
     });
 
     // Edit Product Setup & Submit Handler
-    const editDialog = document.getElementById('edit-product-dialog');
+    const editDialog = document.getElementById('edit-product-dialog') as HTMLDialogElement | null;
     const editForm = document.getElementById('edit-product-form');
     const editError = document.getElementById('edit-error');
 
-    document.querySelectorAll('.edit-prod-btn').forEach(btn => {
+    document.querySelectorAll('.edit-prod-btn').forEach((btn: any) => {
       btn.addEventListener('click', () => {
         if (editError) editError.classList.add('hidden');
         
@@ -1594,20 +1741,20 @@ const parseArray = (val: any) => {
         const tags = JSON.parse(btn.dataset.tags || '[]');
         const category = btn.dataset.category || '1';
 
-        document.getElementById('edit-id').value = id;
-        document.getElementById('edit-name').value = name;
-        document.getElementById('edit-slug').value = slug;
-        document.getElementById('edit-price').value = price;
-        document.getElementById('edit-stock').value = stock;
-        document.getElementById('edit-image').value = image;
-        document.getElementById('edit-desc').value = desc;
-        document.getElementById('edit-sizes').value = sizes.join(', ');
-        document.getElementById('edit-colors').value = colors.join(', ');
+        (document.getElementById('edit-id') as HTMLInputElement).value = id;
+        (document.getElementById('edit-name') as HTMLInputElement).value = name;
+        (document.getElementById('edit-slug') as HTMLInputElement).value = slug;
+        (document.getElementById('edit-price') as HTMLInputElement).value = price;
+        (document.getElementById('edit-stock') as HTMLInputElement).value = stock;
+        (document.getElementById('edit-image') as HTMLInputElement).value = image;
+        (document.getElementById('edit-desc') as HTMLInputElement).value = desc;
+        (document.getElementById('edit-sizes') as HTMLInputElement).value = sizes.join(', ');
+        (document.getElementById('edit-colors') as HTMLInputElement).value = colors.join(', ');
         document.querySelectorAll('.tag-checkbox-edit').forEach((cb) => {
           const checkbox = cb as HTMLInputElement;
           checkbox.checked = tags.includes(checkbox.value);
         });
-        document.getElementById('edit-category').value = category;
+        (document.getElementById('edit-category') as HTMLInputElement).value = category;
 
         editDialog?.showModal();
       });
@@ -1617,26 +1764,26 @@ const parseArray = (val: any) => {
       e.preventDefault();
       if (editError) editError.classList.add('hidden');
 
-      const id = document.getElementById('edit-id').value;
-      const name = document.getElementById('edit-name').value;
-      const slug = document.getElementById('edit-slug').value;
-      const price = parseFloat(document.getElementById('edit-price').value);
-      const stockQuantity = parseInt(document.getElementById('edit-stock').value, 10);
-      const imageUrl = document.getElementById('edit-image').value;
-      const description = document.getElementById('edit-desc').value;
+      const id = (document.getElementById('edit-id') as HTMLInputElement).value;
+      const name = (document.getElementById('edit-name') as HTMLInputElement).value;
+      const slug = (document.getElementById('edit-slug') as HTMLInputElement).value;
+      const price = parseFloat((document.getElementById('edit-price') as HTMLInputElement).value);
+      const stockQuantity = parseInt((document.getElementById('edit-stock') as HTMLInputElement).value, 10);
+      const imageUrl = (document.getElementById('edit-image') as HTMLInputElement).value;
+      const description = (document.getElementById('edit-desc') as HTMLInputElement).value;
       
-      const sizesStr = document.getElementById('edit-sizes').value;
-      const sizes = sizesStr.split(',').map(s => s.trim()).filter(Boolean);
+      const sizesStr = (document.getElementById('edit-sizes') as HTMLInputElement).value;
+      const sizes = sizesStr.split(',').map((s: string) => s.trim()).filter(Boolean);
       
-      const colorsStr = document.getElementById('edit-colors').value;
-      const colors = colorsStr.split(',').map(c => c.trim()).filter(Boolean);
+      const colorsStr = (document.getElementById('edit-colors') as HTMLInputElement).value;
+      const colors = colorsStr.split(',').map((c: string) => c.trim()).filter(Boolean);
 
       const tags: string[] = [];
       document.querySelectorAll('.tag-checkbox-edit:checked').forEach((cb) => {
         tags.push((cb as HTMLInputElement).value);
       });
 
-      const categoryId = parseInt(document.getElementById('edit-category').value, 10);
+      const categoryId = parseInt((document.getElementById('edit-category') as HTMLInputElement).value, 10);
 
       const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
 
@@ -1655,28 +1802,28 @@ const parseArray = (val: any) => {
         } else {
           const data = await res.json();
           if (editError) {
-            editError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to update product.');
+            editError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || getMsg('failedUpdateProduct'));
             editError.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error(err);
         if (editError) {
-          editError.textContent = 'Could not connect to the backend server.';
+          editError.textContent = getMsg('failedConnectBackend');
           editError.classList.remove('hidden');
         }
       }
     });
 
     // Delete Product Handler
-    document.querySelectorAll('.delete-prod-btn').forEach(btn => {
+    document.querySelectorAll('.delete-prod-btn').forEach((btn: any) => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const name = btn.dataset.name;
 
         if (!id || !name) return;
 
-        if (confirm(`Are you sure you want to delete product "${name}"?`)) {
+        if (confirm(getMsg('confirmDeleteProduct', { name }))) {
           try {
             const res = await fetch(`http://localhost:3001/api/products/${id}`, {
               method: 'DELETE',
@@ -1689,11 +1836,11 @@ const parseArray = (val: any) => {
               window.location.reload();
             } else {
               const data = await res.json();
-              alert(data.message || 'Failed to delete product.');
+              alert(data.message || getMsg('failedDeleteProduct'));
             }
           } catch (err) {
             console.error(err);
-            alert('Could not connect to the backend server.');
+            alert(getMsg('failedConnectBackend'));
           }
         }
       });
@@ -1707,12 +1854,12 @@ const parseArray = (val: any) => {
       e.preventDefault();
       if (addBlogError) addBlogError.classList.add('hidden');
 
-      const title = document.getElementById('add-blog-title').value;
-      const slug = document.getElementById('add-blog-slug').value;
-      const summary = document.getElementById('add-blog-summary').value;
-      const imageUrl = document.getElementById('add-blog-image').value;
+      const title = (document.getElementById('add-blog-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-blog-slug') as HTMLInputElement).value;
+      const summary = (document.getElementById('add-blog-summary') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('add-blog-image') as HTMLInputElement).value;
       const content = addEditor ? addEditor.getHTML() : '';
-      const categoryIdVal = document.getElementById('add-blog-category').value;
+      const categoryIdVal = (document.getElementById('add-blog-category') as HTMLInputElement).value;
       const categoryId = categoryIdVal ? parseInt(categoryIdVal, 10) : null;
 
       const payload = { title, slug, summary, imageUrl, content, categoryId };
@@ -1732,25 +1879,25 @@ const parseArray = (val: any) => {
         } else {
           const data = await res.json();
           if (addBlogError) {
-            addBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to create blog post.');
+            addBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || getMsg('failedCreateBlogPost'));
             addBlogError.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error(err);
         if (addBlogError) {
-          addBlogError.textContent = 'Could not connect to the backend server.';
+          addBlogError.textContent = getMsg('failedConnectBackend');
           addBlogError.classList.remove('hidden');
         }
       }
     });
 
     // Edit Blog Setup & Submit Handler
-    const editBlogDialog = document.getElementById('edit-blog-dialog');
+    const editBlogDialog = document.getElementById('edit-blog-dialog') as HTMLDialogElement | null;
     const editBlogForm = document.getElementById('edit-blog-form');
     const editBlogError = document.getElementById('edit-blog-error');
 
-    document.querySelectorAll('.edit-blog-btn').forEach(btn => {
+    document.querySelectorAll('.edit-blog-btn').forEach((btn: any) => {
       btn.addEventListener('click', () => {
         if (editBlogError) editBlogError.classList.add('hidden');
         
@@ -1762,12 +1909,12 @@ const parseArray = (val: any) => {
         const image = btn.dataset.image || '';
         const categoryId = btn.dataset.category || '';
 
-        document.getElementById('edit-blog-id').value = id;
-        document.getElementById('edit-blog-title').value = title;
-        document.getElementById('edit-blog-slug').value = slug;
-        document.getElementById('edit-blog-summary').value = summary;
-        document.getElementById('edit-blog-image').value = image;
-        document.getElementById('edit-blog-category').value = categoryId;
+        (document.getElementById('edit-blog-id') as HTMLInputElement).value = id;
+        (document.getElementById('edit-blog-title') as HTMLInputElement).value = title;
+        (document.getElementById('edit-blog-slug') as HTMLInputElement).value = slug;
+        (document.getElementById('edit-blog-summary') as HTMLInputElement).value = summary;
+        (document.getElementById('edit-blog-image') as HTMLInputElement).value = image;
+        (document.getElementById('edit-blog-category') as HTMLInputElement).value = categoryId;
 
         // Set Tiptap content
         if (editEditor) {
@@ -1776,7 +1923,7 @@ const parseArray = (val: any) => {
 
         // Set preview image if exists
         const previewContainer = document.getElementById('edit-blog-image-preview-container');
-        const preview = document.getElementById('edit-blog-image-preview');
+        const preview = document.getElementById('edit-blog-image-preview') as HTMLImageElement | null;
         const uploadStatus = document.getElementById('edit-blog-upload-status');
         if (uploadStatus) uploadStatus.classList.add('hidden');
         if (image) {
@@ -1800,13 +1947,13 @@ const parseArray = (val: any) => {
       e.preventDefault();
       if (editBlogError) editBlogError.classList.add('hidden');
 
-      const id = document.getElementById('edit-blog-id').value;
-      const title = document.getElementById('edit-blog-title').value;
-      const slug = document.getElementById('edit-blog-slug').value;
-      const summary = document.getElementById('edit-blog-summary').value;
-      const imageUrl = document.getElementById('edit-blog-image').value;
+      const id = (document.getElementById('edit-blog-id') as HTMLInputElement).value;
+      const title = (document.getElementById('edit-blog-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('edit-blog-slug') as HTMLInputElement).value;
+      const summary = (document.getElementById('edit-blog-summary') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('edit-blog-image') as HTMLInputElement).value;
       const content = editEditor ? editEditor.getHTML() : '';
-      const categoryIdVal = document.getElementById('edit-blog-category').value;
+      const categoryIdVal = (document.getElementById('edit-blog-category') as HTMLInputElement).value;
       const categoryId = categoryIdVal ? parseInt(categoryIdVal, 10) : null;
 
       const payload = { title, slug, summary, imageUrl, content, categoryId };
@@ -1826,28 +1973,28 @@ const parseArray = (val: any) => {
         } else {
           const data = await res.json();
           if (editBlogError) {
-            editBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to update blog post.');
+            editBlogError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || getMsg('failedUpdateBlogPost'));
             editBlogError.classList.remove('hidden');
           }
         }
       } catch (err) {
         console.error(err);
         if (editBlogError) {
-          editBlogError.textContent = 'Could not connect to the backend server.';
+          editBlogError.textContent = getMsg('failedConnectBackend');
           editBlogError.classList.remove('hidden');
         }
       }
     });
 
     // Delete Blog Handler
-    document.querySelectorAll('.delete-blog-btn').forEach(btn => {
+    document.querySelectorAll('.delete-blog-btn').forEach((btn: any) => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const title = btn.dataset.title;
 
         if (!id || !title) return;
 
-        if (confirm(`Are you sure you want to delete blog post "${title}"?`)) {
+        if (confirm(getMsg('confirmDeleteBlog', { title }))) {
           try {
             const res = await fetch(`http://localhost:3001/api/blogs/${id}`, {
               method: 'DELETE',
@@ -1860,11 +2007,11 @@ const parseArray = (val: any) => {
               window.location.reload();
             } else {
               const data = await res.json();
-              alert(data.message || 'Failed to delete blog post.');
+              alert(data.message || getMsg('failedDeleteBlog'));
             }
           } catch (err) {
             console.error(err);
-            alert('Could not connect to the backend server.');
+            alert(getMsg('failedConnectBackend'));
           }
         }
       });
@@ -1874,8 +2021,8 @@ const parseArray = (val: any) => {
     const createCatForm = document.getElementById('create-blog-cat-form');
     createCatForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('new-blog-cat-name').value;
-      const slug = document.getElementById('new-blog-cat-slug').value;
+      const name = (document.getElementById('new-blog-cat-name') as HTMLInputElement).value;
+      const slug = (document.getElementById('new-blog-cat-slug') as HTMLInputElement).value;
 
       try {
         const res = await fetch('http://localhost:3001/api/blogs/categories', {
@@ -1891,22 +2038,22 @@ const parseArray = (val: any) => {
           window.location.reload();
         } else {
           const data = await res.json();
-          alert(data.message || 'Failed to create category.');
+          alert(data.message || getMsg('failedCreateCategory'));
         }
       } catch (err) {
         console.error(err);
-        alert('Could not connect to backend server.');
+        alert(getMsg('failedConnectBackend'));
       }
     });
 
     // Delete Blog Category Handler
-    document.querySelectorAll('.delete-blog-cat-btn').forEach(btn => {
+    document.querySelectorAll('.delete-blog-cat-btn').forEach((btn: any) => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         const name = btn.dataset.name;
         if (!id || !name) return;
 
-        if (confirm(`Are you sure you want to delete blog category "${name}"? Blogs in this category will be uncategorized.`)) {
+        if (confirm(getMsg('confirmDeleteBlogCat', { name }))) {
           try {
             const res = await fetch(`http://localhost:3001/api/blogs/categories/${id}`, {
               method: 'DELETE',
@@ -1919,11 +2066,11 @@ const parseArray = (val: any) => {
               window.location.reload();
             } else {
               const data = await res.json();
-              alert(data.message || 'Failed to delete category.');
+              alert(data.message || getMsg('failedDeleteCategory'));
             }
           } catch (err) {
             console.error(err);
-            alert('Could not connect to server.');
+            alert(getMsg('failedConnectServer'));
           }
         }
       });
@@ -1959,11 +2106,11 @@ const parseArray = (val: any) => {
           window.location.reload();
         } else {
           const data = await res.json();
-          alert(data.message || 'Failed to create category.');
+          alert(data.message || getMsg('failedCreateCategory'));
         }
       } catch (err) {
         console.error(err);
-        alert('Could not connect to backend server.');
+        alert(getMsg('failedConnectBackend'));
       }
     });
 
@@ -1974,7 +2121,7 @@ const parseArray = (val: any) => {
         const name = (btn as HTMLElement).dataset.name;
         if (!id || !name) return;
 
-        if (confirm(`Are you sure you want to delete product category "${name}"? Products in this category will be uncategorized.`)) {
+        if (confirm(getMsg('confirmDeleteProductCat', { name }))) {
           try {
             const res = await fetch(`http://localhost:3001/api/products/categories/${id}`, {
               method: 'DELETE',
@@ -1987,11 +2134,11 @@ const parseArray = (val: any) => {
               window.location.reload();
             } else {
               const data = await res.json();
-              alert(data.message || 'Failed to delete category.');
+              alert(data.message || getMsg('failedDeleteCategory'));
             }
           } catch (err) {
             console.error(err);
-            alert('Could not connect to server.');
+            alert(getMsg('failedConnectServer'));
           }
         }
       });
@@ -2032,7 +2179,7 @@ const parseArray = (val: any) => {
       btnSubmit.addEventListener('click', async () => {
         const name = input.value.trim();
         if (!name) {
-          errorDiv.textContent = 'Category name is required';
+          errorDiv.textContent = getMsg('categoryNameRequired');
           errorDiv.classList.remove('hidden');
           return;
         }
@@ -2067,12 +2214,12 @@ const parseArray = (val: any) => {
             // Hide the inline form
             form.classList.add('hidden');
           } else {
-            errorDiv.textContent = data.message || 'Failed to create category';
+            errorDiv.textContent = data.message || getMsg('failedCreateCategory');
             errorDiv.classList.remove('hidden');
           }
         } catch (err) {
           console.error(err);
-          errorDiv.textContent = 'Could not connect to backend server';
+          errorDiv.textContent = getMsg('failedConnectBackend');
           errorDiv.classList.remove('hidden');
         }
       });
@@ -2106,7 +2253,7 @@ const parseArray = (val: any) => {
       btnSubmit.addEventListener('click', async () => {
         const name = input.value.trim();
         if (!name) {
-          errorDiv.textContent = 'Tag name is required';
+          errorDiv.textContent = getMsg('tagNameRequired');
           errorDiv.classList.remove('hidden');
           return;
         }
@@ -2151,12 +2298,12 @@ const parseArray = (val: any) => {
 
             form.classList.add('hidden');
           } else {
-            errorDiv.textContent = data.message || 'Failed to create tag';
+            errorDiv.textContent = data.message || getMsg('failedCreateTag');
             errorDiv.classList.remove('hidden');
           }
         } catch (err) {
           console.error(err);
-          errorDiv.textContent = 'Could not connect to backend server';
+          errorDiv.textContent = getMsg('failedConnectBackend');
           errorDiv.classList.remove('hidden');
         }
       });
@@ -2186,11 +2333,11 @@ const parseArray = (val: any) => {
           window.location.reload();
         } else {
           const data = await res.json();
-          alert(data.message || 'Failed to create tag.');
+          alert(data.message || getMsg('failedCreateTag'));
         }
       } catch (err) {
         console.error(err);
-        alert('Could not connect to backend server.');
+        alert(getMsg('failedConnectBackend'));
       }
     });
 
@@ -2201,7 +2348,7 @@ const parseArray = (val: any) => {
         const name = (btn as HTMLElement).dataset.name;
         if (!id || !name) return;
 
-        if (confirm(`Are you sure you want to delete product tag "${name}"? This will untag all associated products.`)) {
+        if (confirm(getMsg('confirmDeleteProductTag', { name }))) {
           try {
             const res = await fetch(`http://localhost:3001/api/products/tags/${id}`, {
               method: 'DELETE',
@@ -2214,11 +2361,11 @@ const parseArray = (val: any) => {
               window.location.reload();
             } else {
               const data = await res.json();
-              alert(data.message || 'Failed to delete tag.');
+              alert(data.message || getMsg('failedDeleteTag'));
             }
           } catch (err) {
             console.error(err);
-            alert('Could not connect to server.');
+            alert(getMsg('failedConnectServer'));
           }
         }
       });

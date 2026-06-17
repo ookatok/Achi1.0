@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getSession } from 'auth-astro/server';
-import { useTranslations, translateProduct } from '../../lib/translations';
+import { translateProduct } from '../../lib/translations';
 
 // Fetch user session for token authorization
 const session = await getSession(Astro.request);
@@ -46,7 +46,6 @@ const mockProduct = {
 };
 
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
-const t = useTranslations(lang);
 
 const displayProduct = translateProduct(product || mockProduct, lang);
 

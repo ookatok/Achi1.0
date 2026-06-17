@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { ArrowDown, Search, Cart, Globe, XIcon, User, Heart } from '../components/common/icons';
+import { Search, Cart, Globe, XIcon, User, Heart } from '../components/common/icons';
 import { getSession } from 'auth-astro/server';
 import { useTranslations } from '../lib/translations';
 
@@ -9,12 +9,21 @@ interface Props {
   description?: string;
   showHeroHeader?: boolean;
   isAdminPanel?: boolean;
+  pendingOrdersCount?: number;
 }
 
-const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, isAdminPanel = false } = Astro.props;
+const { title, description = 'ACHI | Cool Every Day', showHeroHeader = false, isAdminPanel = false, pendingOrdersCount = 0 } = Astro.props;
 const session = await getSession(Astro.request);
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
+
+const l = (path: string) => {
+  if (path.startsWith('http') || path.startsWith('mailto:') || path.startsWith('tel:')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `/${lang}${cleanPath === '/' ? '' : cleanPath}`;
+};
 
 const token = (session as any)?.accessToken || '';
 let cartCount = 0;
@@ -83,6 +92,26 @@ if (token) {
         color: inherit;
       }
 
+      /* Admin tab buttons active and hover state overrides */
+      header nav button[id^="nav-tab-"] {
+        border-bottom: 2px solid transparent;
+        padding-bottom: 4px;
+        transition: border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+      }
+      header nav button[id^="nav-tab-"].active {
+        border-bottom-color: #1c1917 !important; /* text-brand-charcoal */
+        color: #1c1917 !important;
+        font-weight: 600 !important;
+      }
+      header nav button[id^="nav-tab-"]:not(.active) {
+        border-bottom-color: transparent !important;
+        color: #a8a29e !important; /* text-stone-400 / text-gray-400 */
+        font-weight: 300 !important;
+      }
+      header nav button[id^="nav-tab-"]:not(.active):hover {
+        color: #1c1917 !important;
+      }
+
       /* Favorites active state styling */
       [data-favorite-btn].is-favorite {
         color: #1c1917 !important; /* brand-charcoal */
@@ -90,6 +119,22 @@ if (token) {
       [data-favorite-btn].is-favorite svg {
         fill: #1c1917 !important;
         stroke: #1c1917 !important;
+      }
+
+      /* Product Card Slider Overrides */
+      .prev-img-btn, .next-img-btn, .dot-indicators-container {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .product-card-hover:hover .prev-img-btn,
+      .product-card-hover:hover .next-img-btn,
+      .product-card-hover:hover .dot-indicators-container {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .prev-img-btn:hover, .next-img-btn:hover {
+        transform: translateY(-50%) scale(1.05);
       }
     </style>
     <script is:inline set:html={`
@@ -126,7 +171,7 @@ if (token) {
       <div class="max-w-[1440px] mx-auto px-6 h-24 flex items-center justify-between">
         <!-- Logo Section -->
         <div class="flex flex-col items-center">
-          <a href="/" class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</a>
+          <a href={l('/')} class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</a>
           <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
           <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light block leading-none pl-[0.4em]">Cool Every Day</span>
         </div>
@@ -138,8 +183,11 @@ if (token) {
               <button id="nav-tab-dashboard" class="border-b-2 border-brand-charcoal pb-1 text-xs font-semibold uppercase tracking-widest text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
                 {t('nav.dashboard')}
               </button>
-              <button id="nav-tab-orders" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
-                {t('nav.orders')}
+              <button id="nav-tab-orders" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0 gap-1.5">
+                <span>{t('nav.orders')}</span>
+                <span id="nav-orders-badge" class={`inline-flex items-center justify-center bg-red-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1 rounded-full ${pendingOrdersCount > 0 ? '' : 'hidden'}`}>
+                  {pendingOrdersCount}
+                </span>
               </button>
               <button id="nav-tab-products" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
                 {t('nav.products')}
@@ -153,63 +201,79 @@ if (token) {
             </>
           ) : (
             <>
-              <a href="/" class="hover:opacity-70 transition-opacity">{t('nav.home')}</a>
+              <a href={l('/')} class="hover:opacity-70 transition-opacity">{t('nav.home')}</a>
               
               <!-- SHOP Mega Menu Container -->
               <div class="h-full flex items-center cursor-pointer">
                 <button id="shop-menu-btn" class="hover:opacity-70 transition-opacity flex items-center uppercase bg-transparent border-none outline-none cursor-pointer tracking-[0.15em] font-light text-[13px] p-0 m-0 text-current">{t('nav.shop')}</button>
                 
-                <!-- Dropdown Mega Menu (Full Width) -->
+                <!-- Dropdown Mega Menu (5 Columns) -->
                 <div id="shop-mega-menu" class="absolute top-full left-0 w-full bg-white border-t border-b border-gray-200 py-12 shadow-sm hidden z-50 text-left normal-case tracking-normal animate-fade-in">
-                  <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-3 gap-8">
-                    <!-- Column 1: Category -->
+                  <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-5 gap-8">
+                    <!-- Column 1: SHOP ALL -->
                     <div>
-                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.category')}</h4>
+                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
+                        <a href={l('/products')} class="underline underline-offset-4 font-semibold hover:text-brand-gold">{t('menu.shop_all')}</a>
+                      </h4>
+                    </div>
+
+                    <!-- Column 2: MEN -->
+                    <div>
+                      <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('home.men')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                        <li>
-                          <a href="/products?categorySlug=clothing" id="clothing-toggle-btn" class="hover:text-brand-gold font-medium text-brand-charcoal flex items-center gap-1.5 cursor-pointer">
-                            {t('menu.clothing')}
-                            <ArrowDown id="clothing-arrow" />
-                          </a>
-                        </li>
-                        <li class="clothing-sub-item hidden"><a href="/products/men" class="hover:text-brand-gold pl-3 block text-[10px]">{t('menu.male')}</a></li>
-                        <li class="clothing-sub-item hidden"><a href="/products/women" class="hover:text-brand-gold pl-3 block text-[10px]">{t('menu.female')}</a></li>
-                        <li><a href="/products/accessories" class="hover:text-brand-gold">{t('menu.accessories')}</a></li>
-                        <li><a href="/products/gifts" class="hover:text-brand-gold">{t('menu.gifts')}</a></li>
-                        <li><a href="/products" class="hover:text-brand-gold font-medium text-brand-charcoal">{t('menu.shop_all')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=T-shirt')} class="hover:text-brand-gold">{t('menu.men_tshirt')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Polo')} class="hover:text-brand-gold">{t('menu.men_polo')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Hoodie')} class="hover:text-brand-gold">{t('menu.men_hoodie')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Jeans')} class="hover:text-brand-gold">{t('menu.men_jeans')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Pants')} class="hover:text-brand-gold">{t('menu.men_pants')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Shorts')} class="hover:text-brand-gold">{t('menu.men_shorts')}</a></li>
+                        <li><a href={l('/products?categorySlug=men&query=Bags')} class="hover:text-brand-gold">{t('menu.men_bags')}</a></li>
                       </ul>
                     </div>
 
-                    <!-- Column 2: Featured -->
+                    <!-- Column 3: WOMEN -->
                     <div>
-                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.featured')}</h4>
+                      <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('home.women')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                        <li><a href="/products/new-arrivals" class="hover:text-brand-gold">{t('nav.new_arrivals')}</a></li>
-                        <li><a href="/products/best-sellers" class="hover:text-brand-gold">{t('menu.best_sellers')}</a></li>
-                        <li><a href="/products/trending" class="hover:text-brand-gold">{t('menu.trending')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=T-shirt')} class="hover:text-brand-gold">{t('menu.women_tshirt')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Polo')} class="hover:text-brand-gold">{t('menu.women_polo')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Hoodie')} class="hover:text-brand-gold">{t('menu.women_hoodie')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Jeans')} class="hover:text-brand-gold">{t('menu.women_jeans')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Pants')} class="hover:text-brand-gold">{t('menu.women_pants')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Shorts')} class="hover:text-brand-gold">{t('menu.women_shorts')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Skirts')} class="hover:text-brand-gold">{t('menu.skirts')}</a></li>
+                        <li><a href={l('/products?categorySlug=women&query=Bags')} class="hover:text-brand-gold">{t('menu.women_bags')}</a></li>
                       </ul>
                     </div>
 
-                    <!-- Column 3: Collections -->
+                    <!-- Column 4: Featured -->
                     <div>
-                      <h4 class="font-medium text-brand-charcoal text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.collections')}</h4>
+                      <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.featured')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                        <li><a href="/products/recommend" class="hover:text-brand-gold">{t('menu.recommend')}</a></li>
-                        <li><a href="/products/online-exclusives" class="hover:text-brand-gold">{t('menu.online_exclusives')}</a></li>
-                        <li><a href="/products/total-looks" class="hover:text-brand-gold">{t('menu.total_looks')}</a></li>
-                        <li><a href="/products/basics" class="hover:text-brand-gold">{t('menu.basics')}</a></li>
-                        <li><a href="/products/spring" class="hover:text-brand-gold">{t('menu.spring')}</a></li>
-                        <li><a href="/products/summer" class="hover:text-brand-gold">{t('menu.summer')}</a></li>
-                        <li><a href="/products/fall" class="hover:text-brand-gold">{t('menu.fall')}</a></li>
-                        <li><a href="/products/winter" class="hover:text-brand-gold">{t('menu.winter')}</a></li>
+                        <li><a href={l('/products/new-arrivals')} class="hover:text-brand-gold">{t('nav.new_arrivals')}</a></li>
+                        <li><a href={l('/products/best-sellers')} class="hover:text-brand-gold">{t('menu.best_sellers')}</a></li>
+                        <li><a href={l('/products/trending')} class="hover:text-brand-gold">{t('menu.trending')}</a></li>
+                        <li><a href={l('/discount')} class="hover:text-brand-gold">{t('nav.discount')}</a></li>
+                      </ul>
+                    </div>
+
+                    <!-- Column 5: Collections -->
+                    <div>
+                      <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.collections')}</h4>
+                      <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
+                        <li><a href={l('/collections')} class="hover:text-brand-gold">{t('menu.events')}</a></li>
+                        <li><a href={l('/products/recommend')} class="hover:text-brand-gold">{t('menu.recommend')}</a></li>
+                        <li><a href={l('/products/total-looks')} class="hover:text-brand-gold">{t('menu.total_looks')}</a></li>
+                        <li><a href={l('/products/basics')} class="hover:text-brand-gold">{t('menu.basics')}</a></li>
                       </ul>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <a href="/discount" class="hover:opacity-70 transition-opacity">{t('nav.discount')}</a>
-              <a href="/blog" class="hover:opacity-70 transition-opacity">{t('nav.blog')}</a>
+              <a href={l('/collections')} class="hover:opacity-70 transition-opacity">{t('nav.collections')}</a>
+              <a href={l('/blog')} class="hover:opacity-70 transition-opacity">{t('nav.blog')}</a>
+              <a href={l('/contact')} class="hover:opacity-70 transition-opacity">{t('nav.contact')}</a>
             </>
           )}
         </nav>
@@ -222,13 +286,13 @@ if (token) {
           </button>
 
           <!-- Favorite Icon Button -->
-          <a href="/favorite" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="header-favorite-btn">
+          <a href={l('/favorite')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="header-favorite-btn">
             <Heart />
             <span id="favorite-badge" class="absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
           </a>
 
           <!-- Cart Icon Button -->
-          <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
+          <a href={l('/cart')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
             <Cart />
             <span id="cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
           </a>
@@ -240,17 +304,18 @@ if (token) {
           </button>
 
           {session ? (
-            <!-- Profile Icon Button -->
-            <a href="/profile" class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
+            <a href={l('/profile')} class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
               <User />
             </a>
           ) : (
-            <!-- Sign In Link -->
-            <a href="/auth/signin" class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
+            <a href={l('/auth/signin')} class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
           )}
         </div>
       </div>
     </header>
+
+    <!-- Mega Menu Backdrop -->
+    <div id="mega-menu-backdrop" class="fixed inset-0 bg-black/10 backdrop-blur-sm z-40 hidden transition-all duration-300"></div>
 
     <!-- Main Content Area -->
     <main class="flex-grow">
@@ -275,7 +340,7 @@ if (token) {
           <div>
             <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.company')}</h5>
             <ul class="space-y-2 text-gray-500">
-              <li><a href="/about" class="hover:text-brand-gold transition-colors">{t('footer.about')}</a></li>
+              <li><a href={l('/about')} class="hover:text-brand-gold transition-colors">{t('footer.about')}</a></li>
             </ul>
           </div>
 
@@ -283,16 +348,16 @@ if (token) {
           <div>
             <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.service')}</h5>
             <ul class="space-y-2 text-gray-500">
-              <li><a href="/contact" class="hover:text-brand-gold transition-colors">{t('footer.contact')}</a></li>
-              <li><a href="/stores" class="hover:text-brand-gold transition-colors">{t('footer.stores')}</a></li>
-              <li><a href="/delivery" class="hover:text-brand-gold transition-colors">{t('footer.delivery')}</a></li>
-              <li><a href="/payments" class="hover:text-brand-gold transition-colors">{t('footer.payments')}</a></li>
-              <li><a href="/return" class="hover:text-brand-gold transition-colors">{t('footer.return')}</a></li>
-              <li><a href="/refunds" class="hover:text-brand-gold transition-colors">{t('footer.refunds')}</a></li>
-              <li><a href="/product-care" class="hover:text-brand-gold transition-colors">{t('footer.product_care')}</a></li>
-              <li><a href="/size-guide" class="hover:text-brand-gold transition-colors">{t('footer.size_guide')}</a></li>
-              <li><a href="/faq" class="hover:text-brand-gold transition-colors">{t('footer.faq')}</a></li>
-              <li><a href="/fact-sheet" class="hover:text-brand-gold transition-colors">{t('footer.fact_sheet')}</a></li>
+              <li><a href={l('/contact')} class="hover:text-brand-gold transition-colors">{t('footer.contact')}</a></li>
+              <li><a href={l('/stores')} class="hover:text-brand-gold transition-colors">{t('footer.stores')}</a></li>
+              <li><a href={l('/delivery')} class="hover:text-brand-gold transition-colors">{t('footer.delivery')}</a></li>
+              <li><a href={l('/payments')} class="hover:text-brand-gold transition-colors">{t('footer.payments')}</a></li>
+              <li><a href={l('/return')} class="hover:text-brand-gold transition-colors">{t('footer.return')}</a></li>
+              <li><a href={l('/refunds')} class="hover:text-brand-gold transition-colors">{t('footer.refunds')}</a></li>
+              <li><a href={l('/product-care')} class="hover:text-brand-gold transition-colors">{t('footer.product_care')}</a></li>
+              <li><a href={l('/size-guide')} class="hover:text-brand-gold transition-colors">{t('footer.size_guide')}</a></li>
+              <li><a href={l('/faq')} class="hover:text-brand-gold transition-colors">{t('footer.faq')}</a></li>
+              <li><a href={l('/fact-sheet')} class="hover:text-brand-gold transition-colors">{t('footer.fact_sheet')}</a></li>
             </ul>
           </div>
 
@@ -300,9 +365,9 @@ if (token) {
           <div>
             <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.legal')}</h5>
             <ul class="space-y-2 text-gray-500">
-              <li><a href="/privacy" class="hover:text-brand-gold transition-colors">{t('footer.privacy')}</a></li>
-              <li><a href="/terms" class="hover:text-brand-gold transition-colors">{t('footer.terms')}</a></li>
-              <li><a href="/cookies" class="hover:text-brand-gold transition-colors">{t('footer.cookies')}</a></li>
+              <li><a href={l('/privacy')} class="hover:text-brand-gold transition-colors">{t('footer.privacy')}</a></li>
+              <li><a href={l('/terms')} class="hover:text-brand-gold transition-colors">{t('footer.terms')}</a></li>
+              <li><a href={l('/cookies')} class="hover:text-brand-gold transition-colors">{t('footer.cookies')}</a></li>
             </ul>
           </div>
 
@@ -334,10 +399,11 @@ if (token) {
 
         <!-- Center Navigation -->
         <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full text-brand-charcoal">
-          <a href="/" class="hover:opacity-70 transition-opacity">{t('nav.home')}</a>
-          <a href="/products" class="hover:opacity-70 transition-opacity">{t('nav.shop')}</a>
-          <a href="/discount" class="hover:opacity-70 transition-opacity">{t('nav.discount')}</a>
-          <a href="/blog" class="hover:opacity-70 transition-opacity">{t('nav.blog')}</a>
+          <a href={l('/')} class="hover:opacity-70 transition-opacity">{t('nav.home')}</a>
+          <a href={l('/products')} class="hover:opacity-70 transition-opacity">{t('nav.shop')}</a>
+          <a href={l('/collections')} class="hover:opacity-70 transition-opacity">{t('nav.collections')}</a>
+          <a href={l('/blog')} class="hover:opacity-70 transition-opacity">{t('nav.blog')}</a>
+          <a href={l('/contact')} class="hover:opacity-70 transition-opacity">{t('nav.contact')}</a>
         </nav>
 
         <!-- Right Side Icons -->
@@ -348,13 +414,13 @@ if (token) {
           </button>
 
           <!-- Favorite Icon Button -->
-          <a href="/favorite" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="search-favorite-btn">
+          <a href={l('/favorite')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="search-favorite-btn">
             <Heart />
             <span id="search-favorite-badge" class="absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
           </a>
 
           <!-- Cart Icon Button -->
-          <a href="/cart" class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
+          <a href={l('/cart')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
             <Cart />
             <span id="search-cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
           </a>
@@ -366,13 +432,11 @@ if (token) {
           </button>
 
           {session ? (
-            <!-- Profile Icon Button -->
-            <a href="/profile" class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
+            <a href={l('/profile')} class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
               <User />
             </a>
           ) : (
-            <!-- Sign In Link -->
-            <a href="/auth/signin" class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
+            <a href={l('/auth/signin')} class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
           )}
 
           <!-- Close button -->
@@ -384,7 +448,7 @@ if (token) {
 
       <!-- Search Input Section -->
       <div class="flex-grow flex flex-col max-w-[800px] w-full mx-auto px-6 pt-16">
-        <form action="/products" method="GET" class="relative border-b border-gray-400 flex items-center py-4">
+        <form action={l('/products')} method="GET" class="relative border-b border-gray-400 flex items-center py-4">
           <Search class="w-6 h-6 text-gray-400 mr-4" />
           <input
             type="text"
@@ -478,7 +542,7 @@ if (token) {
                           $${price}
                         </span>
                       </div>
-                      <a href="/products/${product.id}" class="absolute inset-0 z-10" aria-label="View Details"></a>
+                      <a href="/${(window as any).currentLang}/products/${product.id}" class="absolute inset-0 z-10" aria-label="View Details"></a>
                     </div>
                   `;
                 }).join('');
@@ -591,15 +655,19 @@ if (token) {
       }
 
       if (shopMenuBtn && shopMegaMenu) {
+        const backdrop = document.getElementById('mega-menu-backdrop');
+
         shopMenuBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           const isHidden = shopMegaMenu.classList.contains('hidden');
           if (isHidden) {
             shopMegaMenu.classList.remove('hidden');
             shopMegaMenu.classList.add('block');
+            if (backdrop) backdrop.classList.remove('hidden');
           } else {
             shopMegaMenu.classList.remove('block');
             shopMegaMenu.classList.add('hidden');
+            if (backdrop) backdrop.classList.add('hidden');
           }
           handleStickyScroll();
         });
@@ -609,9 +677,19 @@ if (token) {
           if (shopMegaMenu && !shopMegaMenu.contains(e.target) && e.target !== shopMenuBtn) {
             shopMegaMenu.classList.remove('block');
             shopMegaMenu.classList.add('hidden');
+            if (backdrop) backdrop.classList.add('hidden');
             handleStickyScroll();
           }
         });
+
+        if (backdrop) {
+          backdrop.addEventListener('click', () => {
+            shopMegaMenu.classList.remove('block');
+            shopMegaMenu.classList.add('hidden');
+            backdrop.classList.add('hidden');
+            handleStickyScroll();
+          });
+        }
       }
     </script>
     <!-- Client-side script to highlight active links and toggle clothing menu -->
@@ -654,47 +732,7 @@ if (token) {
         }
       });
 
-      // 3. Clothing subcategory toggle logic
-      const clothingToggle = document.getElementById('clothing-toggle-btn');
-      const clothingSubItems = document.querySelectorAll('.clothing-sub-item');
-      const clothingArrow = document.getElementById('clothing-arrow');
-
-      const toggleClothingMenu = (show) => {
-        clothingSubItems.forEach(item => {
-          if (show === undefined) {
-            item.classList.toggle('hidden');
-          } else if (show) {
-            item.classList.remove('hidden');
-          } else {
-            item.classList.add('hidden');
-          }
-        });
-
-        // Toggle arrow rotation
-        if (clothingArrow) {
-          const isCurrentlyHidden = clothingSubItems[0]?.classList.contains('hidden');
-          if (isCurrentlyHidden) {
-            clothingArrow.classList.remove('rotate-180');
-          } else {
-            clothingArrow.classList.add('rotate-180');
-          }
-        }
-      };
-
-      if (clothingToggle) {
-        clothingToggle.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          toggleClothingMenu();
-        });
-      }
-
-      // Auto-expand on page load if user is on /products/men or /products/women, or categorySlug is clothing
-      const pathName = window.location.pathname;
-      const searchParams = window.location.search;
-      if (pathName === '/products/men' || pathName === '/products/women' || searchParams.includes('categorySlug=clothing')) {
-        toggleClothingMenu(true);
-      }
+      // 3. Obsolete clothing subcategory toggle logic removed
     </script>
 
     <!-- Client-side script for Favorites Wishlist sync and click tracking -->
@@ -810,18 +848,41 @@ if (token) {
     <script is:inline>
       document.querySelectorAll('.language-selector-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const cookies = document.cookie.split(';');
-          let currentLang = 'th';
-          for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'lang') {
-              currentLang = value;
-              break;
+          const pathname = window.location.pathname;
+          let newPath = pathname;
+          let newLang = 'th';
+
+          if (pathname.startsWith('/th/')) {
+            newPath = '/en/' + pathname.slice(4);
+            newLang = 'en';
+          } else if (pathname === '/th') {
+            newPath = '/en';
+            newLang = 'en';
+          } else if (pathname.startsWith('/en/')) {
+            newPath = '/th/' + pathname.slice(4);
+            newLang = 'th';
+          } else if (pathname === '/en') {
+            newPath = '/th';
+            newLang = 'th';
+          } else {
+            // Fallback if no prefix is present (should not happen normally due to middleware redirect)
+            const cookies = document.cookie.split(';');
+            let currentLang = 'th';
+            for (let cookie of cookies) {
+              const [name, value] = cookie.trim().split('=');
+              if (name === 'lang') {
+                currentLang = value;
+                break;
+              }
             }
+            newLang = currentLang === 'en' ? 'th' : 'en';
+            newPath = '/' + newLang + pathname;
           }
-          const newLang = currentLang === 'en' ? 'th' : 'en';
+
+          // Update the cookie so the preference is stored
           document.cookie = `lang=${newLang};path=/;max-age=31536000;samesite=lax`;
-          window.location.reload();
+          // Navigate to the new localized URL
+          window.location.href = newPath + window.location.search + window.location.hash;
         });
       });
     </script>
@@ -862,6 +923,156 @@ if (token) {
 
         // Listen for cart update event
         window.addEventListener('cart-updated', updateCartBadges);
+      })();
+    </script>
+
+    <!-- Client-side script for Product Card Image Sliders -->
+    <script is:inline>
+      (function() {
+        const clientResolveImage = (url) => {
+          if (!url) return '/assets/images/placeholder-product.png';
+          if (url.startsWith('http') || url.startsWith('data:')) return url;
+          if (url.startsWith('/assets/uploads/')) {
+            return `http://localhost:3001${url}`;
+          }
+          return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+        };
+
+        const getProductImages = (name, mainImage) => {
+          const nameLower = (name || '').toLowerCase();
+          const alternates = [];
+
+          if (nameLower.includes('tshirt') || nameLower.includes('t-shirt') || nameLower.includes('tee') || nameLower.includes('tank top')) {
+            alternates.push('/assets/images/tshirt-1.png', '/assets/images/products/tshirt.png', '/assets/images/polo-dark.png');
+          } else if (nameLower.includes('polo') || nameLower.includes('shirt') || nameLower.includes('blouse')) {
+            alternates.push('/assets/images/polo-dark.png', '/assets/images/shirt-cat-men.png', '/assets/images/products/tshirt.png');
+          } else if (nameLower.includes('hoodie') || nameLower.includes('cardigan') || nameLower.includes('jacket') || nameLower.includes('trench') || nameLower.includes('coat')) {
+            alternates.push('/assets/images/products/hoodie.png', '/assets/images/products/cardigan.png', '/assets/images/products/leatherjacket.png', '/assets/images/products/trenchcoat.png');
+          } else if (nameLower.includes('pants') || nameLower.includes('shorts') || nameLower.includes('jeans') || nameLower.includes('sweatpants') || nameLower.includes('trouser') || nameLower.includes('skirt') || nameLower.includes('chinos')) {
+            alternates.push('/assets/images/pants-cream.png', '/assets/images/products/sweatpants.png', '/assets/images/bottoms-cat-men.png');
+          } else if (nameLower.includes('belt') || nameLower.includes('sunglasses') || nameLower.includes('necklace') || nameLower.includes('candle') || nameLower.includes('bag') || nameLower.includes('cap')) {
+            alternates.push('/assets/images/products/belt.png', '/assets/images/products/sunglasses.png', '/assets/images/products/necklace.png', '/assets/images/products/candle.png');
+          } else {
+            alternates.push('/assets/images/tshirt-1.png', '/assets/images/polo-dark.png', '/assets/images/pants-cream.png', '/assets/images/shoes-white.png');
+          }
+
+          const all = [mainImage, ...alternates]
+            .map(u => u ? u.trim() : '')
+            .filter(Boolean);
+          
+          const unique = [...new Set(all)];
+          return unique.slice(0, 3);
+        };
+
+        const initProductCardSliders = () => {
+          const cards = document.querySelectorAll('.product-card-hover');
+          cards.forEach(card => {
+            if (card.dataset.sliderInitialized === 'true') return;
+            if (card.id && card.id.startsWith('cart-item')) return;
+            card.dataset.sliderInitialized = 'true';
+
+            const img = card.querySelector('img');
+            if (!img) return;
+
+            const imgContainer = img.parentElement;
+            if (!imgContainer) return;
+
+            // Ensure container has relative styling
+            imgContainer.classList.add('relative');
+
+            const mainImage = img.getAttribute('src') || '';
+            const name = (card.querySelector('h3')?.textContent || card.querySelector('[data-name]')?.getAttribute('data-name') || img.alt || '').trim();
+
+            const images = getProductImages(name, mainImage);
+            if (images.length <= 1) return;
+
+            imgContainer.dataset.currentIndex = '0';
+
+            // Create Left Arrow
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'absolute left-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none prev-img-btn';
+            prevBtn.setAttribute('aria-label', 'Previous image');
+            prevBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+            `;
+
+            // Create Right Arrow
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none next-img-btn';
+            nextBtn.setAttribute('aria-label', 'Next image');
+            nextBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            `;
+
+            // Create Dot Indicators
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-30 dot-indicators-container';
+            dotsContainer.innerHTML = images.map((_, i) => `
+              <span class="w-1.5 h-1.5 rounded-full border border-white/50 transition-all ${i === 0 ? 'bg-brand-charcoal scale-110' : 'bg-white/60'}" data-index="${i}"></span>
+            `).join('');
+
+            // Append to container
+            imgContainer.appendChild(prevBtn);
+            imgContainer.appendChild(nextBtn);
+            imgContainer.appendChild(dotsContainer);
+
+            const updateImage = (index) => {
+              img.src = clientResolveImage(images[index]);
+              imgContainer.dataset.currentIndex = String(index);
+              
+              const dots = dotsContainer.querySelectorAll('span');
+              dots.forEach((dot, i) => {
+                if (i === index) {
+                  dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-brand-charcoal scale-110';
+                } else {
+                  dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-white/60';
+                }
+              });
+            };
+
+            // Event listeners with click event isolation
+            prevBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
+              index = (index - 1 + images.length) % images.length;
+              updateImage(index);
+            });
+
+            nextBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
+              index = (index + 1) % images.length;
+              updateImage(index);
+            });
+          });
+        };
+
+        // Initialize on DOM load
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initProductCardSliders);
+        } else {
+          initProductCardSliders();
+        }
+
+        // Also watch for DOM changes (like live search popup adding new product elements)
+        const observer = new MutationObserver((mutations) => {
+          let hasNewCards = false;
+          mutations.forEach(m => {
+            if (m.addedNodes.length > 0) {
+              hasNewCards = true;
+            }
+          });
+          if (hasNewCards) {
+            initProductCardSliders();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
       })();
     </script>
   </body>

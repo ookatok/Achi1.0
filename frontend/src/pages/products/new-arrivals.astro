@@ -1,10 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { useTranslations, translateProduct } from '../../lib/translations';
+import { translateProduct } from '../../lib/translations';
 import Pagination from '../../components/common/Pagination.astro';
 
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
-const t = useTranslations(lang);
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
