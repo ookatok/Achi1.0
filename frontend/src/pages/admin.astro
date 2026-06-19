@@ -936,22 +936,6 @@ const resolveImage = (url: string) => {
           <input type="number" id="add-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_file')}</label>
-          <input type="file" id="add-product-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
-        </div>
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_url')}</label>
-          <div class="flex gap-2">
-            <input type="text" id="add-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
-            <div id="add-product-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
-              <img id="add-product-image-preview" src="" class="w-full h-full object-cover" />
-            </div>
-          </div>
-          <div id="add-product-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
-        </div>
-      </div>
       <div>
         <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
         <textarea id="add-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
@@ -1000,18 +984,22 @@ const resolveImage = (url: string) => {
           </div>
         </div>
       </div>
-      <!-- Multi Images Upload -->
-      <div class="border border-stone-200 p-3 rounded-sm bg-stone-50/50 space-y-2">
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Color Images (Multi-images)' : 'รูปภาพสินค้าแยกตามสี'}</label>
-        <div id="add-product-images-list" class="space-y-1.5 max-h-36 overflow-y-auto">
-          <!-- Rendered dynamically -->
-        </div>
+      <!-- Product Images Upload (Combined & Multi-upload) -->
+      <div class="border border-stone-200 p-4 rounded-sm bg-stone-50/50 space-y-3">
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Images' : 'รูปภาพสินค้า'}</label>
+        
+        <!-- Files input for multiple images -->
         <div class="flex items-center gap-2">
-          <input type="file" id="add-product-multi-image-file" accept="image/*" class="hidden" />
-          <button type="button" id="btn-add-multi-image" class="px-3 py-1.5 border border-dashed border-stone-300 hover:border-brand-charcoal text-[9px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors">
-            + {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+          <input type="file" id="add-product-images-file" accept="image/*" multiple class="hidden" />
+          <button type="button" id="btn-add-product-images" class="px-3 py-2 border border-dashed border-stone-300 hover:border-brand-charcoal text-[10px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            {lang === 'en' ? 'Choose Images (Multiple)' : 'เลือกรูปภาพ (อัพโหลดพร้อมกันได้หลายรูป)'}
           </button>
-          <div id="add-product-multi-upload-status" class="text-[9px] text-stone-500 font-semibold"></div>
+          <div id="add-product-images-upload-status" class="text-[10px] text-stone-500 font-medium"></div>
+        </div>
+
+        <div id="add-product-combined-images-list" class="space-y-2 max-h-48 overflow-y-auto">
+          <!-- Rendered dynamically -->
         </div>
       </div>
       <div>
@@ -1163,22 +1151,6 @@ const resolveImage = (url: string) => {
           <input type="number" id="edit-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_file')}</label>
-          <input type="file" id="edit-product-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
-        </div>
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_url')}</label>
-          <div class="flex gap-2">
-            <input type="text" id="edit-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
-            <div id="edit-product-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
-              <img id="edit-product-image-preview" src="" class="w-full h-full object-cover" />
-            </div>
-          </div>
-          <div id="edit-product-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
-        </div>
-      </div>
       <div>
         <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
         <textarea id="edit-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
@@ -1227,18 +1199,22 @@ const resolveImage = (url: string) => {
           </div>
         </div>
       </div>
-      <!-- Multi Images Upload -->
-      <div class="border border-stone-200 p-3 rounded-sm bg-stone-50/50 space-y-2">
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Color Images (Multi-images)' : 'รูปภาพสินค้าแยกตามสี'}</label>
-        <div id="edit-product-images-list" class="space-y-1.5 max-h-36 overflow-y-auto">
-          <!-- Rendered dynamically -->
-        </div>
+      <!-- Product Images Upload (Combined & Multi-upload) -->
+      <div class="border border-stone-200 p-4 rounded-sm bg-stone-50/50 space-y-3">
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Images' : 'รูปภาพสินค้า'}</label>
+        
+        <!-- Files input for multiple images -->
         <div class="flex items-center gap-2">
-          <input type="file" id="edit-product-multi-image-file" accept="image/*" class="hidden" />
-          <button type="button" id="btn-edit-multi-image" class="px-3 py-1.5 border border-dashed border-stone-300 hover:border-brand-charcoal text-[9px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors">
-            + {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+          <input type="file" id="edit-product-images-file" accept="image/*" multiple class="hidden" />
+          <button type="button" id="btn-edit-product-images" class="px-3 py-2 border border-dashed border-stone-300 hover:border-brand-charcoal text-[10px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            {lang === 'en' ? 'Choose Images (Multiple)' : 'เลือกรูปภาพ (อัพโหลดพร้อมกันได้หลายรูป)'}
           </button>
-          <div id="edit-product-multi-upload-status" class="text-[9px] text-stone-500 font-semibold"></div>
+          <div id="edit-product-images-upload-status" class="text-[10px] text-stone-500 font-medium"></div>
+        </div>
+
+        <div id="edit-product-combined-images-list" class="space-y-2 max-h-48 overflow-y-auto">
+          <!-- Rendered dynamically -->
         </div>
       </div>
       <div>
@@ -2096,82 +2072,128 @@ const resolveImage = (url: string) => {
     setupToolbar('add-blog-toolbar', addEditor);
     setupToolbar('edit-blog-toolbar', editEditor);
 
-    // Multi Image arrays
-    let addProductImages: { color: string; imageUrl: string }[] = [];
-    let editProductImages: { color: string; imageUrl: string }[] = [];
+    // Combined Product Image arrays
+    let addProductCombinedImages: { imageUrl: string; color: string; isMain: boolean }[] = [];
+    let editProductCombinedImages: { imageUrl: string; color: string; isMain: boolean }[] = [];
 
-    const renderMultiImagesList = (formType: 'add' | 'edit') => {
-      const listEl = document.getElementById(`${formType}-product-images-list`);
+    const renderCombinedImagesList = (formType: 'add' | 'edit') => {
+      const listEl = document.getElementById(`${formType}-product-combined-images-list`);
       if (!listEl) return;
       listEl.innerHTML = '';
-      
-      let imagesArr = formType === 'add' ? addProductImages : editProductImages;
+
+      let imagesArr = formType === 'add' ? addProductCombinedImages : editProductCombinedImages;
       if (!Array.isArray(imagesArr)) {
         imagesArr = [];
       }
+
       const colorsInput = document.getElementById(`${formType}-colors`) as HTMLInputElement | null;
       const colors = colorsInput ? colorsInput.value.split(',').map(c => c.trim()).filter(Boolean) : [];
 
       if (imagesArr.length === 0) {
-        listEl.innerHTML = `<div class="text-stone-400 text-[10px] italic py-1">${lang === 'en' ? 'No multi-images uploaded yet.' : 'ยังไม่มีรูปภาพเพิ่มเติม'}</div>`;
+        listEl.innerHTML = `<div class="text-stone-400 text-[10px] italic py-2 text-center border border-dashed border-stone-200 rounded-sm bg-white">${lang === 'en' ? 'No images uploaded yet.' : 'ยังไม่มีรูปภาพที่อัปโหลด'}</div>`;
         return;
       }
 
       imagesArr.forEach((item, index) => {
         const itemEl = document.createElement('div');
-        itemEl.className = 'flex items-center justify-between gap-3 p-2 bg-stone-50 border border-stone-200 rounded-sm';
+        itemEl.className = 'flex items-center justify-between gap-3 p-2.5 bg-white border border-stone-200 rounded-sm shadow-xs';
 
-        // Left side: image and filename
+        // Left side: image preview and details
         const leftEl = document.createElement('div');
-        leftEl.className = 'flex items-center gap-2 min-w-0 flex-1';
+        leftEl.className = 'flex items-center gap-2.5 min-w-0 flex-1';
 
         const imgEl = document.createElement('img');
-        imgEl.className = 'w-8 h-10 object-cover rounded-sm border border-stone-200';
+        imgEl.className = 'w-10 h-12 object-cover rounded-sm border border-stone-200 shrink-0';
         imgEl.src = item.imageUrl.startsWith('http') ? item.imageUrl : `http://localhost:3001${item.imageUrl}`;
 
-        const urlTextEl = document.createElement('span');
-        urlTextEl.className = 'text-[9px] text-stone-500 truncate font-mono flex-1';
-        urlTextEl.textContent = item.imageUrl.split('/').pop() || item.imageUrl;
+        const detailsEl = document.createElement('div');
+        detailsEl.className = 'flex flex-col min-w-0 flex-1';
+
+        const filename = item.imageUrl.split('/').pop() || item.imageUrl;
+        const filenameEl = document.createElement('span');
+        filenameEl.className = 'text-[10px] text-stone-600 truncate font-medium';
+        filenameEl.textContent = filename;
+
+        detailsEl.appendChild(filenameEl);
+
+        // Badge if Main Cover
+        if (item.isMain) {
+          const badgeEl = document.createElement('span');
+          badgeEl.className = 'inline-flex items-center px-1.5 py-0.5 rounded-sm text-[8px] font-bold uppercase tracking-wider bg-brand-charcoal text-white w-max mt-1';
+          badgeEl.textContent = lang === 'en' ? 'Cover' : 'รูปหลัก';
+          detailsEl.appendChild(badgeEl);
+        }
 
         leftEl.appendChild(imgEl);
-        leftEl.appendChild(urlTextEl);
+        leftEl.appendChild(detailsEl);
 
-        // Right side: color selector and remove button
+        // Right side: controls
         const rightEl = document.createElement('div');
-        rightEl.className = 'flex items-center gap-2 shrink-0';
+        rightEl.className = 'flex items-center gap-3 shrink-0';
 
-        const selectEl = document.createElement('select');
-        selectEl.className = `${formType}-multi-image-color-select border border-stone-200 px-2 py-1 text-[10px] focus:outline-none rounded-sm bg-white`;
-        selectEl.addEventListener('change', () => {
-          item.color = selectEl.value;
-        });
-
-        // Add options to select
-        const defOpt = document.createElement('option');
-        defOpt.value = '';
-        defOpt.textContent = lang === 'en' ? 'Default' : 'รูปเริ่มต้น/ไม่มีสี';
-        selectEl.appendChild(defOpt);
-
-        colors.forEach(col => {
-          const opt = document.createElement('option');
-          opt.value = col;
-          opt.textContent = col;
-          if (col === item.color) {
-            opt.selected = true;
+        // Radio button to set as Cover
+        const coverLabel = document.createElement('label');
+        coverLabel.className = 'flex items-center gap-1 text-[10px] text-stone-500 font-semibold cursor-pointer select-none';
+        
+        const coverRadio = document.createElement('input');
+        coverRadio.type = 'radio';
+        coverRadio.name = `${formType}-product-cover`;
+        coverRadio.checked = item.isMain;
+        coverRadio.className = 'border-stone-300 text-brand-charcoal focus:ring-brand-charcoal w-3.5 h-3.5 cursor-pointer';
+        coverRadio.addEventListener('change', () => {
+          if (coverRadio.checked) {
+            imagesArr.forEach((img, idx) => {
+              img.isMain = (idx === index);
+            });
+            renderCombinedImagesList(formType);
           }
-          selectEl.appendChild(opt);
         });
 
+        coverLabel.appendChild(coverRadio);
+        coverLabel.appendChild(document.createTextNode(lang === 'en' ? 'Cover' : 'ตั้งเป็นรูปหลัก'));
+        rightEl.appendChild(coverLabel);
+
+        // Color selector (only if NOT main image)
+        if (!item.isMain) {
+          const selectEl = document.createElement('select');
+          selectEl.className = `${formType}-combined-image-color-select border border-stone-200 px-2 py-1 text-[10px] focus:outline-none rounded-sm bg-white font-medium max-w-[100px]`;
+          selectEl.addEventListener('change', () => {
+            item.color = selectEl.value;
+          });
+
+          // Default option
+          const defOpt = document.createElement('option');
+          defOpt.value = '';
+          defOpt.textContent = lang === 'en' ? 'No Color' : 'ไม่มีสี';
+          selectEl.appendChild(defOpt);
+
+          colors.forEach(col => {
+            const opt = document.createElement('option');
+            opt.value = col;
+            opt.textContent = col;
+            if (col === item.color) {
+              opt.selected = true;
+            }
+            selectEl.appendChild(opt);
+          });
+
+          rightEl.appendChild(selectEl);
+        }
+
+        // Remove button
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'text-red-500 hover:text-red-700 text-xs font-bold px-1.5 py-0.5 border border-transparent hover:border-red-200 hover:bg-red-50 rounded-sm cursor-pointer';
+        removeBtn.className = 'text-red-500 hover:text-red-700 text-sm font-bold px-1.5 py-0.5 border border-transparent hover:border-red-200 hover:bg-red-50 rounded-sm cursor-pointer';
         removeBtn.textContent = '×';
         removeBtn.addEventListener('click', () => {
+          const wasMain = item.isMain;
           imagesArr.splice(index, 1);
-          renderMultiImagesList(formType);
+          if (wasMain && imagesArr.length > 0) {
+            imagesArr[0].isMain = true; // Set first remaining as main cover
+          }
+          renderCombinedImagesList(formType);
         });
 
-        rightEl.appendChild(selectEl);
         rightEl.appendChild(removeBtn);
 
         itemEl.appendChild(leftEl);
@@ -2181,12 +2203,12 @@ const resolveImage = (url: string) => {
       });
     };
 
-    const updateMultiImageColorSelectors = (formType: 'add' | 'edit') => {
+    const updateCombinedImageColorSelectors = (formType: 'add' | 'edit') => {
       const colorsInput = document.getElementById(`${formType}-colors`) as HTMLInputElement | null;
       if (!colorsInput) return;
       const colors = colorsInput.value.split(',').map(c => c.trim()).filter(Boolean);
 
-      const dropdowns = document.querySelectorAll(`.${formType}-multi-image-color-select`);
+      const dropdowns = document.querySelectorAll(`.${formType}-combined-image-color-select`);
       dropdowns.forEach((selectEl: any) => {
         const currentValue = selectEl.value;
         selectEl.innerHTML = '';
@@ -2194,7 +2216,7 @@ const resolveImage = (url: string) => {
         // Add Default/No Color option
         const defOpt = document.createElement('option');
         defOpt.value = '';
-        defOpt.textContent = lang === 'en' ? 'Default' : 'รูปเริ่มต้น/ไม่มีสี';
+        defOpt.textContent = lang === 'en' ? 'No Color' : 'ไม่มีสี';
         selectEl.appendChild(defOpt);
         
         // Add specific colors
@@ -2216,17 +2238,13 @@ const resolveImage = (url: string) => {
 
     // Setup dialog modals
     setupDialog('add-product-dialog', 'open-add-dialog-btn', () => {
-      const fileInput = document.getElementById('add-product-image-file') as HTMLInputElement | null;
+      const fileInput = document.getElementById('add-product-images-file') as HTMLInputElement | null;
       if (fileInput) fileInput.value = '';
-      const previewContainer = document.getElementById('add-product-image-preview-container');
-      if (previewContainer) previewContainer.classList.add('hidden');
-      const uploadStatus = document.getElementById('add-product-upload-status');
-      if (uploadStatus) uploadStatus.classList.add('hidden');
-      const textInput = document.getElementById('add-image') as HTMLInputElement | null;
-      if (textInput) textInput.value = '';
+      const uploadStatus = document.getElementById('add-product-images-upload-status');
+      if (uploadStatus) uploadStatus.textContent = '';
       
-      addProductImages = [];
-      renderMultiImagesList('add');
+      addProductCombinedImages = [];
+      renderCombinedImagesList('add');
     });
     setupDialog('edit-product-dialog');
     setupDialog('add-blog-dialog', 'open-add-blog-btn', () => {
@@ -2326,61 +2344,98 @@ const resolveImage = (url: string) => {
 
     setupImageUpload('add-blog-image-file', 'add-blog-image', 'add-blog-image-preview-container', 'add-blog-image-preview', 'add-blog-upload-status');
     setupImageUpload('edit-blog-image-file', 'edit-blog-image', 'edit-blog-image-preview-container', 'edit-blog-image-preview', 'edit-blog-upload-status');
-    setupImageUpload('add-product-image-file', 'add-image', 'add-product-image-preview-container', 'add-product-image-preview', 'add-product-upload-status', 'http://localhost:3001/api/products/upload');
-    setupImageUpload('edit-product-image-file', 'edit-image', 'edit-product-image-preview-container', 'edit-product-image-preview', 'edit-product-upload-status', 'http://localhost:3001/api/products/upload');
     setupImageUpload('add-collection-image-file', 'add-col-image', 'add-collection-image-preview-container', 'add-collection-image-preview', 'add-collection-upload-status', 'http://localhost:3001/api/collections/upload');
     setupImageUpload('edit-collection-image-file', 'edit-col-image', 'edit-collection-image-preview-container', 'edit-collection-image-preview', 'edit-collection-upload-status', 'http://localhost:3001/api/collections/upload');
 
-    // Multi Image Upload Handlers
-    const setupMultiImageUpload = (formType: 'add' | 'edit') => {
-      const btnAdd = document.getElementById(`btn-${formType}-multi-image`);
-      const fileInput = document.getElementById(`${formType}-product-multi-image-file`) as HTMLInputElement | null;
-      const statusEl = document.getElementById(`${formType}-product-multi-upload-status`);
+    // Combined Image Upload Handlers (Supports Multi-upload)
+    const setupCombinedImageUpload = (formType: 'add' | 'edit') => {
+      const btnAdd = document.getElementById(`btn-${formType}-product-images`);
+      const fileInput = document.getElementById(`${formType}-product-images-file`) as HTMLInputElement | null;
+      const statusEl = document.getElementById(`${formType}-product-images-upload-status`);
 
       btnAdd?.addEventListener('click', () => {
         fileInput?.click();
       });
 
       fileInput?.addEventListener('change', async () => {
-        const file = fileInput.files?.[0];
-        if (!file) return;
+        const files = fileInput.files;
+        if (!files || files.length === 0) return;
+
+        const imagesArr = formType === 'add' ? addProductCombinedImages : editProductCombinedImages;
 
         if (statusEl) {
-          statusEl.textContent = getMsg('uploadingImage') || 'Uploading...';
+          statusEl.textContent = lang === 'en' 
+            ? `Uploading ${files.length} image(s)...` 
+            : `กำลังอัปโหลด ${files.length} รูปภาพ...`;
+          statusEl.className = "text-[10px] text-stone-500 font-semibold";
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
+        // Upload files in parallel
+        const uploadPromises = Array.from(files).map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
 
-        try {
-          const res = await fetch('http://localhost:3001/api/products/upload', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
+          try {
+            const res = await fetch('http://localhost:3001/api/products/upload', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              },
+              body: formData
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              return { success: true, imageUrl: data.imageUrl };
+            } else {
+              const data = await res.json();
+              return { success: false, error: data.message || 'Upload failed' };
+            }
+          } catch (err) {
+            console.error(err);
+            return { success: false, error: 'Network error' };
+          }
+        });
+
+        const results = await Promise.all(uploadPromises);
+        const successfulUploads = results.filter(r => r.success);
+        
+        if (successfulUploads.length > 0) {
+          successfulUploads.forEach((uploaded) => {
+            // If the array is currently empty, the first successful upload becomes Main Cover
+            const isFirst = (imagesArr.length === 0);
+            imagesArr.push({ 
+              imageUrl: uploaded.imageUrl, 
+              color: '', 
+              isMain: isFirst 
+            });
           });
 
-          if (res.ok) {
-            const data = await res.json();
-            const imagesArr = formType === 'add' ? addProductImages : editProductImages;
-            imagesArr.push({ color: '', imageUrl: data.imageUrl });
-            renderMultiImagesList(formType);
-            if (statusEl) statusEl.textContent = '';
-          } else {
-            const data = await res.json();
-            if (statusEl) statusEl.textContent = data.message || 'Upload failed';
-          }
-        } catch (err) {
-          console.error(err);
-          if (statusEl) statusEl.textContent = 'Upload error';
+          renderCombinedImagesList(formType);
         }
+
+        if (statusEl) {
+          const failedCount = results.length - successfulUploads.length;
+          if (failedCount > 0) {
+            statusEl.textContent = lang === 'en'
+              ? `Uploaded ${successfulUploads.length} image(s), ${failedCount} failed.`
+              : `อัปโหลดสำเร็จ ${successfulUploads.length} รูป, ล้มเหลว ${failedCount} รูป`;
+            statusEl.className = "text-[10px] text-red-500 font-semibold";
+          } else {
+            statusEl.textContent = lang === 'en' ? 'Upload complete' : 'อัปโหลดเรียบร้อยแล้ว';
+            statusEl.className = "text-[10px] text-green-600 font-semibold";
+          }
+          setTimeout(() => {
+            statusEl.textContent = '';
+          }, 3500);
+        }
+        
         fileInput.value = '';
       });
     };
 
-    setupMultiImageUpload('add');
-    setupMultiImageUpload('edit');
+    setupCombinedImageUpload('add');
+    setupCombinedImageUpload('edit');
 
     // Add auto-slug generation to forms (Products)
     const addName = document.getElementById('add-name') as HTMLInputElement | null;
@@ -2437,7 +2492,6 @@ const resolveImage = (url: string) => {
       const slug = (document.getElementById('add-slug') as HTMLInputElement).value;
       const price = parseFloat((document.getElementById('add-price') as HTMLInputElement).value);
       const stockQuantity = parseInt((document.getElementById('add-stock') as HTMLInputElement).value, 10);
-      const imageUrl = (document.getElementById('add-image') as HTMLInputElement).value;
       const description = (document.getElementById('add-desc') as HTMLInputElement).value;
       
       const sizesStr = (document.getElementById('add-sizes') as HTMLInputElement).value;
@@ -2454,7 +2508,14 @@ const resolveImage = (url: string) => {
       const categoryId = parseInt((document.getElementById('add-category') as HTMLInputElement).value, 10);
       const status = (document.getElementById('add-status') as HTMLSelectElement).value;
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, images: addProductImages, description, sizes, colors, tags, categoryId, status };
+      // Extract imageUrl (Main Cover) and images array (additional details)
+      const mainImageObj = addProductCombinedImages.find(img => img.isMain);
+      const imageUrl = mainImageObj ? mainImageObj.imageUrl : '';
+      const images = addProductCombinedImages
+        .filter(img => !img.isMain)
+        .map(img => ({ imageUrl: img.imageUrl, color: img.color || '' }));
+
+      const payload = { name, slug, price, stockQuantity, imageUrl, images, description, sizes, colors, tags, categoryId, status };
 
       try {
         const res = await fetch('http://localhost:3001/api/products', {
@@ -2510,7 +2571,6 @@ const resolveImage = (url: string) => {
         (document.getElementById('edit-slug') as HTMLInputElement).value = slug;
         (document.getElementById('edit-price') as HTMLInputElement).value = price;
         (document.getElementById('edit-stock') as HTMLInputElement).value = stock;
-        (document.getElementById('edit-image') as HTMLInputElement).value = image;
         (document.getElementById('edit-desc') as HTMLInputElement).value = desc;
         (document.getElementById('edit-sizes') as HTMLInputElement).value = sizes.join(', ');
         const editColorsInput = document.getElementById('edit-colors') as HTMLInputElement;
@@ -2528,35 +2588,37 @@ const resolveImage = (url: string) => {
         (document.getElementById('edit-status') as HTMLSelectElement).value = status;
 
         // Reset file input & upload status
-        const fileInput = document.getElementById('edit-product-image-file') as HTMLInputElement | null;
+        const fileInput = document.getElementById('edit-product-images-file') as HTMLInputElement | null;
         if (fileInput) fileInput.value = '';
-        const uploadStatus = document.getElementById('edit-product-upload-status');
-        if (uploadStatus) uploadStatus.classList.add('hidden');
+        const uploadStatus = document.getElementById('edit-product-images-upload-status');
+        if (uploadStatus) uploadStatus.textContent = '';
 
-        // Set preview image if exists
-        const previewContainer = document.getElementById('edit-product-image-preview-container');
-        const preview = document.getElementById('edit-product-image-preview') as HTMLImageElement | null;
+        // Combine main image and additional color images into editProductCombinedImages
+        editProductCombinedImages = [];
         if (image) {
-          let src = image;
-          if (!src.startsWith('http') && src.startsWith('/')) {
-            src = `http://localhost:3001${src}`;
-          }
-          if (preview && previewContainer) {
-            preview.src = src;
-            previewContainer.classList.remove('hidden');
-          }
-        } else {
-          if (previewContainer) previewContainer.classList.add('hidden');
+          editProductCombinedImages.push({ imageUrl: image, color: '', isMain: true });
         }
 
         const imagesStr = btn.dataset.images || '[]';
         try {
           const parsed = JSON.parse(imagesStr);
-          editProductImages = Array.isArray(parsed) ? parsed : [];
+          if (Array.isArray(parsed)) {
+            parsed.forEach((img: any) => {
+              if (img.imageUrl !== image) {
+                editProductCombinedImages.push({ imageUrl: img.imageUrl, color: img.color || '', isMain: false });
+              }
+            });
+          }
         } catch (e) {
-          editProductImages = [];
+          console.error('Error parsing product images', e);
         }
-        renderMultiImagesList('edit');
+
+        // If no image is marked main, make first one main
+        if (editProductCombinedImages.length > 0 && !editProductCombinedImages.some(img => img.isMain)) {
+          editProductCombinedImages[0].isMain = true;
+        }
+
+        renderCombinedImagesList('edit');
 
         editDialog?.showModal();
       });
@@ -2571,7 +2633,6 @@ const resolveImage = (url: string) => {
       const slug = (document.getElementById('edit-slug') as HTMLInputElement).value;
       const price = parseFloat((document.getElementById('edit-price') as HTMLInputElement).value);
       const stockQuantity = parseInt((document.getElementById('edit-stock') as HTMLInputElement).value, 10);
-      const imageUrl = (document.getElementById('edit-image') as HTMLInputElement).value;
       const description = (document.getElementById('edit-desc') as HTMLInputElement).value;
       
       const sizesStr = (document.getElementById('edit-sizes') as HTMLInputElement).value;
@@ -2588,7 +2649,14 @@ const resolveImage = (url: string) => {
       const categoryId = parseInt((document.getElementById('edit-category') as HTMLInputElement).value, 10);
       const status = (document.getElementById('edit-status') as HTMLSelectElement).value;
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, images: editProductImages, description, sizes, colors, tags, categoryId, status };
+      // Extract imageUrl (Main Cover) and images array (additional details)
+      const mainImageObj = editProductCombinedImages.find(img => img.isMain);
+      const imageUrl = mainImageObj ? mainImageObj.imageUrl : '';
+      const images = editProductCombinedImages
+        .filter(img => !img.isMain)
+        .map(img => ({ imageUrl: img.imageUrl, color: img.color || '' }));
+
+      const payload = { name, slug, price, stockQuantity, imageUrl, images, description, sizes, colors, tags, categoryId, status };
 
       try {
         const res = await fetch(`http://localhost:3001/api/products/${id}`, {
@@ -3586,15 +3654,15 @@ const resolveImage = (url: string) => {
     const addColorsInput = document.getElementById('add-colors') as HTMLInputElement | null;
     if (addColorsInput) {
       addColorsInput.addEventListener('input', () => {
-        updateMultiImageColorSelectors('add');
-        renderMultiImagesList('add');
+        updateCombinedImageColorSelectors('add');
+        renderCombinedImagesList('add');
       });
     }
     const editColorsInput = document.getElementById('edit-colors') as HTMLInputElement | null;
     if (editColorsInput) {
       editColorsInput.addEventListener('input', () => {
-        updateMultiImageColorSelectors('edit');
-        renderMultiImagesList('edit');
+        updateCombinedImageColorSelectors('edit');
+        renderCombinedImagesList('edit');
       });
     }
 
