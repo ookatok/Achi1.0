@@ -39,71 +39,31 @@ if (searchQuery) queryParams.set('query', searchQuery);
 queryParams.set('page', String(page));
 queryParams.set('limit', String(limit));
 
+let totalCount = 0;
+
 try {
   const res = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
   if (res.ok) {
     productsList = await res.json();
   }
+
+  // Fetch total count for pagination
+  const countParams = new URLSearchParams(queryParams);
+  countParams.delete('page');
+  countParams.delete('limit');
+  const countRes = await fetch(`${BACKEND_URL}/api/products?${countParams.toString()}`);
+  if (countRes.ok) {
+    const allProducts = await countRes.json();
+    totalCount = allProducts.length;
+  }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching products failed. Falling back to mockup items.', err);
+  console.error('[NestJS API Error] Fetching products failed.', err);
 }
 
-// Fallback Mock items
-const mockEditorialProducts = [
-  {
-    id: 101,
-    name: "Generic T-shirt 1",
-    price: "499.00",
-    imageUrl: "/assets/images/tshirt-1.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
-    sizes: ["S", "M", "L"]
-  },
-  {
-    id: 102,
-    name: "Generic T-shirt 2",
-    price: "499.00",
-    imageUrl: "/assets/images/polo-dark.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
-    sizes: ["M", "L", "XL"]
-  },
-  {
-    id: 103,
-    name: "Generic T-shirt 3",
-    price: "499.00",
-    imageUrl: "/assets/images/pants-cream.png",
-    colors: ["#FF0000", "#1A1A1A"],
-    sizes: ["OS"]
-  },
-  {
-    id: 104,
-    name: "Generic T-shirt 4",
-    price: "499.00",
-    imageUrl: "/assets/images/shoes-white.png",
-    colors: ["#7A00FF", "#1A1A1A"],
-    sizes: ["OS"]
-  }
-];
-
-const mockStandardProducts = [
-  { id: 201, name: "Generic T-shirt 1", price: "499.00", imageUrl: "/assets/images/tshirt-1.png" },
-  { id: 202, name: "Generic T-shirt 2", price: "499.00", imageUrl: "/assets/images/polo-dark.png" },
-  { id: 203, name: "Generic T-shirt 3", price: "499.00", imageUrl: "/assets/images/pants-cream.png" },
-  { id: 204, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" },
-  { id: 109, name: "generic set 1", price: "499.00", imageUrl: "/assets/images/set1.png" },
-  { id: 110, name: "generic set 2", price: "499.00", imageUrl: "/assets/images/set2.png" },
-  { id: 111, name: "generic set 3", price: "499.00", imageUrl: "/assets/images/set3.png" },
-  { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
-];
-
+const displayList = productsList.map(product => translateProduct(product, lang));
+const pageList = displayList;
+const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
-const useMocks = productsList.length === 0 && !isFiltered;
-const displayRawList = useMocks ? [...mockEditorialProducts, ...mockStandardProducts] : productsList;
-const displayList = displayRawList.map(product => translateProduct(product, lang));
-
-// Paginate in-memory if we are using mocks
-const startIndex = (page - 1) * limit;
-const endIndex = startIndex + limit;
-const pageList = useMocks ? displayList.slice(startIndex, endIndex) : displayList;
 
 // Helper to determine original price and discount percentage
 const getDiscountDetails = (product: any) => {
@@ -124,6 +84,12 @@ const getColorsArray = (colors: any) => {
     const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
     return [];
   }
 };
@@ -311,6 +277,13 @@ const getColorsArray = (colors: any) => {
                   [Image: {product.name}]
                 </span>
               )}
+              {product.status === 'inactive' && (
+                <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center z-10">
+                  <span class="text-white text-[10px] uppercase tracking-widest font-semibold border border-white/60 px-3 py-1.5 rounded-sm">
+                    {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Product Details */}
@@ -323,7 +296,7 @@ const getColorsArray = (colors: any) => {
                 {getColorsArray(product.colors).length > 0 && (
                   <div class="flex gap-1.5 shrink-0">
                     {getColorsArray(product.colors).map((color: string) => (
-                      <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
+                      <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
                     ))}
                   </div>
                 )}
@@ -344,6 +317,6 @@ const getColorsArray = (colors: any) => {
     </div>
 
     {/* Pagination Component */}
-    <Pagination totalPages={5} />
+    <Pagination totalPages={totalPages} />
   </div>
 </Layout>

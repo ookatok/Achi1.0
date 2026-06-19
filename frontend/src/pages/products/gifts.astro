@@ -8,34 +8,53 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
 const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 8;
 
-// Fetch user session for token authorization if needed
+const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http')) return url;
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+};
+
 let productsList = [] as any[];
+let totalProducts = 0;
 
 try {
   const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=gifts&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
+
+  const countRes = await fetch(`${BACKEND_URL}/api/products?categorySlug=gifts`);
+  if (countRes.ok) {
+    const allProducts = await countRes.json();
+    totalProducts = allProducts.length;
+  }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching gifts failed. Using mocks.', err);
+  console.error('[NestJS API Error] Fetching products failed.', err);
 }
 
-// Fallback Mock items matching the premium aesthetic
-const mockGifts = [
-  { id: 401, name: "Premium Scented Candle Set", price: "65.00", imageUrl: "/assets/images/products/candle.png" },
-  { id: 402, name: "Leather Travel Organizer", price: "140.00", imageUrl: "/assets/images/products/belt.png" },
-  { id: 403, name: "Silk Sleep Mask & Pillowcase Set", price: "85.00", imageUrl: "/assets/images/bag-cat-women.png" },
-  { id: 404, name: "ACHI Studio E-Gift Card", price: "100.00", imageUrl: "/assets/images/placeholder-product.png" },
-];
+const displayProducts = productsList.map(p => translateProduct(p, lang));
+const paginatedList = displayProducts;
+const totalPages = Math.max(1, Math.ceil(totalProducts / limit));
 
-const useMocks = productsList.length === 0;
-const displayRawList = useMocks ? mockGifts : productsList;
-const displayProducts = displayRawList.map(p => translateProduct(p, lang));
-
-// Paginate in-memory if we are using mocks
-const startIndex = (page - 1) * limit;
-const endIndex = startIndex + limit;
-const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
+const getColorsArray = (colors: any) => {
+  if (!colors) return [];
+  if (Array.isArray(colors)) return colors;
+  try {
+    const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
+    return [];
+  }
+};
 ---
 
 <Layout title={lang === 'en' ? "Gifts | ACHI Studio" : "ของขวัญ | ACHI Studio"} description={lang === 'en' ? "Curated seasonal gifts, gift packaging, and digital gift cards." : "ของขวัญตามฤดูกาลที่คัดสรรมาอย่างดี บรรจุภัณฑ์ของขวัญ และบัตรของขวัญดิจิทัล"} showHeroHeader={true}>
@@ -103,9 +122,19 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
 
           <!-- Product Details -->
           <div>
-            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-              {product.name}
-            </h3>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                {product.name}
+              </h3>
+              {/* Color swatches */}
+              {getColorsArray(product.colors).length > 0 && (
+                <div class="flex gap-1.5 shrink-0">
+                  {getColorsArray(product.colors).map((color: string) => (
+                    <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                  ))}
+                </div>
+              )}
+            </div>
             <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
           </div>
 
@@ -116,6 +145,6 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
         </div>
 
     <!-- Pagination Component -->
-    <Pagination totalPages={5} />
+    <Pagination totalPages={totalPages} />
   </div>
 </Layout>

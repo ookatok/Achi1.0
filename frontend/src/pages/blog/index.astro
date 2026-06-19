@@ -15,91 +15,16 @@ try {
   console.error('[NestJS API Error] Fetching blogs failed.', err);
 }
 
-const mockBlogs = [
-  {
-    id: 1,
-    title: "The Art of Minimalist Layering",
-    slug: "art-of-minimalist-layering",
-    summary: "Explore the essential guidelines for assembling light, premium outfits that hold depth and style in any climate.",
-    imageUrl: "/assets/images/set1.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  {
-    id: 2,
-    title: "Neutral Color Palettes for Summer",
-    slug: "neutral-color-palettes-for-summer",
-    summary: "How to match cream, sand, and charcoal tones to create a cohesive summer wardrobe that feels warm yet light.",
-    imageUrl: "/assets/images/women-hero.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  {
-    id: 3,
-    title: "The Essential Fabric Guide: Linen & Cotton",
-    slug: "essential-fabric-guide-linen-cotton",
-    summary: "Explore why breathable, natural fibres are at the core of our summer design philosophy.",
-    imageUrl: "/assets/images/set2.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  {
-    id: 4,
-    title: "Designing the Perfect Trench Coat",
-    slug: "designing-perfect-trench-coat",
-    summary: "A deep dive into structural tailoring, fabrics, and drape of our signature outerwear.",
-    imageUrl: "/assets/images/set3.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  {
-    id: 5,
-    title: "Monochrome Styling Rules",
-    slug: "monochrome-styling-rules",
-    summary: "How to master single-tone styling with subtle differences in fabric textures.",
-    imageUrl: "/assets/images/collection-hero.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  {
-    id: 6,
-    title: "Crafting the Perfect Basic Tee",
-    slug: "crafting-perfect-basic-tee",
-    summary: "Behind the scenes of selecting weight, cut, and seam spacing for comfort.",
-    imageUrl: "/assets/images/tshirt-1.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  {
-    id: 7,
-    title: "A Guide to Sustainable Smart Casual",
-    slug: "guide-sustainable-smart-casual",
-    summary: "Transition from professional meetings to evening dinners with ease and elegance.",
-    imageUrl: "/assets/images/polo-dark.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  {
-    id: 8,
-    title: "The Capsule Wardrobe Concept",
-    slug: "capsule-wardrobe-concept",
-    summary: "Curate a high-utility, minimal collection of garments for everyday wear.",
-    imageUrl: "/assets/images/pants-cream.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  }
-];
-
 const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 4;
 
-const displayBlogsRaw = blogs.length > 0 ? blogs : mockBlogs;
-const displayBlogs = displayBlogsRaw.map(blog => translateBlog(blog, lang));
+const displayBlogs = blogs.map(blog => translateBlog(blog, lang));
 
 // Paginate in-memory
 const startIndex = (page - 1) * limit;
 const endIndex = startIndex + limit;
 const paginatedBlogs = displayBlogs.slice(startIndex, endIndex);
+const totalPages = Math.max(1, Math.ceil(displayBlogs.length / limit));
 
 const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
@@ -185,6 +110,6 @@ const resolveImage = (url: string) => {
     </div>
 
     <!-- Pagination Component -->
-    <Pagination totalPages={5} />
+    <Pagination totalPages={totalPages} />
   </div>
 </Layout>

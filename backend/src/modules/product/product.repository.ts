@@ -3,7 +3,7 @@ import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { products } from '../../db/schema/product.schema';
 import { categories } from '../../db/schema/category.schema';
 import { tags, productTags } from '../../db/schema/tag.schema';
-import { eq, and, gte, lte, sql, like, or, desc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, like, or, desc, inArray } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 import type { CreateProductDto, GetProductsQueryDto } from './dto/product.dto';
 
@@ -105,7 +105,11 @@ export class ProductRepository {
       } else if (query.collection === 'new-arrivals') {
         conditions.push(sql`${products.id} IN (109, 110, 111)`);
       } else {
-        conditions.push(sql`1 = 0`);
+        conditions.push(sql`exists (
+          select 1 from collection_products cp
+          inner join collections c on cp.collection_id = c.id
+          where cp.product_id = ${products.id} and (c.slug = ${query.collection} or c.slug like ${`%${query.collection}%`})
+        )`);
       }
     }
 
@@ -148,6 +152,7 @@ export class ProductRepository {
         price: products.price,
         stockQuantity: products.stockQuantity,
         imageUrl: products.imageUrl,
+        images: products.images,
         sizes: products.sizes,
         colors: products.colors,
         tags: sql<any>`(
@@ -157,14 +162,15 @@ export class ProductRepository {
           WHERE pt.product_id = products.id
         )`.as('tags'),
         categoryId: products.categoryId,
+        status: products.status,
         categoryName: categories.name,
         categorySlug: categories.slug,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id));
 
-    if (query.categorySlug) {
-      conditions.push(eq(categories.slug, query.categorySlug));
+    if (query.categorySlug && query.categorySlug.length > 0) {
+      conditions.push(inArray(categories.slug, query.categorySlug));
     }
 
     const results = await baseQuery
@@ -190,6 +196,7 @@ export class ProductRepository {
         price: products.price,
         stockQuantity: products.stockQuantity,
         imageUrl: products.imageUrl,
+        images: products.images,
         sizes: products.sizes,
         colors: products.colors,
         tags: sql<any>`(
@@ -199,6 +206,7 @@ export class ProductRepository {
           WHERE pt.product_id = products.id
         )`.as('tags'),
         categoryId: products.categoryId,
+        status: products.status,
       })
       .from(products)
       .where(eq(products.id, id))

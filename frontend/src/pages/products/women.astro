@@ -18,32 +18,43 @@ const resolveImage = (url: string) => {
 };
 
 let productsList = [] as any[];
+let totalProducts = 0;
 
 try {
   const res = await fetch(`${BACKEND_URL}/api/products?categorySlug=women&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
+
+  const countRes = await fetch(`${BACKEND_URL}/api/products?categorySlug=women`);
+  if (countRes.ok) {
+    const allProducts = await countRes.json();
+    totalProducts = allProducts.length;
+  }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching women products failed. Using mocks.', err);
+  console.error('[NestJS API Error] Fetching products failed.', err);
 }
 
-// Fallback Mock items matching Figma design exactly
-const mockProducts = [
-  { id: 101, name: "Generic T-shirt 1", price: "499.00", imageUrl: "/assets/images/tshirt-1.png" },
-  { id: 102, name: "Generic T-shirt 2", price: "499.00", imageUrl: "/assets/images/polo-dark.png" },
-  { id: 103, name: "Generic T-shirt 3", price: "499.00", imageUrl: "/assets/images/pants-cream.png" },
-  { id: 104, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" }
-];
+const displayProducts = productsList.map(p => translateProduct(p, lang));
+const paginatedList = displayProducts;
+const totalPages = Math.max(1, Math.ceil(totalProducts / limit));
 
-const useMocks = productsList.length === 0;
-const displayRawList = useMocks ? mockProducts : productsList;
-const displayProducts = displayRawList.map(p => translateProduct(p, lang));
-
-// Paginate in-memory if we are using mocks
-const startIndex = (page - 1) * limit;
-const endIndex = startIndex + limit;
-const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
+const getColorsArray = (colors: any) => {
+  if (!colors) return [];
+  if (Array.isArray(colors)) return colors;
+  try {
+    const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
+    return [];
+  }
+};
 ---
 
 <Layout title={lang === 'en' ? "Women's Fashion | ACHI Studio" : "แฟชั่นผู้หญิง | ACHI Studio"} description={lang === 'en' ? "Discover the Summer Collection. Shop ACHI's latest women's clothing, bags, and accessories." : "ค้นพบคอลเลกชันฤดูร้อน ช้อปเสื้อผ้าผู้หญิง กระเป๋า และเครื่องประดับล่าสุดจาก ACHI"} showHeroHeader={true}>
@@ -115,7 +126,17 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
               <img src={resolveImage(product.imageUrl)} alt={product.name} class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" />
             </div>
             <div>
-              <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{product.name}</h3>
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase leading-tight">{product.name}</h3>
+                {/* Color swatches */}
+                {getColorsArray(product.colors).length > 0 && (
+                  <div class="flex gap-1.5 shrink-0">
+                    {getColorsArray(product.colors).map((color: string) => (
+                      <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                    ))}
+                  </div>
+                )}
+              </div>
               <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
             </div>
             <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
@@ -124,7 +145,7 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
       </div>
 
       <!-- Pagination Component -->
-      <Pagination totalPages={5} />
+      <Pagination totalPages={totalPages} />
     </div>
   </section>
 </Layout>

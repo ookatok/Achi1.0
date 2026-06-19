@@ -17,6 +17,7 @@ export class ProductService {
       stockQuantity: dto.stockQuantity,
       categoryId: dto.categoryId,
       imageUrl: dto.imageUrl,
+      images: dto.images as { color?: string; imageUrl: string }[],
       sizes: dto.sizes,
       colors: dto.colors,
     }, dto.tags);
@@ -49,8 +50,10 @@ export class ProductService {
     if (dto.stockQuantity !== undefined) updateFields.stockQuantity = dto.stockQuantity;
     if (dto.categoryId !== undefined) updateFields.categoryId = dto.categoryId;
     if (dto.imageUrl !== undefined) updateFields.imageUrl = dto.imageUrl;
+    if (dto.images !== undefined) updateFields.images = dto.images as { color?: string; imageUrl: string }[];
     if (dto.sizes !== undefined) updateFields.sizes = dto.sizes;
     if (dto.colors !== undefined) updateFields.colors = dto.colors;
+    if (dto.status !== undefined) updateFields.status = dto.status;
 
     await this.productRepo.update(id, updateFields, dto.tags);
     return { success: true };

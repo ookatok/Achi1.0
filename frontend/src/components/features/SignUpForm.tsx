@@ -4,6 +4,7 @@ export default function SignUpForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [website, setWebsite] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function SignUpForm() {
       const res = await fetch('http://localhost:3001/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, website }),
       });
 
       const data = await res.json();
@@ -58,6 +59,20 @@ export default function SignUpForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Honeypot field (Invisible to users, autocomplete off, tabindex -1) */}
+        <div className="absolute opacity-0 -z-50 pointer-events-none w-0 h-0 overflow-hidden" aria-hidden="true">
+          <label htmlFor="website">Website</label>
+          <input
+            id="website"
+            type="text"
+            name="website"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
+
         <div>
           <label htmlFor="name" className="block text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">
             Full Name

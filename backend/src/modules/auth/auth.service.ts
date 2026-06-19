@@ -3,6 +3,7 @@ import { UserRepository } from '../user/user.repository';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import type { RegisterDto, LoginDto } from './dto/auth.dto';
+import { ErrorCodes } from '../../core/errors/error-codes';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,10 @@ export class AuthService {
     const existingUser = await this.userRepo.findByEmail(dto.email);
 
     if (existingUser) {
-      throw new ConflictException('Email already registered');
+      throw new ConflictException({
+        message: 'Email already registered',
+        code: ErrorCodes.EMAIL_ALREADY_REGISTERED,
+      });
     }
 
     // 2. Hash password
@@ -46,13 +50,19 @@ export class AuthService {
     // 1. Find user by email
     const user = await this.userRepo.findByEmail(dto.email);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({
+        message: 'Invalid credentials',
+        code: ErrorCodes.INVALID_CREDENTIALS,
+      });
     }
 
     // 2. Verify password match
     const isPasswordMatch = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({
+        message: 'Invalid credentials',
+        code: ErrorCodes.INVALID_CREDENTIALS,
+      });
     }
 
     // 3. Sign JWT token

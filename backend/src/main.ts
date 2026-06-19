@@ -4,12 +4,17 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 
 // Load environment variables manually from root backend/ folder
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // Register global exception filter
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   // Serve static assets from backend/public
   const publicPath = path.join(process.cwd(), 'public');
   app.useStaticAssets(publicPath);

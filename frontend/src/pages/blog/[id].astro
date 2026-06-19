@@ -17,159 +17,7 @@ try {
   console.error('[NestJS API Error] Fetching blog detail failed.', err);
 }
 
-// Fallback mock blog details matching the index page fallbacks
-const mockBlogsMap: Record<string, any> = {
-  "1": {
-    id: 1,
-    title: "The Art of Minimalist Layering",
-    summary: "Explore the essential guidelines for assembling light, premium outfits that hold depth and style in any climate.",
-    content: `Layering is often associated with heavy winter wear, but the art of minimalist layering is about creating texture, depth, and proportion without adding bulk. In neutral-focused style sheets like ACHI, mastering this technique separates simple dressing from a refined, curated appearance.
-
-### 1. Select a Lightweight Base
-Always begin with a high-quality, breathable foundation. A soft cotton crew neck or a fine linen jersey is perfect. It should fit cleanly without feeling restrictive.
-
-### 2. Introduce Textural Contrasts
-The secret to successful layering lies in texture. Pair a smooth t-shirt with a heavily textured waffle knit or a structured linen overshirt. The contrast between surfaces adds interest to monochromatic layouts.
-
-### 3. Play with Proportions
-Let the hemline of your base layer peek out underneath your sweater or jacket. This thin band of color (usually white or cream) draws a clear horizontal line that breaks up the outfit and shows deliberate assembly.
-
-### 4. Invest in Unstructured Outerwear
-An unstructured blazer or a lightweight trench coat wraps the outfit together. Without shoulder pads or heavy linings, they drape naturally over your layers, maintaining a slim, relaxed silhouette.`,
-    imageUrl: "/assets/images/set1.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  "2": {
-    id: 2,
-    title: "Neutral Color Palettes for Summer",
-    summary: "How to match cream, sand, and charcoal tones to create a cohesive summer wardrobe that feels warm yet light.",
-    content: `Summer styling is often dominated by bright prints and vibrant colors. However, a curated color palette of warm neutrals offers a sophisticated, timeless alternative that keeps you looking cool and collected.
-
-### The Anchor Colors
-Every palette needs anchors. For summer, we look to three main categories:
-- **Alabaster & Cream**: These reflect light and keep you cool. They serve as the canvas of your look.
-- **Desert Sand & Taupe**: Earthy middle tones that reference organic textures like dry grass, stone, and raw linen.
-- **Charcoal & Onyx**: Dark elements used in small proportions to outline the silhouette, ground the light tones, and add a sharp modern contrast.
-
-### Fabric Selection is Key
-Neutrals only succeed when matched with premium fabrics. Linen, cotton silk, and open-weave knitwear let the textures speak for themselves. A linen shirt in desert sand paired with charcoal cotton trousers is a simple yet commanding summer silhouette.`,
-    imageUrl: "/assets/images/women-hero.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  "3": {
-    id: 3,
-    title: "The Essential Fabric Guide: Linen & Cotton",
-    summary: "Explore why breathable, natural fibres are at the core of our summer design philosophy.",
-    content: `Breathable, natural fibers are the cornerstone of high-quality summer wardrobes. Here is our guide to linen and cotton blends.
-
-### 1. Linen: The Classic Choice
-Linen is exceptionally strong, absorbent, and dries faster than cotton. This makes it ideal for humid weather.
-
-### 2. Cotton: The Versatile Essential
-Cotton provides soft comfort and structural durability. When woven loosely, it offers superior air circulation.
-
-### 3. Blend Options
-Blending linen and cotton yields the best of both worlds: the drape and breathability of linen with the soft structure and wrinkle resistance of cotton.`,
-    imageUrl: "/assets/images/set2.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  "4": {
-    id: 4,
-    title: "Designing the Perfect Trench Coat",
-    summary: "A deep dive into structural tailoring, fabrics, and drape of our signature outerwear.",
-    content: `Creating the perfect trench coat requires attention to proportions, water resistance, and drape.
-
-### 1. Tailoring & Silhouette
-A modern trench coat should have clean lines, a slightly oversized fit for layering, and a structural belt to define the waist.
-
-### 2. Fabric Choice
-We utilize premium heavy gabardine cotton to ensure rain protection while maintaining breathability.
-
-### 3. Hardware Details
-From custom horn buttons to metal D-rings, every detail is selected to endure generations.`,
-    imageUrl: "/assets/images/set3.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  "5": {
-    id: 5,
-    title: "Monochrome Styling Rules",
-    summary: "How to master single-tone styling with subtle differences in fabric textures.",
-    content: `Monochrome dressing is effortless yet sophisticated when done right. Follow these rules to avoid looking flat.
-
-### 1. Play with Textures
-Combine different materials like a matte cotton tee with a glossy silk skirt, or a rough knit sweater with smooth linen trousers.
-
-### 2. Vary the Shades
-Monochrome does not mean wearing the exact same shade. Use varying tones of the same color family (e.g. charcoal, slate, light grey) to create depth.
-
-### 3. Focus on Silhouettes
-Use strong cuts, asymmetrical lines, and unique fits to make the monochrome outfit stand out visually.`,
-    imageUrl: "/assets/images/collection-hero.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  "6": {
-    id: 6,
-    title: "Crafting the Perfect Basic Tee",
-    summary: "Behind the scenes of selecting weight, cut, and seam spacing for comfort.",
-    content: `A basic t-shirt is the most worn item in any closet. We take its design very seriously.
-
-### 1. Cotton Weight
-We select a medium-weight long-staple cotton that retains its shape after dozens of washes.
-
-### 2. The Neckline
-A robust rib collar that doesn't stretch out over time is essential for a clean look.
-
-### 3. The Cut
-Neither too tight nor too loose, our basic tee is designed to sit comfortably on the shoulders and drape straight down.`,
-    imageUrl: "/assets/images/tshirt-1.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  },
-  "7": {
-    id: 7,
-    title: "A Guide to Sustainable Smart Casual",
-    summary: "Transition from professional meetings to evening dinners with ease and elegance.",
-    content: `Smart casual is about striking a balance. Here is how to keep it sustainable and stylish.
-
-### 1. Quality Over Quantity
-Invest in 3-4 key high-quality items instead of a closet full of fast-fashion alternatives.
-
-### 2. Sustainable Fibers
-Choose items made from Tencel, organic cotton, or linen, which have a lower environmental footprint.
-
-### 3. Versatility
-Select pieces that can easily be dressed up with a blazer or dressed down with clean white sneakers.`,
-    imageUrl: "/assets/images/polo-dark.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Editorial"
-  },
-  "8": {
-    id: 8,
-    title: "The Capsule Wardrobe Concept",
-    summary: "Curate a high-utility, minimal collection of garments for everyday wear.",
-    content: `A capsule wardrobe simplifies your mornings and refines your personal style.
-
-### 1. The Core Pieces
-A capsule wardrobe typically consists of 25-30 pieces, including basics, outerwear, pants, and footwear.
-
-### 2. Cohesive Color Scheme
-Select a primary neutral (black, navy, or brown) and a secondary base (grey, cream, or sand) to ensure all pieces match.
-
-### 3. Layering & Reusability
-Choose pieces that layer well together so you can create dozens of outfits from a small selection of garments.`,
-    imageUrl: "/assets/images/pants-cream.png",
-    createdAt: new Date().toISOString(),
-    authorName: "ACHI Stylist"
-  }
-};
-
-const rawBlog = blog || mockBlogsMap[id || ''] || mockBlogsMap["1"];
-const displayBlog = translateBlog(rawBlog, lang);
+const displayBlog = blog ? translateBlog(blog, lang) : null;
 
 const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
@@ -181,65 +29,85 @@ const resolveImage = (url: string) => {
 };
 ---
 
-<Layout title={`${displayBlog.title} | ACHI Studio`} description={displayBlog.summary} showHeroHeader={true}>
-  <article class="w-full bg-[#FAF9F6] min-h-screen">
-    <!-- Header Banner -->
-    <div class="w-full relative h-[60vh] bg-stone-900 overflow-hidden flex items-end">
-      {displayBlog.imageUrl ? (
-        <img 
-          src={resolveImage(displayBlog.imageUrl)} 
-          alt={displayBlog.title} 
-          class="absolute inset-0 w-full h-full object-cover opacity-60"
-        />
-      ) : (
-        <div class="absolute inset-0 bg-[#3B3835] opacity-60"></div>
-      )}
-      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-      
-      <div class="relative w-full max-w-[900px] mx-auto px-6 pb-16 z-10 text-white space-y-4">
-        <div class="flex items-center gap-3 text-[10px] uppercase tracking-widest text-stone-300 font-semibold">
-          {displayBlog.categoryName && (
-            <>
-              <span class="text-brand-gold font-bold">{displayBlog.categoryName}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
-            </>
-          )}
-          <span>{lang === 'en' ? "By" : "โดย"} {displayBlog.authorName || 'ACHI Studio'}</span>
-          <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
-          <span>{new Date(displayBlog.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-        </div>
-        
-        <h1 class="font-serif text-3xl sm:text-5xl tracking-wide leading-tight uppercase">
-          {displayBlog.title}
-        </h1>
-        
-        {displayBlog.summary && (
-          <p class="font-sans text-xs sm:text-sm text-stone-200/90 font-light tracking-wide max-w-[700px] leading-relaxed">
-            {displayBlog.summary}
-          </p>
+{displayBlog ? (
+  <Layout title={`${displayBlog.title} | ACHI Studio`} description={displayBlog.summary} showHeroHeader={true}>
+    <article class="w-full bg-[#FAF9F6] min-h-screen">
+      <!-- Header Banner -->
+      <div class="w-full relative h-[60vh] bg-stone-900 overflow-hidden flex items-end">
+        {displayBlog.imageUrl ? (
+          <img 
+            src={resolveImage(displayBlog.imageUrl)} 
+            alt={displayBlog.title} 
+            class="absolute inset-0 w-full h-full object-cover opacity-60"
+          />
+        ) : (
+          <div class="absolute inset-0 bg-[#3B3835] opacity-60"></div>
         )}
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        
+        <div class="relative w-full max-w-[900px] mx-auto px-6 pb-16 z-10 text-white space-y-4">
+          <div class="flex items-center gap-3 text-[10px] uppercase tracking-widest text-stone-300 font-semibold">
+            {displayBlog.categoryName && (
+              <>
+                <span class="text-brand-gold font-bold">{displayBlog.categoryName}</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+              </>
+            )}
+            <span>{lang === 'en' ? "By" : "โดย"} {displayBlog.authorName || 'ACHI Studio'}</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+            <span>{new Date(displayBlog.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          </div>
+          
+          <h1 class="font-serif text-3xl sm:text-5xl tracking-wide leading-tight uppercase">
+            {displayBlog.title}
+          </h1>
+          
+          {displayBlog.summary && (
+            <p class="font-sans text-xs sm:text-sm text-stone-200/90 font-light tracking-wide max-w-[700px] leading-relaxed">
+              {displayBlog.summary}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
 
-    <!-- Article Body -->
-    <div class="max-w-[750px] mx-auto px-6 py-24 bg-white border-x border-stone-200/50 shadow-sm min-h-[50vh]">
-      <!-- Content Container -->
-      <div class="font-sans text-stone-700 text-sm leading-relaxed font-light space-y-6 blog-content" set:html={displayBlog.content} />
+      <!-- Article Body -->
+      <div class="max-w-[750px] mx-auto px-6 py-24 bg-white border-x border-stone-200/50 shadow-sm min-h-[50vh]">
+        <!-- Content Container -->
+        <div class="font-sans text-stone-700 text-sm leading-relaxed font-light space-y-6 blog-content" set:html={displayBlog.content} />
 
-      <!-- Footer back button -->
-      <div class="mt-16 pt-8 border-t border-stone-100 flex justify-between items-center">
-        <a 
-          href="/blog" 
-          class="inline-flex items-center text-[10px] uppercase tracking-widest font-semibold text-stone-500 hover:text-brand-charcoal transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="w-4 h-4 mr-2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
-          </svg>
-          {lang === 'en' ? "Back to all posts" : "ย้อนกลับไปบล็อกทั้งหมด"}
-        </a>
+        <!-- Footer back button -->
+        <div class="mt-16 pt-8 border-t border-stone-100 flex justify-between items-center">
+          <a 
+            href="/blog" 
+            class="inline-flex items-center text-[10px] uppercase tracking-widest font-semibold text-stone-500 hover:text-brand-charcoal transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="w-4 h-4 mr-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+            </svg>
+            {lang === 'en' ? "Back to all posts" : "ย้อนกลับไปบล็อกทั้งหมด"}
+          </a>
+        </div>
       </div>
+    </article>
+  </Layout>
+) : (
+  <Layout title={lang === 'en' ? "Blog Post Not Found | ACHI Studio" : "ไม่พบโพสต์บล็อก | ACHI Studio"} showHeroHeader={true}>
+    <div class="max-w-[1440px] mx-auto px-6 py-32 text-center bg-white min-h-[50vh]">
+      <h1 class="font-serif text-3xl sm:text-5xl font-bold tracking-wide text-brand-charcoal mb-4 uppercase">
+        {lang === 'en' ? "Blog Post Not Found" : "ไม่พบโพสต์บล็อก"}
+      </h1>
+      <p class="text-sm font-light text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+        {lang === 'en' 
+          ? "The article you are looking for might have been removed, had its name changed, or is temporarily unavailable."
+          : "ไม่พบบทความบล็อกที่คุณกำลังมองหา บทความนี้อาจถูกนำออก เปลี่ยนชื่อ หรือไม่เปิดให้บริการชั่วคราว"
+        }
+      </p>
+      <a href="/blog" class="inline-block bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300">
+        {lang === 'en' ? "BACK TO BLOG" : "กลับไปยังบล็อก"}
+      </a>
     </div>
-  </article>
+  </Layout>
+)}
 
   <style>
     .blog-content :global(h1) {

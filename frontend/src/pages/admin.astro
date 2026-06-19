@@ -6,6 +6,25 @@ import { useTranslations } from '../lib/translations';
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
 
+const colorPalette = [
+  { name: 'Black', hex: '#000000', text: '#ffffff' },
+  { name: 'White', hex: '#ffffff', text: '#1a1a1a', border: 'border-stone-300' },
+  { name: 'Beige', hex: '#f5f5dc', text: '#1a1a1a', border: 'border-stone-200' },
+  { name: 'Cream', hex: '#fffdd0', text: '#1a1a1a', border: 'border-stone-200' },
+  { name: 'Navy', hex: '#0a192f', text: '#ffffff' },
+  { name: 'Gold', hex: '#d4af37', text: '#ffffff' },
+  { name: 'Charcoal', hex: '#36454f', text: '#ffffff' },
+  { name: 'Brown', hex: '#6f4e37', text: '#ffffff' },
+  { name: 'Olive', hex: '#556b2f', text: '#ffffff' },
+  { name: 'Camel', hex: '#c19a6b', text: '#ffffff' },
+  { name: 'Rust', hex: '#b7410e', text: '#ffffff' },
+  { name: 'Sage', hex: '#87a96b', text: '#ffffff' },
+  { name: 'Mustard', hex: '#e1ad01', text: '#ffffff' },
+  { name: 'Burgundy', hex: '#800020', text: '#ffffff' },
+  { name: 'Gray', hex: '#808080', text: '#ffffff' },
+  { name: 'Pink', hex: '#ffc0cb', text: '#1a1a1a', border: 'border-stone-200' }
+];
+
 const session = await getSession(Astro.request);
 const token = (session as any)?.accessToken;
 
@@ -26,6 +45,7 @@ let blogCategories = [] as any[];
 let productCategories = [] as any[];
 let productTagsList = [] as any[];
 let contacts = [] as any[];
+let collections = [] as any[];
 let errorMsg = null;
 
 try {
@@ -79,6 +99,12 @@ try {
   if (contactRes.ok) {
     contacts = await contactRes.json();
   }
+
+  // 8. Fetch all collections
+  const colRes = await fetch('http://localhost:3001/api/collections');
+  if (colRes.ok) {
+    collections = await colRes.json();
+  }
 } catch (err) {
   console.error('[NestJS API Error] Admin page fetch failed.', err);
   errorMsg = 'Could not load admin panel data. Backend server may be offline.';
@@ -92,10 +118,15 @@ const parseArray = (val: any) => {
     return [];
   }
 };
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return `http://localhost:3001${url}`;
+};
 ---
 
 <Layout title={`${t('admin.title')} | ACHI Studio`} description={t('admin.console')} isAdminPanel={true} pendingOrdersCount={orders.filter((o: any) => o.status === 'pending').length}>
-  <div id="admin-container" data-token={token} data-lang={lang} class="max-w-[1000px] mx-auto px-6 py-24">
+  <div id="admin-container" data-token={token} data-lang={lang} class="max-w-[1440px] mx-auto px-6 py-24">
     {/* Page Header */}
     <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-4 border-b border-stone-100 pb-8">
       <div class="text-center md:text-left">
@@ -125,7 +156,7 @@ const parseArray = (val: any) => {
           {t('admin.overview')}
         </h2>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
         <!-- Card 1: Products Count -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
           <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.total_products')}</span>
@@ -144,7 +175,13 @@ const parseArray = (val: any) => {
           <span class="text-3xl font-serif font-bold text-brand-charcoal">{blogs.length}</span>
         </div>
 
-        <!-- Card 4: Server Status -->
+        <!-- Card 4: Collections Count -->
+        <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
+          <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('nav.collections')}</span>
+          <span class="text-3xl font-serif font-bold text-brand-charcoal">{collections.length}</span>
+        </div>
+
+        <!-- Card 5: Server Status -->
         <div class="bg-gray-50 border border-gray-100 p-6 rounded-sm text-center">
           <span class="block text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">{t('admin.server_status')}</span>
           <span class="text-xs font-semibold text-green-600 uppercase tracking-widest bg-green-50 px-2.5 py-1.5 rounded-full border border-green-100 inline-block mt-1">
@@ -286,6 +323,7 @@ const parseArray = (val: any) => {
                     <th class="p-4 border border-stone-100 w-24">{t('admin.th_price')}</th>
                     <th class="p-4 border border-stone-100 w-20">{t('admin.th_stock')}</th>
                     <th class="p-4 border border-stone-100">{lang === 'en' ? 'Sizes & Colors' : 'ไซส์และสี'}</th>
+                    <th class="p-4 border border-stone-100 text-left w-24">{t('admin.product_status')}</th>
                     <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
                   </tr>
                 </thead>
@@ -304,7 +342,7 @@ const parseArray = (val: any) => {
                           data-stock={product.stockQuantity}>
                         <td class="p-4 border border-stone-100">
                           {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
+                            <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
                           ) : (
                             <div class="w-12 h-14 bg-stone-100 flex items-center justify-center text-[10px] text-stone-400 rounded-sm">{lang === 'en' ? 'No img' : 'ไม่มีรูป'}</div>
                           )}
@@ -336,7 +374,12 @@ const parseArray = (val: any) => {
                               <div class="flex flex-wrap gap-1">
                                 <span class="text-[9px] text-stone-400 uppercase tracking-widest mr-1 self-center">{lang === 'en' ? 'Colors:' : 'สี:'}</span>
                                 {prodColors.map((color: string) => (
-                                  <span class="text-[9px] bg-stone-50 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-sans">{color}</span>
+                                  <span class="inline-flex items-center gap-1 text-[9px] bg-stone-50 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded font-sans">
+                                    {color.startsWith('#') && (
+                                      <span class="w-2.5 h-2.5 rounded-full border border-stone-300 shrink-0" style={`background-color: ${color};`}></span>
+                                    )}
+                                    {color}
+                                  </span>
                                 ))}
                               </div>
                             )}
@@ -349,6 +392,11 @@ const parseArray = (val: any) => {
                               </div>
                             )}
                           </div>
+                        </td>
+                        <td class="p-4 border border-stone-100">
+                          <span class={`inline-block px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${product.status === 'inactive' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                            {product.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}
+                          </span>
                         </td>
                         <td class="p-4 border border-stone-100 text-center">
                           <div class="flex items-center justify-center gap-2">
@@ -363,8 +411,10 @@ const parseArray = (val: any) => {
                               data-desc={product.description}
                               data-sizes={JSON.stringify(prodSizes)}
                               data-colors={JSON.stringify(prodColors)}
+                              data-images={JSON.stringify(product.images || [])}
                               data-tags={JSON.stringify(prodTags.map((t: any) => typeof t === 'object' ? t.name : t))}
                               data-category={product.categoryId}
+                              data-status={product.status || 'active'}
                             >
                               {t('admin.btn_edit')}
                             </button>
@@ -742,6 +792,122 @@ const parseArray = (val: any) => {
         )}
       </div>
     </div>
+
+    <!-- Section: Collections Management -->
+    <div id="collections-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          {t('admin.collections_title')}
+        </h2>
+        <button
+          id="open-add-collection-btn"
+          type="button"
+          class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors"
+        >
+          {t('admin.add_collection')}
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        {collections.length === 0 ? (
+          <div class="text-center py-12 text-gray-400 text-xs font-light bg-stone-50 border border-dashed border-stone-200 rounded-sm">
+            {lang === 'en' ? 'No collections found.' : 'ไม่พบคอลเลกชันในระบบ'}
+          </div>
+        ) : (
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-stone-500 border-collapse border border-stone-100">
+              <thead>
+                <tr class="bg-stone-50 text-brand-charcoal uppercase font-semibold text-[10px] tracking-wider">
+                  <th class="p-4 border border-stone-100 w-16">{t('admin.th_image')}</th>
+                  <th class="p-4 border border-stone-100 text-left">{t('admin.collection_title')}</th>
+                  <th class="p-4 border border-stone-100 text-left w-36">{t('admin.publish_date')}</th>
+                  <th class="p-4 border border-stone-100 text-left w-32">{lang === 'en' ? 'Publish Status' : 'สถานะการโพสต์'}</th>
+                  <th class="p-4 border border-stone-100 text-left w-36">{lang === 'en' ? 'Associated Products' : 'สินค้าที่เชื่อมโยง'}</th>
+                  <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {collections.map((col: any) => {
+                  const publishDate = col.publishDate ? new Date(col.publishDate) : null;
+                  const isScheduled = publishDate && publishDate > new Date();
+                  const statusText = isScheduled 
+                    ? (lang === 'en' ? 'Scheduled' : 'ตั้งเวลาเผยแพร่') 
+                    : (lang === 'en' ? 'Active' : 'เผยแพร่แล้ว');
+                  const statusClass = isScheduled 
+                    ? 'bg-blue-50 text-blue-600 border-blue-100' 
+                    : 'bg-green-50 text-green-600 border-green-100';
+
+                  return (
+                    <tr class="hover:bg-stone-50/50 transition-colors">
+                      <td class="p-4 border border-stone-100 w-16">
+                        {col.imageUrl ? (
+                          <img src={resolveImage(col.imageUrl)} alt={col.title} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
+                        ) : (
+                          <div class="w-12 h-14 bg-stone-100 rounded-sm border border-stone-200 flex items-center justify-center text-[9px] uppercase text-stone-400 font-light font-mono">No Pic</div>
+                        )}
+                      </td>
+                      <td class="p-4 border border-stone-100">
+                        <div class="font-semibold text-brand-charcoal">{col.title}</div>
+                        <div class="text-[9px] text-stone-400 font-mono mt-0.5">slug: {col.slug}</div>
+                      </td>
+                      <td class="p-4 border border-stone-100 text-[10px] font-mono">
+                        {publishDate ? publishDate.toLocaleString() : '-'}
+                      </td>
+                      <td class="p-4 border border-stone-100">
+                        <span class={`inline-block px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${statusClass}`}>
+                          {statusText}
+                        </span>
+                      </td>
+                      <td class="p-4 border border-stone-100 text-[10px] leading-relaxed">
+                        {col.products && col.products.length > 0 ? (
+                          <div class="space-y-1">
+                            {col.products.map((p: any) => (
+                              <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class={`w-1.5 h-1.5 rounded-full shrink-0 ${p.status === 'inactive' ? 'bg-red-500' : 'bg-green-500'}`} title={p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}></span>
+                                <span class="truncate max-w-[120px]">{p.name}</span>
+                                <span class={`text-[8px] px-1 rounded-sm ${p.status === 'inactive' ? 'bg-red-50 text-red-600 border border-red-100/50' : 'bg-green-50 text-green-600 border border-green-100/50'}`}>
+                                  {p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span class="text-stone-400 font-light italic">{lang === 'en' ? 'No products' : 'ไม่มีสินค้า'}</span>
+                        )}
+                      </td>
+                      <td class="p-4 border border-stone-100 text-center">
+                        <div class="flex justify-center gap-1.5">
+                          <button
+                            type="button"
+                            class="edit-col-btn border border-stone-200 hover:border-brand-charcoal text-stone-600 hover:text-brand-charcoal px-2.5 py-1.5 rounded-sm text-[9px] uppercase tracking-wider font-semibold cursor-pointer transition-colors"
+                            data-id={col.id}
+                            data-title={col.title}
+                            data-slug={col.slug}
+                            data-image={col.imageUrl || ''}
+                            data-desc={col.description || ''}
+                            data-publish={col.publishDate ? col.publishDate.substring(0, 16) : ''}
+                            data-products={JSON.stringify((col.products || []).map((p: any) => p.id))}
+                          >
+                            {t('admin.btn_edit')}
+                          </button>
+                          <button
+                            type="button"
+                            class="delete-col-btn border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-2.5 py-1.5 rounded-sm text-[9px] uppercase tracking-wider font-semibold cursor-pointer transition-colors"
+                            data-id={col.id}
+                          >
+                            {t('admin.btn_delete')}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 
   <!-- Add Product Dialog -->
@@ -770,9 +936,21 @@ const parseArray = (val: any) => {
           <input type="number" id="add-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
-      <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.image_url')}</label>
-        <input type="text" id="add-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="https://example.com/image.jpg" />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_file')}</label>
+          <input type="file" id="add-product-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_url')}</label>
+          <div class="flex gap-2">
+            <input type="text" id="add-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
+            <div id="add-product-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+              <img id="add-product-image-preview" src="" class="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div id="add-product-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+        </div>
       </div>
       <div>
         <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
@@ -785,7 +963,55 @@ const parseArray = (val: any) => {
         </div>
         <div>
           <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.colors_comma')}</label>
-          <input type="text" id="add-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="Black, White" />
+          <input type="text" id="add-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="#000000, #ffffff" />
+          <div class="mt-2 flex flex-col gap-2 bg-stone-50/50 p-2 border border-stone-100 rounded-sm">
+            <div>
+              <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1.5">{lang === 'en' ? 'Presets' : 'สีแนะนำ'}</div>
+              <div class="flex flex-wrap gap-1.5" id="add-colors-presets-container">
+                {colorPalette.map(color => (
+                  <button
+                    type="button"
+                    data-color={color.hex}
+                    class="color-palette-btn-add w-6 h-6 rounded-full cursor-pointer transition-all border hover:scale-110 active:scale-95 flex items-center justify-center text-[10px] font-bold shadow-xs shrink-0"
+                    style={`background-color: ${color.hex}; color: ${color.text}; border-color: ${color.border ? '#d6d3d1' : color.hex};`}
+                    title={color.name}
+                  >
+                    <span class="hidden check-icon">✓</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div class="border-t border-stone-100 pt-2 flex flex-wrap items-center gap-2">
+              <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Custom' : 'สีอื่นๆ'}</div>
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  id="add-custom-color-btn"
+                  class="w-6 h-6 rounded-full border border-dashed border-stone-300 hover:border-brand-charcoal cursor-pointer flex items-center justify-center text-xs text-stone-500 hover:text-brand-charcoal transition-colors bg-white shadow-xs font-bold"
+                  title={lang === 'en' ? 'Add Custom Color' : 'เพิ่มสีเอง'}
+                >
+                  +
+                </button>
+                <input type="color" id="add-color-picker" class="hidden" value="#ffffff" />
+              </div>
+              <div class="flex flex-wrap gap-1.5 pl-1.5 border-l border-stone-200" id="add-custom-colors-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Multi Images Upload -->
+      <div class="border border-stone-200 p-3 rounded-sm bg-stone-50/50 space-y-2">
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Color Images (Multi-images)' : 'รูปภาพสินค้าแยกตามสี'}</label>
+        <div id="add-product-images-list" class="space-y-1.5 max-h-36 overflow-y-auto">
+          <!-- Rendered dynamically -->
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="file" id="add-product-multi-image-file" accept="image/*" class="hidden" />
+          <button type="button" id="btn-add-multi-image" class="px-3 py-1.5 border border-dashed border-stone-300 hover:border-brand-charcoal text-[9px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors">
+            + {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+          </button>
+          <div id="add-product-multi-upload-status" class="text-[9px] text-stone-500 font-semibold"></div>
         </div>
       </div>
       <div>
@@ -840,11 +1066,74 @@ const parseArray = (val: any) => {
           <div id="inline-category-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_status')}</label>
+        <select id="add-status" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+          <option value="active">{t('admin.status_active')}</option>
+          <option value="inactive">{t('admin.status_inactive')}</option>
+        </select>
+      </div>
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
         <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
         <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_save')}</button>
       </div>
     </form>
+
+    <!-- Draggable Custom Color Picker for Add Product -->
+    <dialog id="add-draggable-color-picker" class="fixed bg-stone-900 border border-stone-800 text-stone-100 p-3 rounded-md shadow-2xl z-[9999] w-64 select-none outline-none" style="margin: 0; padding: 12px; border: none;">
+      <!-- Drag Handle -->
+      <div id="add-draggable-color-picker-handle" class="flex justify-between items-center bg-stone-800 -mx-3 -mt-3 px-3 py-1.5 rounded-t-md cursor-move text-[10px] font-bold tracking-wider text-stone-300">
+        <span>COLOR PICKER (DRAG ME)</span>
+        <button type="button" class="close-picker-btn text-stone-400 hover:text-white font-bold cursor-pointer text-sm">&times;</button>
+      </div>
+
+      <!-- Saturation/Value Box -->
+      <div class="color-picker-sv-box relative w-full h-32 mt-3 cursor-crosshair rounded-sm overflow-hidden" style="background-color: hsl(0, 100%, 50%);">
+        <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+        <div class="color-picker-sv-cursor absolute w-3 h-3 border border-white rounded-full -translate-x-1.5 -translate-y-1.5 pointer-events-none shadow-md" style="left: 100%; top: 0%; box-shadow: 0 0 0 1.5px black;"></div>
+      </div>
+
+      <!-- Hue Slider -->
+      <div class="mt-3">
+        <input
+          type="range"
+          class="color-picker-hue w-full h-3 rounded-lg appearance-none cursor-pointer outline-none"
+          min="0"
+          max="360"
+          value="0"
+          style="background: linear-gradient(to right, red, #ff0, lime, cyan, blue, #f0f, red);"
+        />
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <div class="color-picker-preview w-8 h-8 rounded-full border border-stone-700 shadow-sm shrink-0" style="background-color: #ff0000;"></div>
+        <button
+          type="button"
+          class="color-picker-dropper-btn hidden bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white p-1.5 rounded transition-colors border border-stone-700 cursor-pointer shrink-0"
+          title="Eye Dropper"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 22l4-4" />
+            <path d="M12.5 11.5l1.5-1.5" />
+            <path d="M6 18l12.5-12.5c.8-.8 2-1 3-.7s1.8 1.4 1.5 2.5c-.3 1-1.2 1.8-2 2.7L8.5 20 6 18z" />
+            <path d="M16 6l2 2" />
+          </svg>
+        </button>
+        <input
+          type="text"
+          class="color-picker-hex-input w-24 bg-stone-800 border border-stone-700 text-stone-100 text-center text-xs py-1 rounded outline-none uppercase font-mono"
+          value="#FF0000"
+        />
+        <button
+          type="button"
+          class="color-picker-select-btn bg-brand-gold text-stone-900 hover:bg-opacity-90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-colors"
+        >
+          OK
+        </button>
+      </div>
+    </dialog>
   </dialog>
 
   <!-- Edit Product Dialog -->
@@ -874,9 +1163,21 @@ const parseArray = (val: any) => {
           <input type="number" id="edit-stock" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
         </div>
       </div>
-      <div>
-        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.image_url')}</label>
-        <input type="text" id="edit-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_file')}</label>
+          <input type="file" id="edit-product-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_image_url')}</label>
+          <div class="flex gap-2">
+            <input type="text" id="edit-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+            <div id="edit-product-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+              <img id="edit-product-image-preview" src="" class="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div id="edit-product-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+        </div>
       </div>
       <div>
         <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
@@ -889,7 +1190,55 @@ const parseArray = (val: any) => {
         </div>
         <div>
           <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.colors_comma')}</label>
-          <input type="text" id="edit-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+          <input type="text" id="edit-colors" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="#000000, #ffffff" />
+          <div class="mt-2 flex flex-col gap-2 bg-stone-50/50 p-2 border border-stone-100 rounded-sm">
+            <div>
+              <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1.5">{lang === 'en' ? 'Presets' : 'สีแนะนำ'}</div>
+              <div class="flex flex-wrap gap-1.5" id="edit-colors-presets-container">
+                {colorPalette.map(color => (
+                  <button
+                    type="button"
+                    data-color={color.hex}
+                    class="color-palette-btn-edit w-6 h-6 rounded-full cursor-pointer transition-all border hover:scale-110 active:scale-95 flex items-center justify-center text-[10px] font-bold shadow-xs shrink-0"
+                    style={`background-color: ${color.hex}; color: ${color.text}; border-color: ${color.border ? '#d6d3d1' : color.hex};`}
+                    title={color.name}
+                  >
+                    <span class="hidden check-icon">✓</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div class="border-t border-stone-100 pt-2 flex flex-wrap items-center gap-2">
+              <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Custom' : 'สีอื่นๆ'}</div>
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  id="edit-custom-color-btn"
+                  class="w-6 h-6 rounded-full border border-dashed border-stone-300 hover:border-brand-charcoal cursor-pointer flex items-center justify-center text-xs text-stone-500 hover:text-brand-charcoal transition-colors bg-white shadow-xs font-bold"
+                  title={lang === 'en' ? 'Add Custom Color' : 'เพิ่มสีเอง'}
+                >
+                  +
+                </button>
+                <input type="color" id="edit-color-picker" class="hidden" value="#ffffff" />
+              </div>
+              <div class="flex flex-wrap gap-1.5 pl-1.5 border-l border-stone-200" id="edit-custom-colors-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Multi Images Upload -->
+      <div class="border border-stone-200 p-3 rounded-sm bg-stone-50/50 space-y-2">
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Product Color Images (Multi-images)' : 'รูปภาพสินค้าแยกตามสี'}</label>
+        <div id="edit-product-images-list" class="space-y-1.5 max-h-36 overflow-y-auto">
+          <!-- Rendered dynamically -->
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="file" id="edit-product-multi-image-file" accept="image/*" class="hidden" />
+          <button type="button" id="btn-edit-multi-image" class="px-3 py-1.5 border border-dashed border-stone-300 hover:border-brand-charcoal text-[9px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors">
+            + {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+          </button>
+          <div id="edit-product-multi-upload-status" class="text-[9px] text-stone-500 font-semibold"></div>
         </div>
       </div>
       <div>
@@ -944,6 +1293,216 @@ const parseArray = (val: any) => {
           <div id="inline-category-error-edit" class="hidden text-[9px] text-red-500 font-light"></div>
         </div>
       </div>
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_status')}</label>
+        <select id="edit-status" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50">
+          <option value="active">{t('admin.status_active')}</option>
+          <option value="inactive">{t('admin.status_inactive')}</option>
+        </select>
+      </div>
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_edit')}</button>
+      </div>
+    </form>
+
+    <!-- Draggable Custom Color Picker for Edit Product -->
+    <dialog id="edit-draggable-color-picker" class="fixed bg-stone-900 border border-stone-800 text-stone-100 p-3 rounded-md shadow-2xl z-[9999] w-64 select-none outline-none" style="margin: 0; padding: 12px; border: none;">
+      <!-- Drag Handle -->
+      <div id="edit-draggable-color-picker-handle" class="flex justify-between items-center bg-stone-800 -mx-3 -mt-3 px-3 py-1.5 rounded-t-md cursor-move text-[10px] font-bold tracking-wider text-stone-300">
+        <span>COLOR PICKER (DRAG ME)</span>
+        <button type="button" class="close-picker-btn text-stone-400 hover:text-white font-bold cursor-pointer text-sm">&times;</button>
+      </div>
+
+      <!-- Saturation/Value Box -->
+      <div class="color-picker-sv-box relative w-full h-32 mt-3 cursor-crosshair rounded-sm overflow-hidden" style="background-color: hsl(0, 100%, 50%);">
+        <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+        <div class="color-picker-sv-cursor absolute w-3 h-3 border border-white rounded-full -translate-x-1.5 -translate-y-1.5 pointer-events-none shadow-md" style="left: 100%; top: 0%; box-shadow: 0 0 0 1.5px black;"></div>
+      </div>
+
+      <!-- Hue Slider -->
+      <div class="mt-3">
+        <input
+          type="range"
+          class="color-picker-hue w-full h-3 rounded-lg appearance-none cursor-pointer outline-none"
+          min="0"
+          max="360"
+          value="0"
+          style="background: linear-gradient(to right, red, #ff0, lime, cyan, blue, #f0f, red);"
+        />
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <div class="color-picker-preview w-8 h-8 rounded-full border border-stone-700 shadow-sm shrink-0" style="background-color: #ff0000;"></div>
+        <button
+          type="button"
+          class="color-picker-dropper-btn hidden bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white p-1.5 rounded transition-colors border border-stone-700 cursor-pointer shrink-0"
+          title="Eye Dropper"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 22l4-4" />
+            <path d="M12.5 11.5l1.5-1.5" />
+            <path d="M6 18l12.5-12.5c.8-.8 2-1 3-.7s1.8 1.4 1.5 2.5c-.3 1-1.2 1.8-2 2.7L8.5 20 6 18z" />
+            <path d="M16 6l2 2" />
+          </svg>
+        </button>
+        <input
+          type="text"
+          class="color-picker-hex-input w-24 bg-stone-800 border border-stone-700 text-stone-100 text-center text-xs py-1 rounded outline-none uppercase font-mono"
+          value="#FF0000"
+        />
+        <button
+          type="button"
+          class="color-picker-select-btn bg-brand-gold text-stone-900 hover:bg-opacity-90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-colors"
+        >
+          OK
+        </button>
+      </div>
+    </dialog>
+  </dialog>
+
+  <!-- Add Collection Dialog -->
+  <dialog id="add-collection-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.add_collection')}</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="add-col-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="add-collection-form" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_title')}</label>
+          <input type="text" id="add-col-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
+          <input type="text" id="add-col-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_image_file')}</label>
+          <input type="file" id="add-collection-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_image_url')}</label>
+          <div class="flex gap-2">
+            <input type="text" id="add-col-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
+            <div id="add-collection-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+              <img id="add-collection-image-preview" src="" class="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div id="add-collection-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_desc')}</label>
+        <textarea id="add-col-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.publish_date')}</label>
+        <input type="datetime-local" id="add-col-publish" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50" />
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_products')}</label>
+        <div class="border border-stone-250 rounded-sm p-3 max-h-40 overflow-y-auto space-y-2 bg-stone-50/50" id="add-col-products-container">
+          {products.map((p: any) => (
+            <label class="flex items-center gap-2 text-xs text-stone-600 font-light cursor-pointer hover:text-brand-charcoal select-none">
+              <input type="checkbox" name="productIds" value={p.id} class="rounded-sm border-stone-300 text-brand-charcoal focus:ring-brand-charcoal col-product-checkbox-add" />
+              <span class={`w-2 h-2 rounded-full ${p.status === 'inactive' ? 'bg-red-500' : 'bg-green-500'}`} title={p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}></span>
+              <span>{p.name}</span>
+              <span class="text-[9px] text-stone-400 font-mono">(${p.price})</span>
+              <span class={`text-[8px] px-1 rounded-sm scale-90 ${p.status === 'inactive' ? 'text-red-500 font-medium' : 'text-green-600 font-medium'}`}>
+                ({p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')})
+              </span>
+            </label>
+          ))}
+          {products.length === 0 && (
+            <div class="text-[10px] text-stone-400 italic text-center py-2">{lang === 'en' ? 'No products available' : 'ไม่มีสินค้าในระบบ'}</div>
+          )}
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
+        <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
+        <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_save')}</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Edit Collection Dialog -->
+  <dialog id="edit-collection-dialog" class="bg-white border border-stone-200 p-8 rounded-sm max-w-lg w-full">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+      <h3 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">{t('admin.edit_collection')}</h3>
+      <button class="close-dialog-btn text-stone-400 hover:text-brand-charcoal text-lg font-light cursor-pointer">&times;</button>
+    </div>
+    <div id="edit-col-error" class="hidden text-[10px] text-red-500 bg-red-50 p-2.5 border-l-2 border-red-500 mb-4 rounded-sm font-light"></div>
+    <form id="edit-collection-form" class="space-y-4">
+      <input type="hidden" id="edit-col-id" />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_title')}</label>
+          <input type="text" id="edit-col-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')}</label>
+          <input type="text" id="edit-col-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_image_file')}</label>
+          <input type="file" id="edit-collection-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_image_url')}</label>
+          <div class="flex gap-2">
+            <input type="text" id="edit-col-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+            <div id="edit-collection-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+              <img id="edit-collection-image-preview" src="" class="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div id="edit-collection-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_desc')}</label>
+        <textarea id="edit-col-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.publish_date')}</label>
+        <input type="datetime-local" id="edit-col-publish" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50" />
+      </div>
+
+      <div>
+        <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.collection_products')}</label>
+        <div class="border border-stone-250 rounded-sm p-3 max-h-40 overflow-y-auto space-y-2 bg-stone-50/50" id="edit-col-products-container">
+          {products.map((p: any) => (
+            <label class="flex items-center gap-2 text-xs text-stone-600 font-light cursor-pointer hover:text-brand-charcoal select-none">
+              <input type="checkbox" name="productIds" value={p.id} class="rounded-sm border-stone-300 text-brand-charcoal focus:ring-brand-charcoal col-product-checkbox-edit" />
+              <span class={`w-2 h-2 rounded-full ${p.status === 'inactive' ? 'bg-red-500' : 'bg-green-500'}`} title={p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}></span>
+              <span>{p.name}</span>
+              <span class="text-[9px] text-stone-400 font-mono">(${p.price})</span>
+              <span class={`text-[8px] px-1 rounded-sm scale-90 ${p.status === 'inactive' ? 'text-red-500 font-medium' : 'text-green-600 font-medium'}`}>
+                ({p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')})
+              </span>
+            </label>
+          ))}
+          {products.length === 0 && (
+            <div class="text-[10px] text-stone-400 italic text-center py-2">{lang === 'en' ? 'No products available' : 'ไม่มีสินค้าในระบบ'}</div>
+          )}
+        </div>
+      </div>
+
       <div class="pt-4 border-t border-stone-100 flex justify-end gap-2">
         <button type="button" class="close-dialog-btn border border-stone-200 text-stone-600 px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal cursor-pointer">{t('admin.dialog_cancel')}</button>
         <button type="submit" class="bg-brand-charcoal text-white px-4 py-2 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 cursor-pointer">{t('admin.dialog_edit')}</button>
@@ -1094,6 +1653,11 @@ const parseArray = (val: any) => {
     dialog::backdrop {
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
+    }
+    #add-draggable-color-picker::backdrop,
+    #edit-draggable-color-picker::backdrop {
+      background: transparent !important;
+      backdrop-filter: none !important;
     }
     dialog {
       border: none;
@@ -1294,31 +1858,35 @@ const parseArray = (val: any) => {
       const navDashboard = document.getElementById('nav-tab-dashboard');
       const navOrders = document.getElementById('nav-tab-orders');
       const navProducts = document.getElementById('nav-tab-products');
+      const navCollections = document.getElementById('nav-tab-collections');
       const navBlogs = document.getElementById('nav-tab-blogs');
       const navContacts = document.getElementById('nav-tab-contacts');
-
+ 
       const dashboardSection = document.getElementById('dashboard-section');
       const ordersSection = document.getElementById('orders-section');
       const productsSection = document.getElementById('products-section');
+      const collectionsSection = document.getElementById('collections-section');
       const blogsSection = document.getElementById('blogs-section');
       const contactsSection = document.getElementById('contacts-section');
-
+ 
       console.log('[Admin Tabs] Elements found:', {
         navDashboard: !!navDashboard,
         navOrders: !!navOrders,
         navProducts: !!navProducts,
+        navCollections: !!navCollections,
         navBlogs: !!navBlogs,
         navContacts: !!navContacts,
         dashboardSection: !!dashboardSection,
         ordersSection: !!ordersSection,
         productsSection: !!productsSection,
+        collectionsSection: !!collectionsSection,
         blogsSection: !!blogsSection,
         contactsSection: !!contactsSection
       });
-
+ 
       const switchTab = (activeNavBtn: any, activeSection: any) => {
         console.log('[Admin Tabs] Switching tab to:', activeSection?.id);
-        [navDashboard, navOrders, navProducts, navBlogs, navContacts].forEach(btn => {
+        [navDashboard, navOrders, navProducts, navCollections, navBlogs, navContacts].forEach(btn => {
           if (btn) {
             if (btn === activeNavBtn) {
               btn.classList.add('active');
@@ -1331,8 +1899,8 @@ const parseArray = (val: any) => {
             }
           }
         });
-
-        [dashboardSection, ordersSection, productsSection, blogsSection, contactsSection].forEach(section => {
+ 
+        [dashboardSection, ordersSection, productsSection, collectionsSection, blogsSection, contactsSection].forEach(section => {
           if (section) {
             if (section === activeSection) {
               section.classList.remove('hidden');
@@ -1342,13 +1910,14 @@ const parseArray = (val: any) => {
           }
         });
       };
-
+ 
       navDashboard?.addEventListener('click', () => switchTab(navDashboard, dashboardSection));
       navOrders?.addEventListener('click', () => switchTab(navOrders, ordersSection));
       navProducts?.addEventListener('click', () => switchTab(navProducts, productsSection));
+      navCollections?.addEventListener('click', () => switchTab(navCollections, collectionsSection));
       navBlogs?.addEventListener('click', () => switchTab(navBlogs, blogsSection));
       navContacts?.addEventListener('click', () => switchTab(navContacts, contactsSection));
-
+ 
       // Initialize the default tab
       switchTab(navDashboard, dashboardSection);
     } catch (e) {
@@ -1527,8 +2096,138 @@ const parseArray = (val: any) => {
     setupToolbar('add-blog-toolbar', addEditor);
     setupToolbar('edit-blog-toolbar', editEditor);
 
+    // Multi Image arrays
+    let addProductImages: { color: string; imageUrl: string }[] = [];
+    let editProductImages: { color: string; imageUrl: string }[] = [];
+
+    const renderMultiImagesList = (formType: 'add' | 'edit') => {
+      const listEl = document.getElementById(`${formType}-product-images-list`);
+      if (!listEl) return;
+      listEl.innerHTML = '';
+      
+      let imagesArr = formType === 'add' ? addProductImages : editProductImages;
+      if (!Array.isArray(imagesArr)) {
+        imagesArr = [];
+      }
+      const colorsInput = document.getElementById(`${formType}-colors`) as HTMLInputElement | null;
+      const colors = colorsInput ? colorsInput.value.split(',').map(c => c.trim()).filter(Boolean) : [];
+
+      if (imagesArr.length === 0) {
+        listEl.innerHTML = `<div class="text-stone-400 text-[10px] italic py-1">${lang === 'en' ? 'No multi-images uploaded yet.' : 'ยังไม่มีรูปภาพเพิ่มเติม'}</div>`;
+        return;
+      }
+
+      imagesArr.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'flex items-center justify-between gap-3 p-2 bg-stone-50 border border-stone-200 rounded-sm';
+
+        // Left side: image and filename
+        const leftEl = document.createElement('div');
+        leftEl.className = 'flex items-center gap-2 min-w-0 flex-1';
+
+        const imgEl = document.createElement('img');
+        imgEl.className = 'w-8 h-10 object-cover rounded-sm border border-stone-200';
+        imgEl.src = item.imageUrl.startsWith('http') ? item.imageUrl : `http://localhost:3001${item.imageUrl}`;
+
+        const urlTextEl = document.createElement('span');
+        urlTextEl.className = 'text-[9px] text-stone-500 truncate font-mono flex-1';
+        urlTextEl.textContent = item.imageUrl.split('/').pop() || item.imageUrl;
+
+        leftEl.appendChild(imgEl);
+        leftEl.appendChild(urlTextEl);
+
+        // Right side: color selector and remove button
+        const rightEl = document.createElement('div');
+        rightEl.className = 'flex items-center gap-2 shrink-0';
+
+        const selectEl = document.createElement('select');
+        selectEl.className = `${formType}-multi-image-color-select border border-stone-200 px-2 py-1 text-[10px] focus:outline-none rounded-sm bg-white`;
+        selectEl.addEventListener('change', () => {
+          item.color = selectEl.value;
+        });
+
+        // Add options to select
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = lang === 'en' ? 'Default' : 'รูปเริ่มต้น/ไม่มีสี';
+        selectEl.appendChild(defOpt);
+
+        colors.forEach(col => {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          if (col === item.color) {
+            opt.selected = true;
+          }
+          selectEl.appendChild(opt);
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'text-red-500 hover:text-red-700 text-xs font-bold px-1.5 py-0.5 border border-transparent hover:border-red-200 hover:bg-red-50 rounded-sm cursor-pointer';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => {
+          imagesArr.splice(index, 1);
+          renderMultiImagesList(formType);
+        });
+
+        rightEl.appendChild(selectEl);
+        rightEl.appendChild(removeBtn);
+
+        itemEl.appendChild(leftEl);
+        itemEl.appendChild(rightEl);
+
+        listEl.appendChild(itemEl);
+      });
+    };
+
+    const updateMultiImageColorSelectors = (formType: 'add' | 'edit') => {
+      const colorsInput = document.getElementById(`${formType}-colors`) as HTMLInputElement | null;
+      if (!colorsInput) return;
+      const colors = colorsInput.value.split(',').map(c => c.trim()).filter(Boolean);
+
+      const dropdowns = document.querySelectorAll(`.${formType}-multi-image-color-select`);
+      dropdowns.forEach((selectEl: any) => {
+        const currentValue = selectEl.value;
+        selectEl.innerHTML = '';
+        
+        // Add Default/No Color option
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = lang === 'en' ? 'Default' : 'รูปเริ่มต้น/ไม่มีสี';
+        selectEl.appendChild(defOpt);
+        
+        // Add specific colors
+        colors.forEach(col => {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          selectEl.appendChild(opt);
+        });
+        
+        // Restore value if it's still valid
+        if (colors.includes(currentValue) || currentValue === '') {
+          selectEl.value = currentValue;
+        } else {
+          selectEl.value = '';
+        }
+      });
+    };
+
     // Setup dialog modals
-    setupDialog('add-product-dialog', 'open-add-dialog-btn');
+    setupDialog('add-product-dialog', 'open-add-dialog-btn', () => {
+      const fileInput = document.getElementById('add-product-image-file') as HTMLInputElement | null;
+      if (fileInput) fileInput.value = '';
+      const previewContainer = document.getElementById('add-product-image-preview-container');
+      if (previewContainer) previewContainer.classList.add('hidden');
+      const uploadStatus = document.getElementById('add-product-upload-status');
+      if (uploadStatus) uploadStatus.classList.add('hidden');
+      const textInput = document.getElementById('add-image') as HTMLInputElement | null;
+      if (textInput) textInput.value = '';
+      
+      addProductImages = [];
+      renderMultiImagesList('add');
+    });
     setupDialog('edit-product-dialog');
     setupDialog('add-blog-dialog', 'open-add-blog-btn', () => {
       // Clear add editor content when opening add post modal
@@ -1543,7 +2242,7 @@ const parseArray = (val: any) => {
     setupDialog('edit-blog-dialog');
 
     // Image Upload helper
-    const setupImageUpload = (fileInputId: string, textInputId: string, previewContainerId: string, previewId: string, statusId: string) => {
+    const setupImageUpload = (fileInputId: string, textInputId: string, previewContainerId: string, previewId: string, statusId: string, uploadUrl: string = 'http://localhost:3001/api/blogs/upload') => {
       const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null;
       const textInput = document.getElementById(textInputId) as HTMLInputElement | null;
       const previewContainer = document.getElementById(previewContainerId);
@@ -1566,7 +2265,7 @@ const parseArray = (val: any) => {
         formData.append('file', file);
 
         try {
-          const res = await fetch('http://localhost:3001/api/blogs/upload', {
+          const res = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -1627,6 +2326,61 @@ const parseArray = (val: any) => {
 
     setupImageUpload('add-blog-image-file', 'add-blog-image', 'add-blog-image-preview-container', 'add-blog-image-preview', 'add-blog-upload-status');
     setupImageUpload('edit-blog-image-file', 'edit-blog-image', 'edit-blog-image-preview-container', 'edit-blog-image-preview', 'edit-blog-upload-status');
+    setupImageUpload('add-product-image-file', 'add-image', 'add-product-image-preview-container', 'add-product-image-preview', 'add-product-upload-status', 'http://localhost:3001/api/products/upload');
+    setupImageUpload('edit-product-image-file', 'edit-image', 'edit-product-image-preview-container', 'edit-product-image-preview', 'edit-product-upload-status', 'http://localhost:3001/api/products/upload');
+    setupImageUpload('add-collection-image-file', 'add-col-image', 'add-collection-image-preview-container', 'add-collection-image-preview', 'add-collection-upload-status', 'http://localhost:3001/api/collections/upload');
+    setupImageUpload('edit-collection-image-file', 'edit-col-image', 'edit-collection-image-preview-container', 'edit-collection-image-preview', 'edit-collection-upload-status', 'http://localhost:3001/api/collections/upload');
+
+    // Multi Image Upload Handlers
+    const setupMultiImageUpload = (formType: 'add' | 'edit') => {
+      const btnAdd = document.getElementById(`btn-${formType}-multi-image`);
+      const fileInput = document.getElementById(`${formType}-product-multi-image-file`) as HTMLInputElement | null;
+      const statusEl = document.getElementById(`${formType}-product-multi-upload-status`);
+
+      btnAdd?.addEventListener('click', () => {
+        fileInput?.click();
+      });
+
+      fileInput?.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+
+        if (statusEl) {
+          statusEl.textContent = getMsg('uploadingImage') || 'Uploading...';
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('http://localhost:3001/api/products/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const imagesArr = formType === 'add' ? addProductImages : editProductImages;
+            imagesArr.push({ color: '', imageUrl: data.imageUrl });
+            renderMultiImagesList(formType);
+            if (statusEl) statusEl.textContent = '';
+          } else {
+            const data = await res.json();
+            if (statusEl) statusEl.textContent = data.message || 'Upload failed';
+          }
+        } catch (err) {
+          console.error(err);
+          if (statusEl) statusEl.textContent = 'Upload error';
+        }
+        fileInput.value = '';
+      });
+    };
+
+    setupMultiImageUpload('add');
+    setupMultiImageUpload('edit');
 
     // Add auto-slug generation to forms (Products)
     const addName = document.getElementById('add-name') as HTMLInputElement | null;
@@ -1634,6 +2388,15 @@ const parseArray = (val: any) => {
     if (addName && addSlug) {
       addName.addEventListener('input', () => {
         addSlug.value = slugify(addName.value);
+      });
+    }
+
+    // Add auto-slug generation to forms (Collections)
+    const addColTitle = document.getElementById('add-col-title') as HTMLInputElement | null;
+    const addColSlug = document.getElementById('add-col-slug') as HTMLInputElement | null;
+    if (addColTitle && addColSlug) {
+      addColTitle.addEventListener('input', () => {
+        addColSlug.value = slugify(addColTitle.value);
       });
     }
 
@@ -1689,8 +2452,9 @@ const parseArray = (val: any) => {
       });
 
       const categoryId = parseInt((document.getElementById('add-category') as HTMLInputElement).value, 10);
+      const status = (document.getElementById('add-status') as HTMLSelectElement).value;
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
+      const payload = { name, slug, price, stockQuantity, imageUrl, images: addProductImages, description, sizes, colors, tags, categoryId, status };
 
       try {
         const res = await fetch('http://localhost:3001/api/products', {
@@ -1749,12 +2513,50 @@ const parseArray = (val: any) => {
         (document.getElementById('edit-image') as HTMLInputElement).value = image;
         (document.getElementById('edit-desc') as HTMLInputElement).value = desc;
         (document.getElementById('edit-sizes') as HTMLInputElement).value = sizes.join(', ');
-        (document.getElementById('edit-colors') as HTMLInputElement).value = colors.join(', ');
+        const editColorsInput = document.getElementById('edit-colors') as HTMLInputElement;
+        if (editColorsInput) {
+          editColorsInput.value = colors.join(', ');
+          editColorsInput.dispatchEvent(new Event('input'));
+        }
         document.querySelectorAll('.tag-checkbox-edit').forEach((cb) => {
           const checkbox = cb as HTMLInputElement;
           checkbox.checked = tags.includes(checkbox.value);
         });
         (document.getElementById('edit-category') as HTMLInputElement).value = category;
+
+        const status = btn.dataset.status || 'active';
+        (document.getElementById('edit-status') as HTMLSelectElement).value = status;
+
+        // Reset file input & upload status
+        const fileInput = document.getElementById('edit-product-image-file') as HTMLInputElement | null;
+        if (fileInput) fileInput.value = '';
+        const uploadStatus = document.getElementById('edit-product-upload-status');
+        if (uploadStatus) uploadStatus.classList.add('hidden');
+
+        // Set preview image if exists
+        const previewContainer = document.getElementById('edit-product-image-preview-container');
+        const preview = document.getElementById('edit-product-image-preview') as HTMLImageElement | null;
+        if (image) {
+          let src = image;
+          if (!src.startsWith('http') && src.startsWith('/')) {
+            src = `http://localhost:3001${src}`;
+          }
+          if (preview && previewContainer) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+          }
+        } else {
+          if (previewContainer) previewContainer.classList.add('hidden');
+        }
+
+        const imagesStr = btn.dataset.images || '[]';
+        try {
+          const parsed = JSON.parse(imagesStr);
+          editProductImages = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          editProductImages = [];
+        }
+        renderMultiImagesList('edit');
 
         editDialog?.showModal();
       });
@@ -1784,8 +2586,9 @@ const parseArray = (val: any) => {
       });
 
       const categoryId = parseInt((document.getElementById('edit-category') as HTMLInputElement).value, 10);
+      const status = (document.getElementById('edit-status') as HTMLSelectElement).value;
 
-      const payload = { name, slug, price, stockQuantity, imageUrl, description, sizes, colors, tags, categoryId };
+      const payload = { name, slug, price, stockQuantity, imageUrl, images: editProductImages, description, sizes, colors, tags, categoryId, status };
 
       try {
         const res = await fetch(`http://localhost:3001/api/products/${id}`, {
@@ -2379,5 +3182,610 @@ const parseArray = (val: any) => {
         prodTagSlugInput.value = slugify(prodTagNameInput.value);
       });
     }
+
+    // Draggable element helper
+    function makeElementDraggable(el: HTMLElement, handle: HTMLElement) {
+      let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+      handle.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e: MouseEvent) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e: MouseEvent) {
+        e.preventDefault();
+        posX = mouseX - e.clientX;
+        posY = mouseY - e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        const rect = el.getBoundingClientRect();
+        let newTop = rect.top - posY;
+        let newLeft = rect.left - posX;
+
+        const maxLeft = window.innerWidth - el.offsetWidth;
+        const maxTop = window.innerHeight - el.offsetHeight;
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop > maxTop) newTop = maxTop;
+
+        el.style.top = newTop + 'px';
+        el.style.left = newLeft + 'px';
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+
+      // Touch events support
+      handle.ontouchstart = dragTouchStart;
+      function dragTouchStart(e: TouchEvent) {
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          mouseX = touch.clientX;
+          mouseY = touch.clientY;
+          document.ontouchend = closeTouchDrag;
+          document.ontouchmove = touchDrag;
+        }
+      }
+      function touchDrag(e: TouchEvent) {
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          posX = mouseX - touch.clientX;
+          posY = mouseY - touch.clientY;
+          mouseX = touch.clientX;
+          mouseY = touch.clientY;
+
+          const rect = el.getBoundingClientRect();
+          let newTop = rect.top - posY;
+          let newLeft = rect.left - posX;
+
+          const maxLeft = window.innerWidth - el.offsetWidth;
+          const maxTop = window.innerHeight - el.offsetHeight;
+          if (newLeft < 0) newLeft = 0;
+          if (newTop < 0) newTop = 0;
+          if (newLeft > maxLeft) newLeft = maxLeft;
+          if (newTop > maxTop) newTop = maxTop;
+
+          el.style.top = newTop + 'px';
+          el.style.left = newLeft + 'px';
+        }
+      }
+      function closeTouchDrag() {
+        document.ontouchend = null;
+        document.ontouchmove = null;
+      }
+    }
+
+    // Color conversion helpers
+    function hsvToHex(h: number, s: number, v: number): string {
+      s /= 100;
+      v /= 100;
+      const k = (n: number) => (n + h / 60) % 6;
+      const f = (n: number) => v - v * s * Math.max(0, Math.min(k(n), 4 - k(n), 1));
+      const decToHex = (x: number) => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      return `#${decToHex(f(5))}${decToHex(f(3))}${decToHex(f(1))}`;
+    }
+
+    function hexToHsv(hex: string) {
+      let c = hex.replace(/^#/, '');
+      if (c.length === 3) {
+        c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+      }
+      if (c.length !== 6) return null;
+      const r = parseInt(c.substring(0, 2), 16) / 255;
+      const g = parseInt(c.substring(2, 4), 16) / 255;
+      const b = parseInt(c.substring(4, 6), 16) / 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      
+      let h = 0;
+      const s = max === 0 ? 0 : (d / max) * 100;
+      const v = max * 100;
+
+      if (max !== min) {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h * 360), s: Math.round(s), v: Math.round(v) };
+    }
+
+    // Color Palette Setup with Draggable Picker
+    function setupColorPalette(
+      inputId: string,
+      buttonClass: string,
+      customContainerId: string,
+      draggablePickerId: string,
+      draggableHandleId: string,
+      pickerBtnId: string
+    ) {
+      const inputEl = document.getElementById(inputId) as HTMLInputElement | null;
+      if (!inputEl) return;
+
+      const presets = document.querySelectorAll(buttonClass) as NodeListOf<HTMLButtonElement>;
+      const customContainer = document.getElementById(customContainerId);
+      const draggablePicker = document.getElementById(draggablePickerId) as HTMLDialogElement | null;
+      const handle = document.getElementById(draggableHandleId);
+      const pickerBtn = document.getElementById(pickerBtnId);
+
+      const getSelectedColors = () => {
+        return inputEl.value
+          .split(',')
+          .map(c => c.trim())
+          .filter(c => /^#[0-9A-F]{3,6}$/i.test(c));
+      };
+
+      const updateButtonStates = () => {
+        const selectedColors = getSelectedColors();
+        const lowerSelected = selectedColors.map(c => c.toLowerCase());
+
+        // 1. Update presets
+        const presetHexs: string[] = [];
+        presets.forEach(btn => {
+          const hex = (btn.dataset.color || '').toLowerCase();
+          presetHexs.push(hex);
+          const isActive = lowerSelected.includes(hex);
+          const checkIcon = btn.querySelector('.check-icon');
+          if (isActive) {
+            btn.classList.add('ring-2', 'ring-stone-800', 'ring-offset-1', 'scale-110');
+            if (checkIcon) checkIcon.classList.remove('hidden');
+          } else {
+            btn.classList.remove('ring-2', 'ring-stone-800', 'ring-offset-1', 'scale-110');
+            if (checkIcon) checkIcon.classList.add('hidden');
+          }
+        });
+
+        // 2. Render dynamic custom color badges
+        if (customContainer) {
+          customContainer.innerHTML = '';
+          const customColors = selectedColors.filter(c => !presetHexs.includes(c.toLowerCase()));
+          
+          customColors.forEach(hex => {
+            const badge = document.createElement('button');
+            badge.type = 'button';
+            badge.className = 'w-6 h-6 rounded-full cursor-pointer border border-stone-300 shadow-xs flex items-center justify-center text-[10px] font-bold transition-all hover:scale-110 active:scale-95 shrink-0';
+            badge.style.backgroundColor = hex;
+            
+            // Calculate text contrast
+            const isLightColor = (hexStr: string) => {
+              let c = hexStr.substring(1);
+              if (c.length === 3) {
+                c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+              }
+              const rgb = parseInt(c, 16);
+              const r = (rgb >> 16) & 0xff;
+              const g = (rgb >> 8) & 0xff;
+              const b = (rgb >> 0) & 0xff;
+              const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              return luma > 180;
+            };
+            badge.style.color = isLightColor(hex) ? '#1a1a1a' : '#ffffff';
+            badge.title = `${hex} (Click to remove)`;
+            badge.innerHTML = '✕';
+
+            badge.addEventListener('click', () => {
+              const current = getSelectedColors();
+              const filtered = current.filter(c => c.toLowerCase() !== hex.toLowerCase());
+              inputEl.value = filtered.join(', ');
+              updateButtonStates();
+              inputEl.dispatchEvent(new Event('input'));
+            });
+
+            customContainer.appendChild(badge);
+          });
+        }
+      };
+
+      presets.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const hex = btn.dataset.color || '';
+          const current = getSelectedColors();
+          const lowerColors = current.map(c => c.toLowerCase());
+          const index = lowerColors.indexOf(hex.toLowerCase());
+
+          if (index > -1) {
+            current.splice(index, 1);
+          } else {
+            current.push(hex);
+          }
+
+          inputEl.value = current.join(', ');
+          updateButtonStates();
+          inputEl.dispatchEvent(new Event('input'));
+        });
+      });
+
+      // Draggable color picker event mapping
+      if (draggablePicker && handle && pickerBtn) {
+        makeElementDraggable(draggablePicker, handle);
+
+        const closeBtn = draggablePicker.querySelector('.close-picker-btn');
+        const svBox = draggablePicker.querySelector('.color-picker-sv-box') as HTMLElement;
+        const svCursor = draggablePicker.querySelector('.color-picker-sv-cursor') as HTMLElement;
+        const hueSlider = draggablePicker.querySelector('.color-picker-hue') as HTMLInputElement;
+        const preview = draggablePicker.querySelector('.color-picker-preview') as HTMLElement;
+        const hexInput = draggablePicker.querySelector('.color-picker-hex-input') as HTMLInputElement;
+        const selectBtn = draggablePicker.querySelector('.color-picker-select-btn');
+        const dropperBtn = draggablePicker.querySelector('.color-picker-dropper-btn') as HTMLButtonElement | null;
+
+        let currentH = 0;
+        let currentS = 100;
+        let currentV = 100;
+
+        const updatePickerUi = (hexVal: string) => {
+          preview.style.backgroundColor = hexVal;
+          hexInput.value = hexVal.toUpperCase();
+          svBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+          svCursor.style.left = `${currentS}%`;
+          svCursor.style.top = `${100 - currentV}%`;
+          hueSlider.value = String(currentH);
+        };
+
+        const updateFromHsv = () => {
+          const hex = hsvToHex(currentH, currentS, currentV);
+          updatePickerUi(hex);
+        };
+
+        if (dropperBtn && 'EyeDropper' in window) {
+          dropperBtn.classList.remove('hidden');
+          dropperBtn.addEventListener('click', async () => {
+            try {
+              const eyeDropper = new (window as any).EyeDropper();
+              const result = await eyeDropper.open();
+              const hex = result.sRGBHex;
+              const hsv = hexToHsv(hex);
+              if (hsv) {
+                currentH = hsv.h;
+                currentS = hsv.s;
+                currentV = hsv.v;
+                updatePickerUi(hex);
+              }
+            } catch (err) {
+              console.error('EyeDropper failed:', err);
+            }
+          });
+        }
+
+        pickerBtn.addEventListener('click', () => {
+          if (draggablePicker) draggablePicker.showModal();
+          const topVal = Math.max(20, (window.innerHeight - draggablePicker.offsetHeight) / 2);
+          const leftVal = Math.max(20, (window.innerWidth - draggablePicker.offsetWidth) / 2);
+          draggablePicker.style.top = `${topVal}px`;
+          draggablePicker.style.left = `${leftVal}px`;
+          draggablePicker.style.transform = 'none';
+          
+          const currentVal = hexInput.value;
+          const hsv = hexToHsv(currentVal);
+          if (hsv) {
+            currentH = hsv.h;
+            currentS = hsv.s;
+            currentV = hsv.v;
+          }
+          updateFromHsv();
+        });
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            if (draggablePicker) draggablePicker.close();
+          });
+        }
+
+        hueSlider.addEventListener('input', () => {
+          currentH = parseInt(hueSlider.value, 10);
+          updateFromHsv();
+        });
+
+        let isMouseDownOnSv = false;
+        const handleSvEvent = (e: MouseEvent | TouchEvent) => {
+          const rect = svBox.getBoundingClientRect();
+          let clientX = 0;
+          let clientY = 0;
+          
+          if ('touches' in e) {
+            if (e.touches.length === 0) return;
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+          
+          let x = clientX - rect.left;
+          let y = clientY - rect.top;
+          
+          if (x < 0) x = 0;
+          if (x > rect.width) x = rect.width;
+          if (y < 0) y = 0;
+          if (y > rect.height) y = rect.height;
+          
+          currentS = Math.round((x / rect.width) * 100);
+          currentV = Math.round((1 - y / rect.height) * 100);
+          updateFromHsv();
+        };
+
+        svBox.addEventListener('mousedown', (e) => {
+          isMouseDownOnSv = true;
+          handleSvEvent(e);
+        });
+        document.addEventListener('mousemove', (e) => {
+          if (isMouseDownOnSv) handleSvEvent(e);
+        });
+        document.addEventListener('mouseup', () => {
+          isMouseDownOnSv = false;
+        });
+
+        svBox.addEventListener('touchstart', (e) => {
+          handleSvEvent(e);
+        }, { passive: true });
+        svBox.addEventListener('touchmove', (e) => {
+          handleSvEvent(e);
+        }, { passive: true });
+
+        hexInput.addEventListener('change', () => {
+          const hsv = hexToHsv(hexInput.value);
+          if (hsv) {
+            currentH = hsv.h;
+            currentS = hsv.s;
+            currentV = hsv.v;
+            updatePickerUi(hexInput.value);
+          }
+        });
+
+        if (selectBtn) {
+          selectBtn.addEventListener('click', () => {
+            const hex = hsvToHex(currentH, currentS, currentV);
+            const current = getSelectedColors();
+            if (!current.map(c => c.toLowerCase()).includes(hex.toLowerCase())) {
+              current.push(hex);
+              inputEl.value = current.join(', ');
+              updateButtonStates();
+              inputEl.dispatchEvent(new Event('input'));
+            }
+            if (draggablePicker) draggablePicker.close();
+          });
+        }
+      }
+
+      inputEl.addEventListener('input', updateButtonStates);
+      updateButtonStates();
+    }
+
+    // Initialize palettes
+    setupColorPalette(
+      'add-colors',
+      '.color-palette-btn-add',
+      'add-custom-colors-container',
+      'add-draggable-color-picker',
+      'add-draggable-color-picker-handle',
+      'add-custom-color-btn'
+    );
+    setupColorPalette(
+      'edit-colors',
+      '.color-palette-btn-edit',
+      'edit-custom-colors-container',
+      'edit-draggable-color-picker',
+      'edit-draggable-color-picker-handle',
+      'edit-custom-color-btn'
+    );
+
+    const addColorsInput = document.getElementById('add-colors') as HTMLInputElement | null;
+    if (addColorsInput) {
+      addColorsInput.addEventListener('input', () => {
+        updateMultiImageColorSelectors('add');
+        renderMultiImagesList('add');
+      });
+    }
+    const editColorsInput = document.getElementById('edit-colors') as HTMLInputElement | null;
+    if (editColorsInput) {
+      editColorsInput.addEventListener('input', () => {
+        updateMultiImageColorSelectors('edit');
+        renderMultiImagesList('edit');
+      });
+    }
+
+    // Collections CRUD Scripting
+    const addColDialog = document.getElementById('add-collection-dialog') as HTMLDialogElement | null;
+    const addColForm = document.getElementById('add-collection-form');
+    const addColError = document.getElementById('add-col-error');
+
+    setupDialog('add-collection-dialog', 'open-add-collection-btn', () => {
+      if (addColForm) (addColForm as HTMLFormElement).reset();
+      const previewContainer = document.getElementById('add-collection-image-preview-container');
+      if (previewContainer) previewContainer.classList.add('hidden');
+      const uploadStatus = document.getElementById('add-collection-upload-status');
+      if (uploadStatus) uploadStatus.classList.add('hidden');
+      if (addColError) addColError.classList.add('hidden');
+    });
+
+    addColForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addColError) addColError.classList.add('hidden');
+
+      const title = (document.getElementById('add-col-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-col-slug') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('add-col-image') as HTMLInputElement).value;
+      const description = (document.getElementById('add-col-desc') as HTMLInputElement).value;
+      const publishDateStr = (document.getElementById('add-col-publish') as HTMLInputElement).value;
+      const publishDate = publishDateStr ? new Date(publishDateStr).toISOString() : null;
+
+      const productIds: number[] = [];
+      document.querySelectorAll('#add-col-products-container input[type="checkbox"]:checked').forEach((cb) => {
+        productIds.push(parseInt((cb as HTMLInputElement).value, 10));
+      });
+
+      const payload = { title, slug, description, imageUrl, publishDate, productIds };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/collections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (addColError) {
+            addColError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to create collection.');
+            addColError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (addColError) {
+          addColError.textContent = getMsg('failedConnectBackend');
+          addColError.classList.remove('hidden');
+        }
+      }
+    });
+
+    const editColDialog = document.getElementById('edit-collection-dialog') as HTMLDialogElement | null;
+    const editColForm = document.getElementById('edit-collection-form');
+    const editColError = document.getElementById('edit-col-error');
+
+    setupDialog('edit-collection-dialog');
+
+    document.querySelectorAll('.edit-col-btn').forEach((btn: any) => {
+      btn.addEventListener('click', () => {
+        if (editColError) editColError.classList.add('hidden');
+
+        const id = btn.dataset.id || '';
+        const title = btn.dataset.title || '';
+        const slug = btn.dataset.slug || '';
+        const image = btn.dataset.image || '';
+        const desc = btn.dataset.desc || '';
+        const publish = btn.dataset.publish || '';
+        const productIds = JSON.parse(btn.dataset.products || '[]');
+
+        (document.getElementById('edit-col-id') as HTMLInputElement).value = id;
+        (document.getElementById('edit-col-title') as HTMLInputElement).value = title;
+        (document.getElementById('edit-col-slug') as HTMLInputElement).value = slug;
+        (document.getElementById('edit-col-desc') as HTMLInputElement).value = desc;
+        (document.getElementById('edit-col-image') as HTMLInputElement).value = image;
+        (document.getElementById('edit-col-publish') as HTMLInputElement).value = publish;
+
+        // Reset file input & upload status
+        const fileInput = document.getElementById('edit-collection-image-file') as HTMLInputElement | null;
+        if (fileInput) fileInput.value = '';
+        const uploadStatus = document.getElementById('edit-collection-upload-status');
+        if (uploadStatus) uploadStatus.classList.add('hidden');
+
+        // Set preview image if exists
+        const previewContainer = document.getElementById('edit-collection-image-preview-container');
+        const preview = document.getElementById('edit-collection-image-preview') as HTMLImageElement | null;
+        if (image) {
+          let src = image;
+          if (!src.startsWith('http') && src.startsWith('/')) {
+            src = `http://localhost:3001${src}`;
+          }
+          if (preview && previewContainer) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+          }
+        } else {
+          if (previewContainer) previewContainer.classList.add('hidden');
+        }
+
+        // Set checkboxes
+        document.querySelectorAll('#edit-col-products-container input[type="checkbox"]').forEach((cb) => {
+          const checkbox = cb as HTMLInputElement;
+          checkbox.checked = productIds.includes(parseInt(checkbox.value, 10));
+        });
+
+        editColDialog?.showModal();
+      });
+    });
+
+    editColForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (editColError) editColError.classList.add('hidden');
+
+      const id = (document.getElementById('edit-col-id') as HTMLInputElement).value;
+      const title = (document.getElementById('edit-col-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('edit-col-slug') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('edit-col-image') as HTMLInputElement).value;
+      const description = (document.getElementById('edit-col-desc') as HTMLInputElement).value;
+      const publishDateStr = (document.getElementById('edit-col-publish') as HTMLInputElement).value;
+      const publishDate = publishDateStr ? new Date(publishDateStr).toISOString() : null;
+
+      const productIds: number[] = [];
+      document.querySelectorAll('#edit-col-products-container input[type="checkbox"]:checked').forEach((cb) => {
+        productIds.push(parseInt((cb as HTMLInputElement).value, 10));
+      });
+
+      const payload = { title, slug, description, imageUrl, publishDate, productIds };
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/collections/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          if (editColError) {
+            editColError.textContent = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Failed to update collection.');
+            editColError.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (editColError) {
+          editColError.textContent = getMsg('failedConnectBackend');
+          editColError.classList.remove('hidden');
+        }
+      }
+    });
+
+    document.querySelectorAll('.delete-col-btn').forEach((btn: any) => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if (!id) return;
+        if (!confirm(lang === 'en' ? 'Are you sure you want to delete this collection?' : 'คุณแน่ใจหรือไม่ที่จะลบคอลเลกชันนี้?')) return;
+
+        try {
+          const res = await fetch(`http://localhost:3001/api/collections/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (res.ok) {
+            window.location.reload();
+          } else {
+            alert(lang === 'en' ? 'Failed to delete collection.' : 'ลบคอลเลกชันไม่สำเร็จ');
+          }
+        } catch (err) {
+          console.error(err);
+          alert(lang === 'en' ? 'Network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        }
+      });
+    });
   </script>
 </Layout>

@@ -6,7 +6,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = url.pathname;
 
   // Prevent rewrite redirection loops
-  const isInternalRewritten = url.searchParams.has('__astro_rewritten');
+  const isInternalRewritten = context.request.headers.get('x-astro-rewritten') === 'true';
   if (isInternalRewritten) {
     return next();
   }
@@ -132,14 +132,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
         }
       }
 
-      // Rewrite the URL internally to the unprefixed target path, appending loop guard parameter
-      let targetSearch = url.search;
-      if (targetSearch) {
-        targetSearch += '&__astro_rewritten=true';
-      } else {
-        targetSearch = '?__astro_rewritten=true';
+      // Rewrite the URL internally to the unprefixed target path
+      const targetUrl = new URL(`${targetPath}${url.search}`, context.url.origin);
+      const headers = new Headers(context.request.headers);
+      headers.set('x-astro-rewritten', 'true');
+
+      const requestInit: RequestInit = {
+        method: context.request.method,
+        headers: headers,
+      };
+
+      if (context.request.method !== 'GET' && context.request.method !== 'HEAD' && context.request.body) {
+        requestInit.body = context.request.body;
+        // @ts-ignore
+        requestInit.duplex = 'half';
       }
-      return context.rewrite(new URL(`${targetPath}${targetSearch}`, context.url.origin));
+
+      return context.rewrite(new Request(targetUrl, requestInit));
     } else {
       // No locale prefix in the URL - redirect to correct prefix based on cookie
       const langCookie = context.cookies.get('lang')?.value;

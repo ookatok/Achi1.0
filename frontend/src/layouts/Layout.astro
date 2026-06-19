@@ -43,6 +43,63 @@ if (token) {
     console.error('[NestJS API Error] Fetching cart in Layout failed.', err);
   }
 }
+
+let categoriesList = [] as any[];
+let tagsList = [] as any[];
+
+try {
+  const catRes = await fetch(`${BACKEND_URL}/api/products/categories`);
+  if (catRes.ok) {
+    categoriesList = await catRes.json();
+  }
+  const tagRes = await fetch(`${BACKEND_URL}/api/products/tags`);
+  if (tagRes.ok) {
+    tagsList = await tagRes.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching categories/tags in Layout.astro failed.', err);
+}
+
+// Fallback lists
+const fallbackCategories = [
+  { id: 1, slug: 'men', name: 'men' },
+  { id: 2, slug: 'women', name: 'women' },
+  { id: 3, slug: 'accessories', name: 'accessories' },
+];
+
+const fallbackTags = [
+  { id: 1, slug: 'new', name: 'new' },
+  { id: 2, slug: 'basics', name: 'basics' },
+  { id: 3, slug: 'summer', name: 'summer' },
+];
+
+const displayCategories = categoriesList.length > 0
+  ? categoriesList.map(c => ({
+      id: c.id,
+      slug: c.slug,
+      nameEn: c.name.charAt(0).toUpperCase() + c.name.slice(1),
+      nameTh: c.name === 'men' ? 'ผู้ชาย' : c.name === 'women' ? 'ผู้หญิง' : c.name === 'accessories' ? 'เครื่องประดับ' : c.name
+    }))
+  : fallbackCategories.map(c => ({
+      id: c.id,
+      slug: c.slug,
+      nameEn: c.name.charAt(0).toUpperCase() + c.name.slice(1),
+      nameTh: c.name === 'men' ? 'ผู้ชาย' : c.name === 'women' ? 'ผู้หญิง' : c.name === 'accessories' ? 'เครื่องประดับ' : c.name
+    }));
+
+const displayTags = tagsList.length > 0
+  ? tagsList.map(t => ({
+      id: t.id,
+      slug: t.slug,
+      nameEn: t.name.charAt(0).toUpperCase() + t.name.slice(1),
+      nameTh: t.name === 'summer' ? 'ฤดูร้อน' : t.name === 'basics' ? 'เบสิก' : t.name === 'new' ? 'ใหม่' : t.name
+    }))
+  : fallbackTags.map(t => ({
+      id: t.id,
+      slug: t.slug,
+      nameEn: t.name.charAt(0).toUpperCase() + t.name.slice(1),
+      nameTh: t.name === 'summer' ? 'ฤดูร้อน' : t.name === 'basics' ? 'เบสิก' : t.name === 'new' ? 'ใหม่' : t.name
+    }));
 ---
 
 <!DOCTYPE html>
@@ -191,6 +248,9 @@ if (token) {
               </button>
               <button id="nav-tab-products" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
                 {t('nav.products')}
+              </button>
+              <button id="nav-tab-collections" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+                {t('nav.collections')}
               </button>
               <button id="nav-tab-blogs" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
                 {t('nav.blogs')}
@@ -462,6 +522,56 @@ if (token) {
             <XIcon class="w-5 h-5" />
           </button>
         </form>
+
+        <!-- Toggle Filters Button -->
+        <div class="mt-4 flex justify-start items-center">
+          <button 
+            id="search-filter-toggle-btn" 
+            class="flex items-center gap-2 text-[10px] tracking-widest uppercase text-gray-400 hover:text-brand-charcoal transition-colors font-semibold cursor-pointer focus:outline-none py-1"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+            </svg>
+            <span>{lang === 'en' ? "Filter Options" : "ตัวกรองสินค้า"}</span>
+          </button>
+        </div>
+
+        <!-- Search Filters (Categories & Tags Checkboxes) - Hidden by Default -->
+        <div id="search-overlay-filters" class="mt-6 flex flex-col sm:flex-row gap-6 border-b border-gray-100 pb-6 text-xs text-gray-500 hidden">
+          <!-- Categories Filter Group -->
+          <div class="flex flex-col gap-2 shrink-0">
+            <span class="font-serif text-[10px] font-semibold tracking-widest text-brand-charcoal uppercase">
+              {lang === 'en' ? "Categories" : "หมวดหมู่"}
+            </span>
+            <div class="flex flex-wrap gap-4 mt-1">
+              {displayCategories.map(cat => (
+                <label class="flex items-center gap-2 cursor-pointer select-none uppercase tracking-wider text-[11px] hover:text-brand-charcoal">
+                  <input type="checkbox" name="search-category-checkbox" value={cat.slug} class="w-3.5 h-3.5 border border-gray-300 rounded-sm accent-brand-charcoal cursor-pointer" />
+                  <span>{lang === 'en' ? cat.nameEn : cat.nameTh}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="hidden sm:block w-px bg-gray-200 self-stretch my-1"></div>
+
+          <!-- Tags Filter Group -->
+          <div class="flex flex-col gap-2 shrink-0">
+            <span class="font-serif text-[10px] font-semibold tracking-widest text-brand-charcoal uppercase">
+              {lang === 'en' ? "Tags" : "แท็กสินค้า"}
+            </span>
+            <div class="flex flex-wrap gap-4 mt-1">
+              {displayTags.map(tag => (
+                <label class="flex items-center gap-2 cursor-pointer select-none uppercase tracking-wider text-[11px] hover:text-brand-charcoal">
+                  <input type="checkbox" name="search-tag-checkbox" value={tag.slug} class="w-3.5 h-3.5 border border-gray-300 rounded-sm accent-brand-charcoal cursor-pointer" />
+                  <span>{lang === 'en' ? tag.nameEn : tag.nameTh}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
         
         <!-- Live Search Results Preview -->
         <div id="search-preview-container" class="mt-12 overflow-y-auto max-h-[55vh] hidden">
@@ -506,8 +616,48 @@ if (token) {
 
       let debounceTimer: number;
 
+      // Checkbox references
+      const searchCatCheckboxes = document.querySelectorAll('input[name="search-category-checkbox"]');
+      const searchTagCheckboxes = document.querySelectorAll('input[name="search-tag-checkbox"]');
+      const filterToggleBtn = document.getElementById('search-filter-toggle-btn');
+      const searchOverlayFilters = document.getElementById('search-overlay-filters');
+
+      const clearSearchFilters = () => {
+        searchCatCheckboxes.forEach((cb: any) => cb.checked = false);
+        searchTagCheckboxes.forEach((cb: any) => cb.checked = false);
+        if (searchOverlayFilters) {
+          searchOverlayFilters.classList.add('hidden');
+        }
+        if (filterToggleBtn) {
+          filterToggleBtn.classList.remove('text-brand-gold');
+        }
+      };
+
+      // Toggle filter visibility
+      if (filterToggleBtn && searchOverlayFilters) {
+        filterToggleBtn.addEventListener('click', () => {
+          const isHidden = searchOverlayFilters.classList.contains('hidden');
+          if (isHidden) {
+            searchOverlayFilters.classList.remove('hidden');
+            filterToggleBtn.classList.add('text-brand-gold');
+          } else {
+            searchOverlayFilters.classList.add('hidden');
+            filterToggleBtn.classList.remove('text-brand-gold');
+          }
+        });
+      }
+
       const performSearch = async (query: string) => {
-        if (!query.trim()) {
+        const selectedCats: string[] = [];
+        searchCatCheckboxes.forEach((cb: any) => {
+          if (cb.checked) selectedCats.push(cb.value);
+        });
+        const selectedTgs: string[] = [];
+        searchTagCheckboxes.forEach((cb: any) => {
+          if (cb.checked) selectedTgs.push(cb.value);
+        });
+
+        if (!query.trim() && selectedCats.length === 0 && selectedTgs.length === 0) {
           if (searchPreviewContainer) searchPreviewContainer.classList.add('hidden');
           if (searchPreviewEmpty) searchPreviewEmpty.classList.add('hidden');
           if (searchSuggestions) searchSuggestions.classList.remove('hidden');
@@ -516,7 +666,12 @@ if (token) {
         }
 
         try {
-          const res = await fetch(`http://localhost:3001/api/products?query=${encodeURIComponent(query)}`);
+          const params = new URLSearchParams();
+          if (query.trim()) params.set('query', query);
+          if (selectedCats.length > 0) params.set('categorySlug', selectedCats.join(','));
+          if (selectedTgs.length > 0) params.set('tags', selectedTgs.join(','));
+
+          const res = await fetch(`http://localhost:3001/api/products?${params.toString()}`);
           if (res.ok) {
             const products = await res.json();
             
@@ -559,12 +714,20 @@ if (token) {
         }
       };
 
+      // Listeners for checkbox filters
+      const onFilterChange = () => {
+        performSearch(searchInput.value);
+      };
+      searchCatCheckboxes.forEach(cb => cb.addEventListener('change', onFilterChange));
+      searchTagCheckboxes.forEach(cb => cb.addEventListener('change', onFilterChange));
+
       if (searchBtn && searchOverlay) {
         searchBtn.addEventListener('click', () => {
           searchOverlay.classList.remove('hidden');
           document.body.style.overflow = 'hidden'; // Lock background scroll
           if (searchInput) {
             searchInput.value = '';
+            clearSearchFilters();
             performSearch('');
             if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
             searchInput.focus();
@@ -578,6 +741,7 @@ if (token) {
           document.body.style.overflow = ''; // Unlock background scroll
           if (searchInput) {
             searchInput.value = '';
+            clearSearchFilters();
             performSearch('');
             if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
           }
@@ -610,6 +774,7 @@ if (token) {
         if (clearSearchBtn) {
           clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
+            clearSearchFilters();
             clearSearchBtn.classList.add('hidden');
             performSearch('');
             searchInput.focus();
@@ -724,9 +889,12 @@ if (token) {
           }
         } else if (href) {
           const normalizedHref = href.endsWith('/') ? href.slice(0, -1) : href;
-          if (normalizedHref === '' && normalizedCurrent === '') {
-            link.classList.add('active');
-          } else if (normalizedHref !== '' && normalizedCurrent.startsWith(normalizedHref)) {
+          const isHomeLink = normalizedHref === '/en' || normalizedHref === '/th' || normalizedHref === '';
+          if (isHomeLink) {
+            if (normalizedCurrent === '/en' || normalizedCurrent === '/th' || normalizedCurrent === '') {
+              link.classList.add('active');
+            }
+          } else if (normalizedCurrent.startsWith(normalizedHref)) {
             link.classList.add('active');
           }
         }

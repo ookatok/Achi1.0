@@ -8,37 +8,58 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
 const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 8;
 
+const resolveImage = (url: string) => {
+  if (url && url.startsWith('/assets/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http')) return url;
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+};
+
 let productsList = [] as any[];
+let totalProducts = 0;
 
 try {
   const res = await fetch(`${BACKEND_URL}/api/products?collection=fall&page=${page}&limit=${limit}`);
   if (res.ok) {
     productsList = await res.json();
   }
+
+  const countRes = await fetch(`${BACKEND_URL}/api/products?collection=fall`);
+  if (countRes.ok) {
+    const allProducts = await countRes.json();
+    totalProducts = allProducts.length;
+  }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching fall failed. Using mocks.', err);
+  console.error('[NestJS API Error] Fetching products failed.', err);
 }
 
-const mockFall = [
-  { id: 1301, name: "Oversized Wool Cardigan", price: "320.00", imageUrl: "/assets/images/products/cardigan.png" },
-  { id: 1302, name: "Corduroy Utility Overshirt", price: "185.00", imageUrl: "/assets/images/shirt-cat-men.png" },
-  { id: 1303, name: "Tailored Suede Trousers", price: "450.00", imageUrl: "/assets/images/bottoms-cat-men.png" },
-  { id: 1304, name: "Merino Wool Beanie", price: "55.00", imageUrl: "/assets/images/cap-cat-men.png" },
-];
+const displayProducts = productsList.map(p => translateProduct(p, lang));
+const paginatedList = displayProducts;
+const totalPages = Math.max(1, Math.ceil(totalProducts / limit));
 
-const useMocks = productsList.length === 0;
-const displayRawList = useMocks ? mockFall : productsList;
-const displayProducts = displayRawList.map(p => translateProduct(p, lang));
-
-// Paginate in-memory if we are using mocks
-const startIndex = (page - 1) * limit;
-const endIndex = startIndex + limit;
-const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : displayProducts;
+const getColorsArray = (colors: any) => {
+  if (!colors) return [];
+  if (Array.isArray(colors)) return colors;
+  try {
+    const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
+    return [];
+  }
+};
 ---
 
 <Layout title={lang === 'en' ? "Fall Collection | ACHI Studio" : "คอลเลกชันฤดูใบไม้ร่วง | ACHI Studio"} description={lang === 'en' ? "Cosy wool cardigans, corduroy overshirts, and soft beanies." : "เสื้อคาร์ดิแกนผ้าขนสัตว์แสนอบอุ่น เสื้อเชิ้ตลูกฟูก และหมวกบีนนี่แสนนุ่ม"} showHeroHeader={true}>
   <section class="w-full relative h-[60vh] bg-[#362923] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/collage-model.png?v=2');"></div>
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/men-hero.png?v=2');"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
@@ -89,9 +110,19 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
           </div>
 
           <div>
-            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-              {product.name}
-            </h3>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                {product.name}
+              </h3>
+              {/* Color swatches */}
+              {getColorsArray(product.colors).length > 0 && (
+                <div class="flex gap-1.5 shrink-0">
+                  {getColorsArray(product.colors).map((color: string) => (
+                    <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                  ))}
+                </div>
+              )}
+            </div>
             <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
           </div>
 
@@ -101,6 +132,6 @@ const paginatedList = useMocks ? displayProducts.slice(startIndex, endIndex) : d
         </div>
 
     <!-- Pagination Component -->
-    <Pagination totalPages={5} />
+    <Pagination totalPages={totalPages} />
   </div>
 </Layout>

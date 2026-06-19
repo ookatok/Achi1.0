@@ -2,6 +2,7 @@ import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/commo
 import { CartRepository } from './cart.repository';
 import { ProductRepository } from '../product/product.repository';
 import type { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
+import { ErrorCodes } from '../../core/errors/error-codes';
 
 @Injectable()
 export class CartService {
@@ -71,7 +72,10 @@ export class CartService {
     // Verify ownership of the cart item
     const item = await this.cartRepo.findCartItemByIdAndCartId(itemId, cart.id);
     if (!item) {
-      throw new ForbiddenException('You do not own this cart item');
+      throw new ForbiddenException({
+        message: 'You do not own this cart item',
+        code: ErrorCodes.CART_ITEM_NOT_OWNED,
+      });
     }
 
     const updateFields: any = {};
@@ -89,7 +93,10 @@ export class CartService {
     // Verify ownership
     const item = await this.cartRepo.findCartItemByIdAndCartId(itemId, cart.id);
     if (!item) {
-      throw new ForbiddenException('You do not own this cart item');
+      throw new ForbiddenException({
+        message: 'You do not own this cart item',
+        code: ErrorCodes.CART_ITEM_NOT_OWNED,
+      });
     }
 
     await this.cartRepo.deleteCartItem(itemId);

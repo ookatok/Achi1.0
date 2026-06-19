@@ -5,6 +5,7 @@ import { OrderRepository } from './order.repository';
 import { ProductRepository } from '../product/product.repository';
 import { CartService } from '../cart/cart.service';
 import type { CheckoutDto } from './dto/order.dto';
+import { ErrorCodes } from '../../core/errors/error-codes';
 
 @Injectable()
 export class OrderService {
@@ -19,7 +20,10 @@ export class OrderService {
     const cart = await this.cartService.getCart(userId);
 
     if (cart.items.length === 0) {
-      throw new BadRequestException('Cannot checkout with an empty cart');
+      throw new BadRequestException({
+        message: 'Cannot checkout with an empty cart',
+        code: ErrorCodes.EMPTY_CART,
+      });
     }
 
     // Execute the checkout inside a transaction to ensure ACID consistency
@@ -36,7 +40,10 @@ export class OrderService {
         }
 
         if (product.stockQuantity < item.quantity) {
-          throw new BadRequestException(`Product '${product.name}' is out of stock (Requested: ${item.quantity}, Available: ${product.stockQuantity})`);
+          throw new BadRequestException({
+            message: `Product '${product.name}' is out of stock (Requested: ${item.quantity}, Available: ${product.stockQuantity})`,
+            code: ErrorCodes.OUT_OF_STOCK,
+          });
         }
 
         // Deduct stock in DB

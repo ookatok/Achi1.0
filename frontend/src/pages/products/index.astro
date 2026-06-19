@@ -14,11 +14,15 @@ const resolveImage = (url: string) => {
 
 // Fetch query params for filters
 const categorySlug = Astro.url.searchParams.get('categorySlug') || '';
+const tags = Astro.url.searchParams.get('tags') || '';
 const minPrice = Astro.url.searchParams.get('minPrice') || '';
 const maxPrice = Astro.url.searchParams.get('maxPrice') || '';
 const sizes = Astro.url.searchParams.get('sizes') || '';
 const colors = Astro.url.searchParams.get('colors') || '';
 const searchQuery = Astro.url.searchParams.get('query') || '';
+
+const selectedCategories = categorySlug ? categorySlug.split(',') : [];
+const selectedTags = tags ? tags.split(',') : [];
 
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 
@@ -26,6 +30,8 @@ const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 8;
 
 let productsList = [] as any[];
+let categoriesList = [] as any[];
+let tagsList = [] as any[];
 
 // Build query string for API
 const queryParams = new URLSearchParams();
@@ -34,77 +40,49 @@ if (minPrice) queryParams.set('minPrice', minPrice);
 if (maxPrice) queryParams.set('maxPrice', maxPrice);
 if (sizes) queryParams.set('sizes', sizes);
 if (colors) queryParams.set('colors', colors);
+if (tags) queryParams.set('tags', tags);
 if (searchQuery) queryParams.set('query', searchQuery);
 queryParams.set('page', String(page));
 queryParams.set('limit', String(limit));
 
+let totalCount = 0;
+
 try {
+  // 1. Fetch products
   const res = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
   if (res.ok) {
     productsList = await res.json();
   }
+
+  // 2. Fetch categories
+  const catRes = await fetch(`${BACKEND_URL}/api/products/categories`);
+  if (catRes.ok) {
+    categoriesList = await catRes.json();
+  }
+
+  // 3. Fetch tags
+  const tagRes = await fetch(`${BACKEND_URL}/api/products/tags`);
+  if (tagRes.ok) {
+    tagsList = await tagRes.json();
+  }
+
+  // Fetch total count for pagination by querying without page/limit
+  const countParams = new URLSearchParams(queryParams);
+  countParams.delete('page');
+  countParams.delete('limit');
+  const countRes = await fetch(`${BACKEND_URL}/api/products?${countParams.toString()}`);
+  if (countRes.ok) {
+    const allProducts = await countRes.json();
+    totalCount = allProducts.length;
+  }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching products failed. Falling back to mockup items.', err);
+  console.error('[NestJS API Error] Fetching catalog data failed.', err);
 }
 
-// Fallback Mock items matching Figma design screenshot exactly
-const mockEditorialProducts = [
-  {
-    id: 101,
-    name: "Generic T-shirt 1",
-    price: "499.00",
-    imageUrl: "/assets/images/tshirt-1.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"], // Yellow, Navy, Light Blue
-    sizes: ["S", "M", "L"]
-  },
-  {
-    id: 102,
-    name: "Generic T-shirt 2",
-    price: "499.00",
-    imageUrl: "/assets/images/polo-dark.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
-    sizes: ["M", "L", "XL"]
-  },
-  {
-    id: 103,
-    name: "Generic T-shirt 3",
-    price: "499.00",
-    imageUrl: "/assets/images/pants-cream.png",
-    colors: ["#FF0000", "#1A1A1A"], // Red, Black
-    sizes: ["OS"]
-  },
-  {
-    id: 104,
-    name: "Generic T-shirt 4",
-    price: "499.00",
-    imageUrl: "/assets/images/shoes-white.png",
-    colors: ["#7A00FF", "#1A1A1A"], // Purple, Black
-    sizes: ["OS"]
-  }
-];
-
-const mockStandardProducts = [
-  { id: 201, name: "Generic T-shirt 1", price: "499.00", imageUrl: "/assets/images/tshirt-1.png" },
-  { id: 202, name: "Generic T-shirt 2", price: "499.00", imageUrl: "/assets/images/polo-dark.png" },
-  { id: 203, name: "Generic T-shirt 3", price: "499.00", imageUrl: "/assets/images/pants-cream.png" },
-  { id: 204, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" },
-  { id: 109, name: "generic set 1", price: "499.00", imageUrl: "/assets/images/set1.png" },
-  { id: 110, name: "generic set 2", price: "499.00", imageUrl: "/assets/images/set2.png" },
-  { id: 111, name: "generic set 3", price: "499.00", imageUrl: "/assets/images/set3.png" },
-  { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
-];
-
-
-// Determine if we should use mock data (if API is offline or returns nothing, and no filter is active)
-const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
-const useMocks = productsList.length === 0 && !isFiltered;
-const displayRawList = useMocks ? [...mockEditorialProducts, ...mockStandardProducts] : productsList;
-const displayList = displayRawList.map(product => translateProduct(product, lang));
-
-// Paginate in-memory if we are using mocks
-const startIndex = (page - 1) * limit;
-const endIndex = startIndex + limit;
-const pageList = useMocks ? displayList.slice(startIndex, endIndex) : displayList;
+const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || tags || searchQuery);
+const displayList = productsList.map(product => translateProduct(product, lang));
+const pageList = displayList;
+const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
 const getColorsArray = (colors: any) => {
   if (!colors) return [];
@@ -113,9 +91,29 @@ const getColorsArray = (colors: any) => {
     const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
     return [];
   }
 };
+
+const displayCategories = categoriesList.map(c => ({
+  id: c.id,
+  slug: c.slug,
+  nameEn: c.name.charAt(0).toUpperCase() + c.name.slice(1),
+  nameTh: c.name === 'men' ? 'ผู้ชาย' : c.name === 'women' ? 'ผู้หญิง' : c.name === 'accessories' ? 'เครื่องประดับ' : c.name
+}));
+
+const displayTags = tagsList.map(t => ({
+  id: t.id,
+  slug: t.slug,
+  nameEn: t.name.charAt(0).toUpperCase() + t.name.slice(1),
+  nameTh: t.name === 'summer' ? 'ฤดูร้อน' : t.name === 'basics' ? 'เบสิก' : t.name === 'new' ? 'ใหม่' : t.name
+}));
 ---
 
 <Layout 
@@ -124,7 +122,7 @@ const getColorsArray = (colors: any) => {
   showHeroHeader={true}
 >
   {/* Editorial Collection Hero Banner */}
-  <section class="w-full relative h-[70vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
+  <section class="w-full relative h-[50vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
     <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/collection-hero.png')}');`}></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
@@ -145,87 +143,294 @@ const getColorsArray = (colors: any) => {
     </div>
   </section>
 
-  {/* Filter Dropdowns Bar */}
-  <section class="border-y border-gray-200 bg-white">
-    <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center gap-8 text-[11px] uppercase tracking-wider font-light text-gray-500 overflow-x-auto">
-      <span class="text-brand-charcoal font-semibold">{lang === 'en' ? "FILTER BY" : "กรองตาม"}</span>
-      
-      <select id="price-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
-        <option value="">{lang === 'en' ? "Price" : "ราคา"}</option>
-        <option value="0-500" selected={minPrice === '0' && maxPrice === '500'}>{lang === 'en' ? "Under $500" : "ต่ำกว่า $500"}</option>
-        <option value="500-1000" selected={minPrice === '500' && maxPrice === '1000'}>$500 - $1,000</option>
-      </select>
-
-      <select id="color-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
-        <option value="">{lang === 'en' ? "Color" : "สี"}</option>
-        <option value="#94B2E6" selected={colors === '#94B2E6'}>{lang === 'en' ? "Soft Blue" : "สีฟ้าอ่อน"}</option>
-        <option value="#F3F1EC" selected={colors === '#F3F1EC'}>{lang === 'en' ? "Soft Cream" : "สีครีมอ่อน"}</option>
-        <option value="#1B2F50" selected={colors === '#1B2F50'}>{lang === 'en' ? "Navy" : "สีกรมท่า"}</option>
-      </select>
-
-      <select id="size-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
-        <option value="">{lang === 'en' ? "Size" : "ขนาด (ไซส์)"}</option>
-        <option value="S" selected={sizes === 'S'}>S</option>
-        <option value="M" selected={sizes === 'M'}>M</option>
-        <option value="L" selected={sizes === 'L'}>L</option>
-        <option value="XL" selected={sizes === 'XL'}>XL</option>
-      </select>
-
-      <select id="gender-filter" class="bg-transparent border-none outline-none hover:text-brand-charcoal transition-colors cursor-pointer text-[11px] uppercase tracking-wider font-light text-gray-500">
-        <option value="">{lang === 'en' ? "Gender" : "เพศ"}</option>
-        <option value="men" selected={categorySlug === 'men'}>{lang === 'en' ? "Male" : "ผู้ชาย"}</option>
-        <option value="women" selected={categorySlug === 'women'}>{lang === 'en' ? "Female" : "ผู้หญิง"}</option>
-      </select>
-    </div>
-  </section>
-
   {/* Active Filters Bar */}
   {isFiltered && (
     <div class="max-w-[1440px] mx-auto px-6 pt-8 flex flex-wrap gap-3 items-center text-[10px] tracking-wider uppercase font-light text-gray-400">
       <span class="font-medium text-brand-charcoal text-xs mr-2">{lang === 'en' ? "Active filters:" : "ตัวกรองที่เลือก:"}</span>
-      {categorySlug && (
-        <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
-          {lang === 'en' ? "Category" : "หมวดหมู่"}: {categorySlug === 'men' ? (lang === 'en' ? 'Male' : 'ผู้ชาย') : (categorySlug === 'women' ? (lang === 'en' ? 'Female' : 'ผู้หญิง') : categorySlug)}
-          <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('categorySlug'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
-        </span>
-      )}
+      
+      {selectedCategories.map(cat => {
+        const matchingCat = displayCategories.find(c => c.slug === cat);
+        const displayName = matchingCat ? (lang === 'en' ? matchingCat.nameEn : matchingCat.nameTh) : cat;
+        return (
+          <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
+            {lang === 'en' ? "Category" : "หมวดหมู่"}: {displayName}
+            <a href={Astro.url.pathname + "?" + (() => { 
+              const p = new URLSearchParams(Astro.url.search); 
+              const cats = selectedCategories.filter(c => c !== cat);
+              if (cats.length > 0) p.set('categorySlug', cats.join(','));
+              else p.delete('categorySlug');
+              return p.toString(); 
+            })()} class="hover:text-red-500 font-bold ml-1">×</a>
+          </span>
+        );
+      })}
+
+      {selectedTags.map(tag => {
+        const matchingTag = displayTags.find(t => t.slug === tag);
+        const displayName = matchingTag ? (lang === 'en' ? matchingTag.nameEn : matchingTag.nameTh) : tag;
+        return (
+          <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
+            {lang === 'en' ? "Tag" : "แท็ก"}: {displayName}
+            <a href={Astro.url.pathname + "?" + (() => { 
+              const p = new URLSearchParams(Astro.url.search); 
+              const tgs = selectedTags.filter(t => t !== tag);
+              if (tgs.length > 0) p.set('tags', tgs.join(','));
+              else p.delete('tags');
+              return p.toString(); 
+            })()} class="hover:text-red-500 font-bold ml-1">×</a>
+          </span>
+        );
+      })}
+
       {minPrice && maxPrice && (
         <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
           {lang === 'en' ? "Price" : "ราคา"}: ${minPrice} - ${maxPrice}
           <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('minPrice'); p.delete('maxPrice'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
         </span>
       )}
+
       {colors && (
         <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
           {lang === 'en' ? "Color" : "สี"}: {colors === '#94B2E6' ? (lang === 'en' ? 'Soft Blue' : 'สีฟ้าอ่อน') : colors === '#F3F1EC' ? (lang === 'en' ? 'Soft Cream' : 'สีครีมอ่อน') : colors === '#1B2F50' ? (lang === 'en' ? 'Navy' : 'สีกรมท่า') : colors}
           <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('colors'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
         </span>
       )}
+
       {sizes && (
         <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
           {lang === 'en' ? "Size" : "ขนาด (ไซส์)"}: {sizes}
           <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('sizes'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
         </span>
       )}
+
       {searchQuery && (
         <span class="border border-gray-200 px-3 py-1.5 rounded-full flex items-center gap-2 bg-gray-50 text-brand-charcoal">
           {lang === 'en' ? "Search" : "ค้นหา"}: "{searchQuery}"
           <a href={Astro.url.pathname + "?" + (() => { const p = new URLSearchParams(Astro.url.search); p.delete('query'); return p.toString(); })()} class="hover:text-red-500 font-bold ml-1">×</a>
         </span>
       )}
+
       <a href="/products" class="text-brand-gold font-medium underline underline-offset-4 ml-4">{lang === 'en' ? "Clear All" : "ล้างทั้งหมด"}</a>
     </div>
   )}
 
+  {/* Main Layout Section: Sidebar + Product Grid */}
+  <div class="max-w-[1440px] mx-auto px-6 py-16 flex flex-col lg:flex-row gap-12">
+    
+    {/* Left Column: Filter Sidebar */}
+    <aside class="w-full lg:w-60 shrink-0 space-y-4 lg:space-y-8 lg:sticky lg:top-28 self-start">
+      {/* Mobile Filter Toggle Button */}
+      <div class="lg:hidden flex items-center justify-between border-b border-gray-100 pb-4">
+        <button 
+          id="mobile-filter-toggle-btn" 
+          class="flex items-center gap-2.5 text-xs font-semibold tracking-widest text-brand-charcoal uppercase focus:outline-none cursor-pointer py-1"
+          type="button"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+          </svg>
+          <span>{lang === 'en' ? "Filter Options" : "ตัวกรองสินค้า"}</span>
+        </button>
+        <span class="text-[10px] text-gray-400 tracking-wider uppercase">{pageList.length} {lang === 'en' ? "Items" : "รายการ"}</span>
+      </div>
+
+      {/* Filter Sidebar Content (Hidden on Mobile by default, visible on Desktop) */}
+      <div id="sidebar-filters-content" class="hidden lg:block space-y-8 mt-4 lg:mt-0">
+      
+      {/* Categories Filter (Checkboxes) */}
+      <div class="border-b border-gray-100 pb-6">
+        <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-4">
+          {lang === 'en' ? "Categories" : "หมวดหมู่"}
+        </h4>
+        <div class="space-y-3">
+          {displayCategories.map(cat => {
+            const isChecked = selectedCategories.includes(cat.slug);
+            return (
+              <label class="flex items-center gap-3 text-xs tracking-wider text-gray-500 uppercase cursor-pointer hover:text-brand-charcoal select-none">
+                <input 
+                  type="checkbox" 
+                  name="category-checkbox" 
+                  value={cat.slug} 
+                  checked={isChecked}
+                  class="w-4 h-4 border border-gray-300 rounded-sm accent-brand-charcoal cursor-pointer"
+                />
+                <span>{lang === 'en' ? cat.nameEn : cat.nameTh}</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tags Filter (Checkboxes) */}
+      <div class="border-b border-gray-100 pb-6">
+        <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-4">
+          {lang === 'en' ? "Tags" : "แท็กสินค้า"}
+        </h4>
+        <div class="space-y-3">
+          {displayTags.map(tag => {
+            const isChecked = selectedTags.includes(tag.slug);
+            return (
+              <label class="flex items-center gap-3 text-xs tracking-wider text-gray-500 uppercase cursor-pointer hover:text-brand-charcoal select-none">
+                <input 
+                  type="checkbox" 
+                  name="tag-checkbox" 
+                  value={tag.slug} 
+                  checked={isChecked}
+                  class="w-4 h-4 border border-gray-300 rounded-sm accent-brand-charcoal cursor-pointer"
+                />
+                <span>{lang === 'en' ? tag.nameEn : tag.nameTh}</span>
+              </label>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Price Filter (Select) */}
+      <div class="border-b border-gray-100 pb-6">
+        <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
+          {lang === 'en' ? "Price Range" : "ช่วงราคา"}
+        </h4>
+        <select id="price-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
+          <option value="">{lang === 'en' ? "All Prices" : "ทุกช่วงราคา"}</option>
+          <option value="0-500" selected={minPrice === '0' && maxPrice === '500'}>{lang === 'en' ? "Under $500" : "ต่ำกว่า $500"}</option>
+          <option value="500-1000" selected={minPrice === '500' && maxPrice === '1000'}>$500 - $1,000</option>
+        </select>
+      </div>
+
+      {/* Color Filter (Select) */}
+      <div class="border-b border-gray-100 pb-6">
+        <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
+          {lang === 'en' ? "Color" : "สี"}
+        </h4>
+        <select id="color-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
+          <option value="">{lang === 'en' ? "All Colors" : "ทุกสี"}</option>
+          <option value="#94B2E6" selected={colors === '#94B2E6'}>{lang === 'en' ? "Soft Blue" : "สีฟ้าอ่อน"}</option>
+          <option value="#F3F1EC" selected={colors === '#F3F1EC'}>{lang === 'en' ? "Soft Cream" : "สีครีมอ่อน"}</option>
+          <option value="#1B2F50" selected={colors === '#1B2F50'}>{lang === 'en' ? "Navy" : "สีกรมท่า"}</option>
+        </select>
+      </div>
+
+      {/* Size Filter (Select) */}
+      <div class="pb-6">
+        <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
+          {lang === 'en' ? "Size" : "ขนาด (ไซส์)"}
+        </h4>
+        <select id="size-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
+          <option value="">{lang === 'en' ? "All Sizes" : "ทุกขนาด"}</option>
+          <option value="S" selected={sizes === 'S'}>S</option>
+          <option value="M" selected={sizes === 'M'}>M</option>
+          <option value="L" selected={sizes === 'L'}>L</option>
+          <option value="XL" selected={sizes === 'XL'}>XL</option>
+        </select>
+      </div>
+      </div>
+    </aside>
+
+    {/* Right Column: Products Content */}
+    <div class="flex-grow">
+      
+      {/* Clean Grid Section of Products */}
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        {pageList.map((product: any) => (
+          <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
+            {/* Heart Favorite Button */}
+            <button
+              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
+              data-favorite-btn
+              data-id={product.id}
+              data-name={product.name}
+              data-price={product.price}
+              data-image={product.imageUrl}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+            </button>
+
+            {/* Product Image Box */}
+            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
+              {product.imageUrl ? (
+                <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              ) : (
+                <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
+                  [Image: {product.name}]
+                </span>
+              )}
+              {product.status === 'inactive' && (
+                <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center z-10">
+                  <span class="text-white text-[10px] uppercase tracking-widest font-semibold border border-white/60 px-3 py-1.5 rounded-sm">
+                    {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Product Details */}
+            <div>
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                  {product.name}
+                </h3>
+                {/* Color swatches */}
+                {getColorsArray(product.colors).length > 0 && (
+                  <div class="flex gap-1.5 shrink-0">
+                    {getColorsArray(product.colors).map((color: string) => (
+                      <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+            </div>
+            
+            {/* Clickable Area Link */}
+            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
+          </div>
+        ))}
+        {pageList.length === 0 && (
+          <div class="col-span-full text-center py-24 text-stone-400 font-light italic text-sm border border-dashed border-stone-200 rounded-sm">
+            {lang === 'en' ? 'No products match your selected filters' : 'ไม่พบสินค้าที่ตรงตามเงื่อนไขการค้นหา'}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination Component */}
+      {pageList.length > 0 && <Pagination totalPages={totalPages} />}
+    </div>
+  </div>
+
   <script is:inline>
+    const categoryCheckboxes = document.querySelectorAll('input[name="category-checkbox"]');
+    const tagCheckboxes = document.querySelectorAll('input[name="tag-checkbox"]');
     const priceFilter = document.getElementById('price-filter');
     const colorFilter = document.getElementById('color-filter');
     const sizeFilter = document.getElementById('size-filter');
-    const genderFilter = document.getElementById('gender-filter');
 
     const updateFilters = () => {
       const params = new URLSearchParams(window.location.search);
       
+      // Categories (Checkboxes)
+      const selectedCats = [];
+      categoryCheckboxes.forEach(cb => {
+        if (cb.checked) selectedCats.push(cb.value);
+      });
+      if (selectedCats.length > 0) {
+        params.set('categorySlug', selectedCats.join(','));
+      } else {
+        params.delete('categorySlug');
+      }
+
+      // Tags (Checkboxes)
+      const selectedTgs = [];
+      tagCheckboxes.forEach(cb => {
+        if (cb.checked) selectedTgs.push(cb.value);
+      });
+      if (selectedTgs.length > 0) {
+        params.set('tags', selectedTgs.join(','));
+      } else {
+        params.delete('tags');
+      }
+
       // Price
       if (priceFilter && priceFilter.value) {
         const [min, max] = priceFilter.value.split('-');
@@ -250,76 +455,34 @@ const getColorsArray = (colors: any) => {
         params.delete('sizes');
       }
 
-      // Gender / Category
-      if (genderFilter && genderFilter.value) {
-        params.set('categorySlug', genderFilter.value);
-      } else {
-        params.delete('categorySlug');
-      }
+      // Reset to page 1 when filter changes
+      params.set('page', '1');
 
       window.location.search = params.toString();
     };
 
-    [priceFilter, colorFilter, sizeFilter, genderFilter].forEach(el => {
+    // Add change listeners
+    categoryCheckboxes.forEach(cb => cb.addEventListener('change', updateFilters));
+    tagCheckboxes.forEach(cb => cb.addEventListener('change', updateFilters));
+    [priceFilter, colorFilter, sizeFilter].forEach(el => {
       if (el) el.addEventListener('change', updateFilters);
     });
+
+    // Mobile toggle filter sidebar
+    const mobileFilterToggleBtn = document.getElementById('mobile-filter-toggle-btn');
+    const sidebarFiltersContent = document.getElementById('sidebar-filters-content');
+
+    if (mobileFilterToggleBtn && sidebarFiltersContent) {
+      mobileFilterToggleBtn.addEventListener('click', () => {
+        const isHidden = sidebarFiltersContent.classList.contains('hidden');
+        if (isHidden) {
+          sidebarFiltersContent.classList.remove('hidden');
+          mobileFilterToggleBtn.classList.add('text-brand-gold');
+        } else {
+          sidebarFiltersContent.classList.add('hidden');
+          mobileFilterToggleBtn.classList.remove('text-brand-gold');
+        }
+      });
+    }
   </script>
-
-  <div class="max-w-[1440px] mx-auto px-6 py-16">
-    {/* Clean 4-Column Grid Section of All Products */}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {pageList.map((product: any) => (
-        <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
-          {/* Heart Favorite Button */}
-          <button
-            class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
-            data-favorite-btn
-            data-id={product.id}
-            data-name={product.name}
-            data-price={product.price}
-            data-image={product.imageUrl}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
-          </button>
-
-          {/* Product Image Box */}
-          <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
-            {product.imageUrl ? (
-              <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            ) : (
-              <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
-                [Image: {product.name}]
-              </span>
-            )}
-          </div>
-
-          {/* Product Details */}
-          <div>
-            <div class="flex items-center justify-between gap-4">
-              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-                {product.name}
-              </h3>
-              {/* Color swatches */}
-              {getColorsArray(product.colors).length > 0 && (
-                <div class="flex gap-1.5 shrink-0">
-                  {getColorsArray(product.colors).map((color: string) => (
-                    <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
-          </div>
-          
-          {/* Clickable Area Link */}
-          <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
-        </div>
-      ))}
-    </div>
-
-    {/* Pagination Component */}
-    <Pagination totalPages={5} />
-  </div>
 </Layout>

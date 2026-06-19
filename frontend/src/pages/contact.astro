@@ -25,6 +25,18 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-start mt-8">
       {/* Left Column: Form */}
       <form class="space-y-6" id="contact-form">
+        <!-- Honeypot field (Invisible to users, autocomplete off, tabindex -1) -->
+        <div class="absolute opacity-0 -z-50 pointer-events-none w-0 h-0 overflow-hidden" aria-hidden="true">
+          <label for="website">Website</label>
+          <input
+            id="website"
+            type="text"
+            name="website"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+
         <div>
           <input
             type="text"
@@ -163,6 +175,7 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
             phone: document.getElementById('phone').value || null,
             topic: document.getElementById('topic').value,
             description: document.getElementById('description').value,
+            website: document.getElementById('website').value,
           };
 
           try {

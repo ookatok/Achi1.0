@@ -8,15 +8,20 @@ export const CreateProductSchema = z.object({
   stockQuantity: z.number().int().nonnegative().default(0),
   categoryId: z.number().int().positive().nullable().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
+  images: z.array(z.object({
+    color: z.string().optional(),
+    imageUrl: z.string()
+  })).optional().default([]),
   sizes: z.array(z.string()).optional().default([]),   // e.g. ["S", "M"]
   colors: z.array(z.string()).optional().default([]), // e.g. ["Red", "Black"]
   tags: z.array(z.string()).optional().default([]),   // e.g. ["new", "basics"]
+  status: z.enum(['active', 'inactive']).optional().default('active'),
 });
 
 export const GetProductsQuerySchema = z.object({
   page: z.string().optional().transform((val) => (val ? Math.max(1, parseInt(val, 10)) : 1)),
   limit: z.string().optional().transform((val) => (val ? Math.max(1, parseInt(val, 10)) : 100)),
-  categorySlug: z.string().optional(),
+  categorySlug: z.string().optional().transform((val) => (val ? val.split(',') : undefined)),
   collection: z.string().optional(),
   minPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
   maxPrice: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),

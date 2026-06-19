@@ -42,63 +42,11 @@ try {
     productsList = await res.json();
   }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching products failed. Falling back to mockup items.', err);
+  console.error('[NestJS API Error] Fetching products failed.', err);
 }
 
-// Fallback Mock items matching Figma design screenshot exactly
-const mockEditorialProducts = [
-  {
-    id: 101,
-    name: "Generic T-shirt 1",
-    price: "499.00",
-    imageUrl: "/assets/images/tshirt-1.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"], // Yellow, Navy, Light Blue
-    sizes: ["S", "M", "L"]
-  },
-  {
-    id: 102,
-    name: "Generic T-shirt 2",
-    price: "499.00",
-    imageUrl: "/assets/images/polo-dark.png",
-    colors: ["#FFE135", "#1B2F50", "#5B7C99"],
-    sizes: ["M", "L", "XL"]
-  },
-  {
-    id: 103,
-    name: "Generic T-shirt 3",
-    price: "499.00",
-    imageUrl: "/assets/images/pants-cream.png",
-    colors: ["#FF0000", "#1A1A1A"], // Red, Black
-    sizes: ["OS"]
-  },
-  {
-    id: 104,
-    name: "Generic T-shirt 4",
-    price: "499.00",
-    imageUrl: "/assets/images/shoes-white.png",
-    colors: ["#7A00FF", "#1A1A1A"], // Purple, Black
-    sizes: ["OS"]
-  }
-];
-
-const mockStandardProducts = [
-  { id: 201, name: "Generic T-shirt 1", price: "499.00", imageUrl: "/assets/images/tshirt-1.png" },
-  { id: 202, name: "Generic T-shirt 2", price: "499.00", imageUrl: "/assets/images/polo-dark.png" },
-  { id: 203, name: "Generic T-shirt 3", price: "499.00", imageUrl: "/assets/images/pants-cream.png" },
-  { id: 204, name: "Generic T-shirt 4", price: "499.00", imageUrl: "/assets/images/shoes-white.png" },
-  { id: 109, name: "generic set 1", price: "499.00", imageUrl: "/assets/images/set1.png" },
-  { id: 110, name: "generic set 2", price: "499.00", imageUrl: "/assets/images/set2.png" },
-  { id: 111, name: "generic set 3", price: "499.00", imageUrl: "/assets/images/set3.png" },
-  { id: 301, name: "minimalist leather belt", price: "120.00", imageUrl: "/assets/images/products/belt.png" }
-];
-
-
-// Determine if we should use mock data (if API is offline or returns nothing)
-const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
-const useMocks = productsList.length === 0 && !isFiltered;
-
-const rawEditorial = useMocks ? mockEditorialProducts : productsList.slice(0, 4);
-const rawStandard = useMocks ? mockStandardProducts : productsList.slice(4);
+const rawEditorial = productsList.slice(0, 4);
+const rawStandard = productsList.slice(4);
 
 const displayEditorialList = rawEditorial.map(p => translateProduct(p, lang));
 const displayStandardList = rawStandard.map(p => translateProduct(p, lang));
@@ -107,6 +55,7 @@ const displayStandardList = rawStandard.map(p => translateProduct(p, lang));
 const startIndex = (page - 1) * limit;
 const endIndex = startIndex + limit;
 const paginatedStandardList = displayStandardList.slice(startIndex, endIndex);
+const totalPages = Math.max(1, Math.ceil(displayStandardList.length / limit));
 
 const getColorsArray = (colors: any) => {
   if (!colors) return [];
@@ -115,6 +64,12 @@ const getColorsArray = (colors: any) => {
     const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
+    if (typeof colors === 'string' && colors.includes(',')) {
+      return colors.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof colors === 'string' && colors.trim() !== '') {
+      return [colors.trim()];
+    }
     return [];
   }
 };
@@ -267,7 +222,7 @@ const getColorsArray = (colors: any) => {
                   {getColorsArray(product.colors).length > 0 && (
                     <div class="flex gap-1.5 shrink-0">
                       {getColorsArray(product.colors).map((color: string) => (
-                        <span class="w-3.5 h-3.5 rounded-full border border-gray-200 block shadow-sm" style={{ backgroundColor: color }}></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
                       ))}
                     </div>
                   )}
@@ -312,9 +267,19 @@ const getColorsArray = (colors: any) => {
 
           {/* Product Details */}
           <div>
-            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-              {product.name}
-            </h3>
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
+                {product.name}
+              </h3>
+              {/* Color swatches */}
+              {getColorsArray(product.colors).length > 0 && (
+                <div class="flex gap-1.5 shrink-0">
+                  {getColorsArray(product.colors).map((color: string) => (
+                    <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                  ))}
+                </div>
+              )}
+            </div>
             <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
           </div>
 
@@ -325,6 +290,6 @@ const getColorsArray = (colors: any) => {
     </div>
 
     {/* Pagination Component */}
-    <Pagination totalPages={5} />
+    <Pagination totalPages={totalPages} />
   </div>
 </Layout>
