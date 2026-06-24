@@ -10,11 +10,11 @@ const limit = 8;
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 let productsList = [] as any[];

@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `is_pre_order` boolean DEFAULT false NOT NULL;

@@ -5,14 +5,12 @@ export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [website, setWebsite] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     try {
       const res = await fetch('http://localhost:3001/api/auth/register', {
@@ -24,16 +22,35 @@ export default function SignUpForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed');
+        if (typeof window !== 'undefined' && (window as any).showStatusAlert) {
+          (window as any).showStatusAlert(res.status, null, data ? data.message : 'Registration failed');
+        } else {
+          alert(data ? data.message : 'Registration failed');
+        }
+        return;
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        // Redirect to sign in page
+      setIsSuccess(true);
+      if (typeof window !== 'undefined' && (window as any).showStatusAlert) {
+        (window as any).showStatusAlert(
+          200,
+          'Registration successful! Redirecting to sign in page...',
+          null,
+          true,
+          () => {
+            window.location.href = '/auth/signin';
+          }
+        );
+      } else {
         window.location.href = '/auth/signin';
-      }, 2000);
+      }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during registration.');
+      console.error(err);
+      if (typeof window !== 'undefined' && (window as any).showStatusAlert) {
+        (window as any).showStatusAlert(0, null, 'An error occurred during registration. Please check your connection.');
+      } else {
+        alert('An error occurred during registration.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -45,18 +62,6 @@ export default function SignUpForm() {
         <h2 className="font-serif text-3xl font-bold tracking-tight text-brand-charcoal mb-2">Create Account</h2>
         <p className="text-xs uppercase tracking-widest text-brand-gold font-medium">Register as ACHI Client</p>
       </div>
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border-l-2 border-red-500 text-red-600 text-xs font-medium rounded-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border-l-2 border-green-500 text-green-600 text-xs font-medium rounded-sm">
-          Registration successful! Redirecting to sign in page...
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Honeypot field (Invisible to users, autocomplete off, tabindex -1) */}
@@ -120,7 +125,7 @@ export default function SignUpForm() {
 
         <button
           type="submit"
-          disabled={isLoading || success}
+          disabled={isLoading || isSuccess}
           className="w-full bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal py-3 rounded-sm font-medium transition-all duration-300 disabled:opacity-50 text-sm uppercase tracking-widest font-semibold"
         >
           {isLoading ? 'Creating Account...' : 'Register'}

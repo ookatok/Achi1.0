@@ -7,4 +7,5 @@ export * from './blog.schema';
 export * from './tag.schema';
 export * from './contact.schema';
 export * from './collection.schema';
+export * from './faq.schema';
 

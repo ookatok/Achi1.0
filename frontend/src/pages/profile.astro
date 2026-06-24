@@ -114,9 +114,6 @@ if (role === 'customer') {
             </h2>
           </div>
 
-          <div id="profile-error" class="hidden text-xs text-red-500 font-light bg-red-50 p-4 border-l-2 border-red-500 rounded-sm"></div>
-          <div id="profile-success" class="hidden text-xs text-green-600 font-light bg-green-50 p-4 border-l-2 border-green-600 rounded-sm"></div>
-
           <form id="profile-edit-form" class="space-y-6">
             <div>
               <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
@@ -270,30 +267,27 @@ if (role === 'customer') {
 
     // Profile update form logic
     const profileForm = document.getElementById('profile-edit-form');
-    const profileError = document.getElementById('profile-error');
-    const profileSuccess = document.getElementById('profile-success');
     
     if (profileForm) {
       profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const isEn = document.documentElement.lang === 'en';
         
-        if (profileError) profileError.classList.add('hidden');
-        if (profileSuccess) profileSuccess.classList.add('hidden');
-        
-        const nameInput = document.getElementById('profile-name') as HTMLInputElement;
-        const passwordInput = document.getElementById('profile-password') as HTMLInputElement;
-        const confirmPasswordInput = document.getElementById('profile-confirm-password') as HTMLInputElement;
+        const nameInput = document.getElementById('profile-name') as HTMLInputElement | null;
+        const passwordInput = document.getElementById('profile-password') as HTMLInputElement | null;
+        const confirmPasswordInput = document.getElementById('profile-confirm-password') as HTMLInputElement | null;
         
         const name = nameInput?.value;
         const password = passwordInput?.value;
         const confirmPassword = confirmPasswordInput?.value;
         
         if (password && password !== confirmPassword) {
-          if (profileError) {
-            profileError.textContent = isEn ? 'Passwords do not match.' : 'รหัสผ่านไม่ตรงกัน';
-            profileError.classList.remove('hidden');
-          }
+          window.showStatusAlert(
+            400,
+            isEn ? 'Passwords do not match.' : 'รหัสผ่านไม่ตรงกัน',
+            null,
+            false
+          );
           return;
         }
         
@@ -314,27 +308,31 @@ if (role === 'customer') {
           });
           
           if (res.ok) {
-            if (profileSuccess) {
-              profileSuccess.textContent = isEn 
+            window.showStatusAlert(
+              200,
+              isEn 
                 ? 'Profile updated successfully. Please re-sign in for changes to reflect in your header name.'
-                : 'อัปเดตข้อมูลบัญชีเสร็จสมบูรณ์ กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อให้ชื่อแสดงผลถูกต้องที่แถบเมนูด้านบน';
-              profileSuccess.classList.remove('hidden');
-            }
+                : 'อัปเดตข้อมูลบัญชีเสร็จสมบูรณ์ กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อให้ชื่อแสดงผลถูกต้องที่แถบเมนูด้านบน',
+              null,
+              true
+            );
             if (passwordInput) passwordInput.value = '';
             if (confirmPasswordInput) confirmPasswordInput.value = '';
           } else {
             const err = await res.json();
-            if (profileError) {
-              profileError.textContent = err.message || (isEn ? 'Failed to update profile.' : 'อัปเดตโปรไฟล์ล้มเหลว');
-              profileError.classList.remove('hidden');
-            }
+            window.showStatusAlert(
+              res.status,
+              null,
+              err ? err.message : (isEn ? 'Failed to update profile.' : 'อัปเดตโปรไฟล์ล้มเหลว')
+            );
           }
         } catch (err) {
           console.error(err);
-          if (profileError) {
-            profileError.textContent = isEn ? 'Backend server error or network issue.' : 'ระบบเกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
-            profileError.classList.remove('hidden');
-          }
+          window.showStatusAlert(
+            0,
+            null,
+            isEn ? 'Backend server error or network issue.' : 'ระบบเกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์'
+          );
         }
       });
     }

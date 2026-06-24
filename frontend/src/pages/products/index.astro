@@ -5,11 +5,11 @@ import Pagination from '../../components/common/Pagination.astro';
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 // Fetch query params for filters
@@ -380,7 +380,24 @@ const displayTags = tagsList.map(t => ({
                   </div>
                 )}
               </div>
-              <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-xs text-brand-gold font-medium">${Number(product.price).toLocaleString()}</span>
+                {product.status !== 'inactive' && (
+                  product.stockQuantity > 0 ? (
+                    <span class="text-[9px] uppercase tracking-wider text-stone-500 font-light">
+                      {product.stockQuantity} pcs
+                    </span>
+                  ) : product.allowOnOrder ? (
+                    <span class="text-[9px] uppercase tracking-wider text-amber-600 font-bold bg-amber-50 border border-amber-100 px-1 py-0.5 rounded-sm">
+                      {lang === 'en' ? 'Pre-Order' : 'สั่งจอง'}
+                    </span>
+                  ) : (
+                    <span class="text-[9px] uppercase tracking-wider text-red-500 font-bold bg-red-50 border border-red-100 px-1 py-0.5 rounded-sm">
+                      {lang === 'en' ? 'Out of stock' : 'หมด'}
+                    </span>
+                  )
+                )}
+              </div>
             </div>
             
             {/* Clickable Area Link */}

@@ -1,6 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+
+let faqs = [] as any[];
+try {
+  const res = await fetch('http://localhost:3001/api/faqs');
+  if (res.ok) {
+    faqs = await res.json();
+    faqs.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+  }
+} catch (e) {
+  console.error('[NestJS API Error] Fetching public FAQs failed.', e);
+}
 ---
 
 <Layout 
@@ -16,73 +27,28 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
     </div>
 
     <div class="space-y-6 divide-y divide-gray-200 text-xs tracking-wider uppercase font-light text-gray-600">
-      <div class="py-6 first:pt-0">
-        <details class="group cursor-pointer">
-          <summary class="flex justify-between items-center focus:outline-none select-none text-left">
-            <span>
-              {lang === 'en' ? "What are your shipping methods and delivery times?" : "วิธีการจัดส่งและระยะเวลาการส่งของเป็นอย่างไร?"}
-            </span>
-            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-            {lang === 'en'
-              ? "We offer free standard shipping on all orders. Standard delivery typically takes 2-4 business days within Bangkok, and 3-5 business days for other provinces."
-              : "เรามีบริการจัดส่งมาตรฐานฟรีสำหรับทุกรายการสั่งซื้อ การจัดส่งจะใช้เวลาประมาณ 2 - 4 วันทำการสำหรับพื้นที่กรุงเทพฯ และปริมณฑล และประมาณ 3 - 5 วันทำการสำหรับพื้นที่ต่างจังหวัด"
-            }
+      {faqs.length === 0 ? (
+        <div class="text-center py-12 text-stone-400 font-light normal-case tracking-normal">
+          {lang === 'en' ? "No FAQs available at the moment." : "ไม่มีข้อมูลคำถามที่พบบ่อยในขณะนี้"}
+        </div>
+      ) : (
+        faqs.map((faq, index) => (
+          <div class={`py-6 ${index === 0 ? 'first:pt-0' : ''}`}>
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center focus:outline-none select-none text-left">
+                <span>
+                  {lang === 'en' ? faq.questionEn : faq.questionTh}
+                </span>
+                <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2 whitespace-pre-line">
+                {lang === 'en' ? faq.answerEn : faq.answerTh}
+              </div>
+            </details>
           </div>
-        </details>
-      </div>
-
-      <div class="py-6">
-        <details class="group cursor-pointer">
-          <summary class="flex justify-between items-center focus:outline-none select-none text-left">
-            <span>
-              {lang === 'en' ? "What is your return policy?" : "นโยบายการคืนสินค้าคืออะไร?"}
-            </span>
-            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-            {lang === 'en'
-              ? "We accept unconditional returns up to 14 days after receiving your order. Items must be unworn, unwashed, and have their original tags attached."
-              : "เรายอมรับการส่งคืนสินค้าโดยไม่มีเงื่อนไขภายใน 14 วันหลังจากที่คุณได้รับพัสดุ โดยสินค้าที่ส่งคืนต้องไม่ผ่านการใช้งาน ไม่ผ่านการซัก และมีป้ายราคากระดาษและกล่องบรรจุภัณฑ์ต้นฉบับแนบมาครบถ้วน"
-            }
-          </div>
-        </details>
-      </div>
-
-      <div class="py-6">
-        <details class="group cursor-pointer">
-          <summary class="flex justify-between items-center focus:outline-none select-none text-left">
-            <span>
-              {lang === 'en' ? "How do I care for my linen and cotton garments?" : "การดูแลรักษาเสื้อผ้าฝ้ายและผ้าลินินต้องทำอย่างไร?"}
-            </span>
-            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-            {lang === 'en'
-              ? "We recommend machine washing on a gentle cycle in cold water with similar colors. Line dry or tumble dry low. Warm iron if necessary. Avoid bleaching."
-              : "แนะนำซักเครื่องโดยใช้โหมดถนอมผ้าด้วยน้ำเย็นร่วมกับเสื้อผ้าที่มีโทนสีใกล้เคียงกัน หลีกเลี่ยงเครื่องอบแห้งโดยแนะนำตากแดดร่มแทน รีดด้วยไฟอ่อนหากจำเป็น และห้ามใช้น้ำยาฟอกขาว"
-            }
-          </div>
-        </details>
-      </div>
-
-      <div class="py-6">
-        <details class="group cursor-pointer">
-          <summary class="flex justify-between items-center focus:outline-none select-none text-left">
-            <span>
-              {lang === 'en' ? "Can I modify or cancel my order after it has been placed?" : "สามารถขอแก้ไขหรือยกเลิกรายการสั่งซื้อหลังจากสั่งซื้อเสร็จได้ไหม?"}
-            </span>
-            <span class="transition-transform duration-300 group-open:rotate-180">▼</span>
-          </summary>
-          <div class="mt-4 text-gray-500 font-light normal-case tracking-normal leading-relaxed pl-2">
-            {lang === 'en'
-              ? "Orders are processed quickly. Please contact us via Line or phone within 30 minutes of order placement to request modifications or cancellation."
-              : "เนื่องจากเรามีรอบดำเนินการจัดส่งสินค้าที่รวดเร็ว โปรดติดต่อทีมงานบริการลูกค้าของเราผ่านช่องทางแอปพลิเคชัน Line หรือทางโทรศัพท์ภายในเวลา 30 นาทีหลังจากที่กดสั่งซื้อพัสดุสำเร็จ เพื่อขอดำเนินการแก้ไขหรือยกเลิก"
-            }
-          </div>
-        </details>
-      </div>
+        ))
+      )}
     </div>
   </div>
 </Layout>
+

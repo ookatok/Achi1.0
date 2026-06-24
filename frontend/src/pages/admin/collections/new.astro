@@ -1,0 +1,733 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+import { useTranslations } from '../../../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
+}
+
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let products = [] as any[];
+try {
+  const prodRes = await fetch('http://localhost:3001/api/products?limit=100');
+  if (prodRes.ok) {
+    products = await prodRes.json();
+  }
+} catch (e) {
+  console.error(e);
+}
+
+let pendingOrdersCount = 0;
+try {
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    const orders = await ordRes.json();
+    pendingOrdersCount = orders.filter((o: any) => o.status === 'pending').length;
+  }
+} catch (e) {
+  console.error('[NestJS API Error] Fetching orders failed.', e);
+}
+---
+
+<Layout title={lang === 'en' ? "Add Collection | ACHI Studio" : "เพิ่มคอลเลกชัน | ACHI Studio"} isAdminPanel={true} pendingOrdersCount={pendingOrdersCount}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 bg-[#FAF9F6] min-h-screen" id="collection-editor-container" data-token={token} data-lang={lang}>
+    <div class="w-full bg-white border border-stone-200 p-8 sm:p-12 rounded-sm shadow-xs space-y-8">
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+        <h2 class="font-serif text-2xl tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? "Add New Collection" : "เพิ่มคอลเลกชันใหม่"}
+        </h2>
+        <a href={`/${lang}/admin`} class="text-stone-400 hover:text-brand-charcoal text-xs uppercase tracking-wider font-semibold transition-colors">
+          &larr; {lang === 'en' ? "Back to Dashboard" : "กลับไปยังแดชบอร์ด"}
+        </a>
+      </div>
+
+      <div id="add-col-error" class="hidden text-xs text-red-500 bg-red-50 p-4 border-l-4 border-red-500 rounded-xs font-light"></div>
+
+      <form id="add-collection-form" class="space-y-8">
+        {/* Section 1: Basic Information */}
+        <div class="space-y-4">
+          <div class="flex items-center gap-3 border-b border-stone-200/60 pb-3 mb-6">
+            <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+              1. {lang === 'en' ? "Basic Information" : "ข้อมูลพื้นฐาน"}
+            </h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {t('admin.collection_title')} *
+              </label>
+              <input type="text" id="add-col-title" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {t('admin.slug')} *
+              </label>
+              <input type="text" id="add-col-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="e.g. spring-blossom-2026" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+              {t('admin.collection_desc')}
+            </label>
+            <textarea id="add-col-desc" rows="3" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {t('admin.collection_image_file')}
+              </label>
+              <input type="file" id="add-collection-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {t('admin.collection_image_url')}
+              </label>
+              <div class="flex gap-2">
+                <input type="text" id="add-col-image" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/images/image.png" />
+                <div id="add-collection-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+                  <img id="add-collection-image-preview" src="" class="w-full h-full object-cover" />
+                </div>
+              </div>
+              <div id="add-collection-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+              {t('admin.publish_date')}
+            </label>
+            <input type="datetime-local" id="add-col-publish" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-stone-50" />
+          </div>
+        </div>
+
+        {/* Section 2: Editorial Story (TH/EN) */}
+        <div class="space-y-6 pt-4">
+          <div class="flex items-center gap-3 border-b border-stone-200/60 pb-3 mb-6">
+            <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+              2. {lang === 'en' ? "Editorial Storytelling" : "เรื่องราวประชาสัมพันธ์คอลเลกชัน"}
+            </h3>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* English Story fields */}
+            <div class="space-y-4 bg-stone-50/50 p-4 border border-stone-200/50 rounded-sm">
+              <span class="text-[9px] font-bold tracking-widest text-brand-gold uppercase block">English Details</span>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Title (EN)</label>
+                <input type="text" id="story-title-en" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="e.g. Chasing the Vernal Light" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Subtitle (EN)</label>
+                <input type="text" id="story-subtitle-en" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="e.g. A study in fresh beginnings..." />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Paragraphs (EN)</label>
+                <div class="border border-stone-200 bg-white rounded-sm">
+                  <div class="flex flex-wrap items-center gap-1.5 p-2 bg-stone-50 border-b border-stone-200 text-xs" id="story-paragraphs-en-toolbar">
+                    <button type="button" data-cmd="h1" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H1</button>
+                    <button type="button" data-cmd="h2" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H2</button>
+                    <button type="button" data-cmd="h3" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H3</button>
+                    <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                    <button type="button" data-cmd="bold" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">B</button>
+                    <button type="button" data-cmd="italic" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-serif italic font-bold text-xs border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">/</button>
+                    <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                    <button type="button" data-cmd="bulletList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">• List</button>
+                    <button type="button" data-cmd="orderedList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">1. List</button>
+                  </div>
+                  <div id="story-paragraphs-en-editor" class="p-3 min-h-[280px] overflow-y-auto resize-y font-sans text-xs focus:outline-none bg-white"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Thai Story fields */}
+            <div class="space-y-4 bg-stone-50/50 p-4 border border-stone-200/50 rounded-sm">
+              <span class="text-[9px] font-bold tracking-widest text-brand-gold uppercase block">Thai Details (ภาษาไทย)</span>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Title (TH)</label>
+                <input type="text" id="story-title-th" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="เช่น เมื่อแสงแรกแห่งฤดูใบไม้ผลิมาเยือน" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Subtitle (TH)</label>
+                <input type="text" id="story-subtitle-th" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="เช่น การค้นหารูปแบบการแต่งกายที่เบาสบาย..." />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Story Paragraphs (TH) (ย่อหน้าภาษาไทย)</label>
+                <div class="border border-stone-200 bg-white rounded-sm">
+                  <div class="flex flex-wrap items-center gap-1.5 p-2 bg-stone-50 border-b border-stone-200 text-xs" id="story-paragraphs-th-toolbar">
+                    <button type="button" data-cmd="h1" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H1</button>
+                    <button type="button" data-cmd="h2" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H2</button>
+                    <button type="button" data-cmd="h3" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H3</button>
+                    <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                    <button type="button" data-cmd="bold" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">B</button>
+                    <button type="button" data-cmd="italic" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-serif italic font-bold text-xs border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">/</button>
+                    <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                    <button type="button" data-cmd="bulletList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">• List</button>
+                    <button type="button" data-cmd="orderedList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">1. List</button>
+                  </div>
+                  <div id="story-paragraphs-th-editor" class="p-3 min-h-[280px] overflow-y-auto resize-y font-sans text-xs focus:outline-none bg-white"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Story Side Image */}
+          <div class="mt-6 border-t border-stone-100 pt-6 space-y-4">
+            <h4 class="text-[10px] font-bold tracking-widest text-brand-gold uppercase block">Story Side Image</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                  {lang === 'en' ? "Upload Story Side Image" : "อัปโหลดภาพประกอบเรื่องราว"}
+                </label>
+                <input type="file" id="story-side-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                  {lang === 'en' ? "Story Side Image URL" : "URL ภาพประกอบเรื่องราว"}
+                </label>
+                <div class="flex gap-2">
+                  <input type="text" id="story-side-image-url" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/images/image.png" />
+                  <div id="story-side-image-preview-container" class="hidden w-10 h-10 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0">
+                    <img id="story-side-image-preview" src="" class="w-full h-full object-cover" />
+                  </div>
+                </div>
+                <div id="story-side-image-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Lookbook Gallery */}
+        <div class="space-y-4 pt-4">
+          <div class="flex items-center gap-3 border-b border-stone-200/60 pb-3 mb-6">
+            <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+              3. {lang === 'en' ? "Lookbook Gallery Photos" : "รูปภาพประกอบลุคบุคเพิ่มเติม"}
+            </h3>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+              {lang === 'en' ? "Upload lookbook image (Upload one by one to add)" : "อัปโหลดภาพลุคบุค (อัปโหลดทีละไฟล์เพื่อเพิ่มเข้าแกลเลอรี)"}
+            </label>
+            <input type="file" id="gallery-image-upload-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+            <div id="gallery-image-upload-status" class="text-[9px] mt-1 hidden font-semibold"></div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+              {lang === 'en' ? "Gallery Images (Comma-separated List)" : "รายการรูปภาพแกลเลอรี (คั่นด้วยเครื่องหมายจุลภาค)"}
+            </label>
+            <textarea id="gallery-images-list" rows="2" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm font-mono" placeholder="/assets/images/img1.png, /assets/images/img2.png"></textarea>
+            <div id="gallery-previews" class="flex flex-wrap gap-3 mt-3"></div>
+          </div>
+        </div>
+
+        {/* Section 4: Associated Products */}
+        <div class="space-y-4 pt-4">
+          <div class="flex items-center gap-3 border-b border-stone-200/60 pb-3 mb-6">
+            <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+              4. {t('admin.collection_products')}
+            </h3>
+          </div>
+          <div class="border border-stone-200 rounded-sm p-4 max-h-56 overflow-y-auto space-y-2 bg-stone-50/50" id="add-col-products-container">
+            {products.map((p: any) => (
+              <label class="flex items-center gap-3 text-xs text-stone-600 font-light cursor-pointer hover:text-brand-charcoal select-none py-1 border-b border-stone-100/50 last:border-0">
+                <input type="checkbox" name="productIds" value={p.id} class="rounded-sm border-stone-300 text-brand-charcoal focus:ring-brand-charcoal" />
+                <span class={`w-2 h-2 rounded-full ${p.status === 'inactive' ? 'bg-red-500' : 'bg-green-500'}`} title={p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}></span>
+                <span class="font-medium text-stone-700">{p.name}</span>
+                <span class="text-[10px] text-stone-400 font-mono">(${p.price})</span>
+                <span class={`text-[8px] px-1 rounded-sm ${p.status === 'inactive' ? 'bg-red-50 text-red-600 border border-red-100/50' : 'bg-green-50 text-green-600 border border-green-100/50'}`}>
+                  {p.status === 'inactive' ? t('admin.status_inactive') : t('admin.status_active')}
+                </span>
+              </label>
+            ))}
+            {products.length === 0 && (
+              <div class="text-xs text-stone-400 italic text-center py-4">{lang === 'en' ? 'No products available' : 'ไม่มีสินค้าในระบบ'}</div>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div class="pt-6 border-t border-stone-150 flex justify-end gap-3">
+          <a href={`/${lang}/admin`} class="border border-stone-200 text-stone-600 px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:border-brand-charcoal transition-colors">
+            {t('admin.dialog_cancel')}
+          </a>
+          <button type="submit" class="bg-brand-charcoal text-white px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold hover:bg-stone-800 transition-colors cursor-pointer">
+            {t('admin.dialog_save')}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { Editor } from '@tiptap/core';
+    import StarterKit from '@tiptap/starter-kit';
+
+    const container = document.getElementById('collection-editor-container');
+    const token = container ? container.dataset.token : '';
+    const lang = container ? (container.dataset.lang || 'th') : 'th';
+    const BACKEND_URL = '';
+
+    // Initialize Tiptap Editors
+    let editorEn: any = null;
+    let editorTh: any = null;
+
+    try {
+      const editorEnEl = document.getElementById('story-paragraphs-en-editor');
+      if (editorEnEl) {
+        editorEn = new Editor({
+          element: editorEnEl,
+          extensions: [StarterKit],
+          content: '',
+        });
+      }
+    } catch (e) {
+      console.error('Failed to init EN editor:', e);
+    }
+
+    try {
+      const editorThEl = document.getElementById('story-paragraphs-th-editor');
+      if (editorThEl) {
+        editorTh = new Editor({
+          element: editorThEl,
+          extensions: [StarterKit],
+          content: '',
+        });
+      }
+    } catch (e) {
+      console.error('Failed to init TH editor:', e);
+    }
+
+    // Toolbar setup helper
+    const setupToolbar = (toolbarId: string, editorInstance: Editor | null) => {
+      const toolbar = document.getElementById(toolbarId);
+      if (!toolbar || !editorInstance) return;
+
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
+        btn.addEventListener('click', (e: any) => {
+          e.preventDefault();
+          const cmd = btn.dataset.cmd;
+          if (!cmd) return;
+
+          if (cmd === 'bold') {
+            editorInstance.chain().focus().toggleBold().run();
+          } else if (cmd === 'italic') {
+            editorInstance.chain().focus().toggleItalic().run();
+          } else if (cmd === 'bulletList') {
+            editorInstance.chain().focus().toggleBulletList().run();
+          } else if (cmd === 'orderedList') {
+            editorInstance.chain().focus().toggleOrderedList().run();
+          } else if (cmd === 'h1') {
+            editorInstance.chain().focus().toggleHeading({ level: 1 }).run();
+          } else if (cmd === 'h2') {
+            editorInstance.chain().focus().toggleHeading({ level: 2 }).run();
+          } else if (cmd === 'h3') {
+            editorInstance.chain().focus().toggleHeading({ level: 3 }).run();
+          }
+          
+          updateButtonStates(toolbar, editorInstance);
+        });
+      });
+
+      editorInstance.on('selectionUpdate', () => updateButtonStates(toolbar, editorInstance));
+      editorInstance.on('transaction', () => updateButtonStates(toolbar, editorInstance));
+    };
+
+    const updateButtonStates = (toolbar: any, editorInstance: any) => {
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
+        const cmd = btn.dataset.cmd;
+        let isActive = false;
+
+        if (cmd === 'bold') isActive = editorInstance.isActive('bold');
+        else if (cmd === 'italic') isActive = editorInstance.isActive('italic');
+        else if (cmd === 'bulletList') isActive = editorInstance.isActive('bulletList');
+        else if (cmd === 'orderedList') isActive = editorInstance.isActive('orderedList');
+        else if (cmd === 'h1') isActive = editorInstance.isActive('heading', { level: 1 });
+        else if (cmd === 'h2') isActive = editorInstance.isActive('heading', { level: 2 });
+        else if (cmd === 'h3') isActive = editorInstance.isActive('heading', { level: 3 });
+        if (isActive) {
+          btn.classList.add('bg-[#e6e6e6]', 'border-stone-300', 'text-stone-900', 'font-bold');
+          btn.classList.remove('bg-white', 'border-stone-200', 'text-stone-700', 'font-semibold');
+        } else {
+          btn.classList.remove('bg-[#e6e6e6]', 'border-stone-300', 'text-stone-900', 'font-bold');
+          btn.classList.add('bg-white', 'border-stone-200', 'text-stone-700', 'font-semibold');
+        }
+      });
+    };
+
+    setupToolbar('story-paragraphs-en-toolbar', editorEn);
+    setupToolbar('story-paragraphs-th-toolbar', editorTh);
+
+    // Image Upload setup function
+    function setupImageUpload(fileInputId: string, inputUrlId: string, previewContainerId: string, previewImgId: string, statusId: string) {
+      const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null;
+      const urlInput = document.getElementById(inputUrlId) as HTMLInputElement | null;
+      const previewContainer = document.getElementById(previewContainerId);
+      const previewImg = document.getElementById(previewImgId) as HTMLImageElement | null;
+      const statusText = document.getElementById(statusId);
+
+      fileInput?.addEventListener('change', async () => {
+        const file = fileInput.files ? fileInput.files[0] : null;
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        if (statusText) {
+          statusText.textContent = lang === 'en' ? 'Uploading...' : 'กำลังอัปโหลด...';
+          statusText.className = 'text-[9px] mt-1 font-semibold text-stone-500';
+          statusText.classList.remove('hidden');
+        }
+
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/collections/upload`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const imageUrl = data.imageUrl;
+            if (urlInput) urlInput.value = imageUrl;
+            if (previewImg && previewContainer) {
+              previewImg.src = imageUrl.startsWith('http') ? imageUrl : `${BACKEND_URL}${imageUrl}`;
+              previewContainer.classList.remove('hidden');
+            }
+            if (statusText) {
+              statusText.textContent = lang === 'en' ? 'Upload success' : 'อัปโหลดสำเร็จ';
+              statusText.className = 'text-[9px] mt-1 font-semibold text-green-600';
+            }
+          } else {
+            throw new Error('Upload failed');
+          }
+        } catch (e) {
+          console.error(e);
+          if (statusText) {
+            statusText.textContent = lang === 'en' ? 'Upload failed' : 'อัปโหลดล้มเหลว';
+            statusText.className = 'text-[9px] mt-1 font-semibold text-red-600';
+          }
+        }
+      });
+    }
+
+    // Set up cover image upload
+    setupImageUpload(
+      'add-collection-image-file',
+      'add-col-image',
+      'add-collection-image-preview-container',
+      'add-collection-image-preview',
+      'add-collection-upload-status'
+    );
+
+    // Watch cover image url text to show preview dynamically
+    const coverUrlInput = document.getElementById('add-col-image') as HTMLInputElement | null;
+    coverUrlInput?.addEventListener('input', () => {
+      const val = coverUrlInput.value.trim();
+      const previewContainer = document.getElementById('add-collection-image-preview-container');
+      const previewImg = document.getElementById('add-collection-image-preview') as HTMLImageElement | null;
+      if (val) {
+        if (previewImg) previewImg.src = val.startsWith('http') ? val : `${BACKEND_URL}${val}`;
+        previewContainer?.classList.remove('hidden');
+      } else {
+        previewContainer?.classList.add('hidden');
+      }
+    });
+
+    // Set up story side image upload
+    setupImageUpload(
+      'story-side-image-file',
+      'story-side-image-url',
+      'story-side-image-preview-container',
+      'story-side-image-preview',
+      'story-side-image-upload-status'
+    );
+
+    // Watch story side image url text to show preview dynamically
+    const storySideUrlInput = document.getElementById('story-side-image-url') as HTMLInputElement | null;
+    storySideUrlInput?.addEventListener('input', () => {
+      const val = storySideUrlInput.value.trim();
+      const previewContainer = document.getElementById('story-side-image-preview-container');
+      const previewImg = document.getElementById('story-side-image-preview') as HTMLImageElement | null;
+      if (val) {
+        if (previewImg) previewImg.src = val.startsWith('http') ? val : `${BACKEND_URL}${val}`;
+        previewContainer?.classList.remove('hidden');
+      } else {
+        previewContainer?.classList.add('hidden');
+      }
+    });
+
+    // Gallery images rendering and uploads
+    const galleryListTextarea = document.getElementById('gallery-images-list') as HTMLTextAreaElement | null;
+    const galleryPreviewsContainer = document.getElementById('gallery-previews');
+
+    function renderGalleryPreviews() {
+      if (!galleryPreviewsContainer || !galleryListTextarea) return;
+      galleryPreviewsContainer.innerHTML = '';
+      const val = galleryListTextarea.value.trim();
+      if (!val) return;
+
+      const imgs = val.split(',').map((s: string) => s.trim()).filter(Boolean);
+      imgs.forEach((img: string, idx: number) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'relative w-16 h-20 border border-stone-200 rounded-sm overflow-hidden group shadow-xs bg-stone-50';
+
+        const fullSrc = img.startsWith('http') ? img : `${BACKEND_URL}${img}`;
+        const im = document.createElement('img');
+        im.src = fullSrc;
+        im.className = 'w-full h-full object-cover';
+        wrap.appendChild(im);
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.innerHTML = '&times;';
+        delBtn.className = 'absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] transition-colors leading-none cursor-pointer';
+        delBtn.addEventListener('click', () => {
+          imgs.splice(idx, 1);
+          galleryListTextarea.value = imgs.join(', ');
+          renderGalleryPreviews();
+        });
+        wrap.appendChild(delBtn);
+
+        galleryPreviewsContainer.appendChild(wrap);
+      });
+    }
+
+    // Set up gallery image upload
+    const galleryFileInput = document.getElementById('gallery-image-upload-file') as HTMLInputElement | null;
+    const galleryUploadStatus = document.getElementById('gallery-image-upload-status');
+
+    galleryFileInput?.addEventListener('change', async () => {
+      const file = galleryFileInput.files ? galleryFileInput.files[0] : null;
+      if (!file || !galleryListTextarea) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      if (galleryUploadStatus) {
+        galleryUploadStatus.textContent = lang === 'en' ? 'Uploading gallery image...' : 'กำลังอัปโหลดภาพแกลเลอรี...';
+        galleryUploadStatus.className = 'text-[9px] mt-1 font-semibold text-stone-500';
+        galleryUploadStatus.classList.remove('hidden');
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/collections/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const imageUrl = data.imageUrl;
+          
+          let currentList = galleryListTextarea.value.trim();
+          if (currentList) {
+            currentList += ', ' + imageUrl;
+          } else {
+            currentList = imageUrl;
+          }
+          galleryListTextarea.value = currentList;
+          galleryFileInput.value = '';
+          
+          if (galleryUploadStatus) {
+            galleryUploadStatus.textContent = lang === 'en' ? 'Gallery upload success' : 'อัปโหลดแกลเลอรีสำเร็จ';
+            galleryUploadStatus.className = 'text-[9px] mt-1 font-semibold text-green-600';
+          }
+          renderGalleryPreviews();
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (e) {
+        console.error(e);
+        if (galleryUploadStatus) {
+          galleryUploadStatus.textContent = lang === 'en' ? 'Gallery upload failed' : 'อัปโหลดแกลเลอรีล้มเหลว';
+          galleryUploadStatus.className = 'text-[9px] mt-1 font-semibold text-red-600';
+        }
+      }
+    });
+
+    // Rerender previews on list textarea edit
+    galleryListTextarea?.addEventListener('input', renderGalleryPreviews);
+
+    // Form Submission
+    const addColForm = document.getElementById('add-collection-form');
+    const addColError = document.getElementById('add-col-error');
+
+    addColForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addColError) addColError.classList.add('hidden');
+
+      const submitBtn = addColForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const originalText = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = lang === 'en' ? 'Saving...' : 'กำลังบันทึกข้อมูล...';
+      }
+
+      const title = (document.getElementById('add-col-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-col-slug') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('add-col-image') as HTMLInputElement).value;
+      const description = (document.getElementById('add-col-desc') as HTMLTextAreaElement).value;
+      const publishDateStr = (document.getElementById('add-col-publish') as HTMLInputElement).value;
+      const publishDate = publishDateStr ? new Date(publishDateStr).toISOString() : null;
+
+      // New storytelling fields
+      const storyTitleEn = (document.getElementById('story-title-en') as HTMLInputElement).value;
+      const storyTitleTh = (document.getElementById('story-title-th') as HTMLInputElement).value;
+      const storySubtitleEn = (document.getElementById('story-subtitle-en') as HTMLInputElement).value;
+      const storySubtitleTh = (document.getElementById('story-subtitle-th') as HTMLInputElement).value;
+      
+      const storyParagraphsEn = editorEn ? editorEn.getHTML() : '';
+      const storyParagraphsTh = editorTh ? editorTh.getHTML() : '';
+
+      // Gallery Images JSON Array
+      const galleryVal = galleryListTextarea ? galleryListTextarea.value.trim() : '';
+      const galleryArray = galleryVal.split(',').map(s => s.trim()).filter(Boolean);
+      const galleryImages = JSON.stringify(galleryArray);
+
+      const productIds: number[] = [];
+      document.querySelectorAll('#add-col-products-container input[type="checkbox"]:checked').forEach((cb) => {
+        productIds.push(parseInt((cb as HTMLInputElement).value, 10));
+      });
+
+      const storyImageUrl = (document.getElementById('story-side-image-url') as HTMLInputElement).value;
+
+      const payload = { 
+        title, slug, description, imageUrl, publishDate, productIds,
+        storyTitleEn, storyTitleTh, storySubtitleEn, storySubtitleTh,
+        storyParagraphsEn, storyParagraphsTh, storyImageUrl, galleryImages
+      };
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/collections`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.showStatusAlert(
+            200,
+            lang === 'en' ? 'Collection created successfully.' : 'สร้างคอลเลกชันเสร็จสมบูรณ์',
+            null,
+            true,
+            () => {
+              window.location.href = `/${lang}/admin`;
+            }
+          );
+        } else {
+          const data = await res.json();
+          window.showStatusAlert(res.status, null, data ? data.message : 'Failed to create collection.');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        window.showStatusAlert(0, lang === 'en' ? 'Failed to connect to backend.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+
+    // Sync heights of Thai and English storytelling editors
+    const enEditor = document.getElementById('story-paragraphs-en-editor');
+    const thEditor = document.getElementById('story-paragraphs-th-editor');
+
+    if (enEditor && thEditor) {
+      let isSyncing = false;
+      const observer = new ResizeObserver((entries) => {
+        if (isSyncing) return;
+        isSyncing = true;
+
+        for (let entry of entries) {
+          const target = entry.target as HTMLElement;
+          const height = target.offsetHeight;
+
+          if (target === enEditor) {
+            if (Math.abs(thEditor.offsetHeight - height) > 2) {
+              thEditor.style.height = `${height}px`;
+            }
+          } else if (target === thEditor) {
+            if (Math.abs(enEditor.offsetHeight - height) > 2) {
+              enEditor.style.height = `${height}px`;
+            }
+          }
+        }
+
+        requestAnimationFrame(() => {
+          isSyncing = false;
+        });
+      });
+
+      observer.observe(enEditor);
+      observer.observe(thEditor);
+    }
+  </script>
+
+  <style is:global>
+    .ProseMirror {
+      outline: none;
+      min-height: 250px;
+    }
+    .ProseMirror p {
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      margin-bottom: 0.4rem;
+    }
+    .ProseMirror h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .ProseMirror ul {
+      list-style-type: disc;
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror ol {
+      list-style-type: decimal;
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</Layout>

@@ -9,8 +9,21 @@ import { UserModule } from './modules/user/user.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { CollectionModule } from './modules/collection/collection.module';
+import { FaqModule } from './modules/faq/faq.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, ProductModule, CartModule, OrderModule, WebImageModule, UserModule, BlogModule, ContactModule, CollectionModule],
+  imports: [
+    DatabaseModule, 
+    AuthModule, 
+    ProductModule, 
+    CartModule, 
+    OrderModule, 
+    WebImageModule, 
+    UserModule, 
+    BlogModule, 
+    ContactModule, 
+    CollectionModule,
+    FaqModule
+  ],
 })
 export class AppModule {}

@@ -29,6 +29,7 @@ export class OrderService {
     // Execute the checkout inside a transaction to ensure ACID consistency
     return await this.db.transaction(async (tx) => {
       let totalPrice = 0;
+      let isPreOrder = false;
 
       // 1. Verify and deduct stock for all items
       for (const item of cart.items) {
@@ -40,15 +41,28 @@ export class OrderService {
         }
 
         if (product.stockQuantity < item.quantity) {
-          throw new BadRequestException({
-            message: `Product '${product.name}' is out of stock (Requested: ${item.quantity}, Available: ${product.stockQuantity})`,
-            code: ErrorCodes.OUT_OF_STOCK,
-          });
-        }
+          if (!product.allowOnOrder) {
+            throw new BadRequestException({
+              message: `Product '${product.name}' is out of stock (Requested: ${item.quantity}, Available: ${product.stockQuantity})`,
+              code: ErrorCodes.OUT_OF_STOCK,
+            });
+          }
 
-        // Deduct stock in DB
-        const remainingStock = product.stockQuantity - item.quantity;
-        await this.productRepo.update(item.productId, { stockQuantity: remainingStock }, tx);
+          // If allowOnOrder is true:
+          isPreOrder = true;
+          const shortfall = item.quantity - product.stockQuantity;
+          const remainingStock = 0;
+          const newOnOrderQuantity = (product.onOrderQuantity || 0) + shortfall;
+
+          await this.productRepo.update(item.productId, {
+            stockQuantity: remainingStock,
+            onOrderQuantity: newOnOrderQuantity
+          }, tx);
+        } else {
+          // Deduct stock in DB normally
+          const remainingStock = product.stockQuantity - item.quantity;
+          await this.productRepo.update(item.productId, { stockQuantity: remainingStock }, tx);
+        }
 
         // Increment total price
         totalPrice += Number(item.productPrice) * item.quantity;
@@ -60,6 +74,7 @@ export class OrderService {
         totalPrice: String(totalPrice),
         shippingAddress: dto.shippingAddress,
         status: 'pending',
+        isPreOrder,
       }, tx);
 
       // 3. Create Order Items

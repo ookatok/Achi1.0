@@ -1,0 +1,1221 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+import { useTranslations } from '../../../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const colorPalette = [
+  { name: 'Black', hex: '#000000', text: '#ffffff' },
+  { name: 'White', hex: '#ffffff', text: '#1a1a1a', border: 'border-stone-300' },
+  { name: 'Beige', hex: '#f5f5dc', text: '#1a1a1a', border: 'border-stone-200' },
+  { name: 'Cream', hex: '#fffdd0', text: '#1a1a1a', border: 'border-stone-200' },
+  { name: 'Navy', hex: '#0a192f', text: '#ffffff' },
+  { name: 'Gold', hex: '#d4af37', text: '#ffffff' },
+  { name: 'Charcoal', hex: '#36454f', text: '#ffffff' },
+  { name: 'Brown', hex: '#6f4e37', text: '#ffffff' },
+  { name: 'Olive', hex: '#556b2f', text: '#ffffff' },
+  { name: 'Camel', hex: '#c19a6b', text: '#ffffff' },
+  { name: 'Rust', hex: '#b7410e', text: '#ffffff' },
+  { name: 'Sage', hex: '#87a96b', text: '#ffffff' },
+  { name: 'Mustard', hex: '#e1ad01', text: '#ffffff' },
+  { name: 'Burgundy', hex: '#800020', text: '#ffffff' },
+  { name: 'Gray', hex: '#808080', text: '#ffffff' },
+  { name: 'Pink', hex: '#ffc0cb', text: '#1a1a1a', border: 'border-stone-200' }
+];
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
+}
+
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let productCategories = [] as any[];
+let productTagsList = [] as any[];
+let pendingOrdersCount = 0;
+
+try {
+  const prodCatRes = await fetch('http://localhost:3001/api/products/categories');
+  if (prodCatRes.ok) {
+    productCategories = await prodCatRes.json();
+  }
+
+  const prodTagRes = await fetch('http://localhost:3001/api/products/tags');
+  if (prodTagRes.ok) {
+    productTagsList = await prodTagRes.json();
+  }
+
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    const orders = await ordRes.json();
+    pendingOrdersCount = orders.filter((o: any) => o.status === 'pending').length;
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching admin data failed.', err);
+}
+---
+
+<Layout title={lang === 'en' ? "Add Product | ACHI Studio" : "เพิ่มสินค้า | ACHI Studio"} isAdminPanel={true} pendingOrdersCount={pendingOrdersCount}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 bg-[#FAF9F6] min-h-screen" id="product-editor-container" data-token={token} data-lang={lang}>
+    <div class="w-full bg-white border border-stone-200 p-8 sm:p-12 rounded-sm shadow-xs space-y-8">
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+        <h2 class="font-serif text-2xl tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? "Add New Product" : "เพิ่มสินค้าใหม่"}
+        </h2>
+        <a href={`/${lang}/admin?tab=products`} class="text-stone-400 hover:text-brand-charcoal text-xs uppercase tracking-wider font-semibold transition-colors">
+          &larr; {lang === 'en' ? "Back to products" : "กลับไปยังหน้ารายการสินค้า"}
+        </a>
+      </div>
+
+      <div id="add-error" class="hidden text-xs text-red-500 bg-red-50 p-4 border-l-4 border-red-500 rounded-xs font-light"></div>
+
+      <form id="add-product-form" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Left Column: Details -->
+          <div class="lg:col-span-7 space-y-6">
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Product Information" : "ข้อมูลสินค้า"}
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_name')} *</label>
+                <input type="text" id="add-name" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')} *</label>
+                <input type="text" id="add-slug" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.price_usd')} *</label>
+                  <input type="number" id="add-price" step="0.01" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.stock_qty')} *</label>
+                  <input type="number" id="add-stock" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? 'Allow On-Order' : 'เปิดรับ On-Order / Pre-Order'}</label>
+                  <div class="flex items-center h-[34px]">
+                    <input type="checkbox" id="add-allow-on-order" class="w-4 h-4 text-brand-charcoal accent-brand-charcoal focus:ring-0 cursor-pointer rounded-sm" />
+                    <span class="ml-2 text-xs text-stone-500 font-light">{lang === 'en' ? 'Allow buy when out of stock' : 'ลูกค้าสั่งได้เมื่อสินค้าหมด'}</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? 'Initial On-Order Qty' : 'ยอดสั่งจองเริ่มต้น (On-Order)'}</label>
+                  <input type="number" id="add-on-order-qty" value="0" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.description')}</label>
+                <textarea id="add-desc" rows="5" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm"></textarea>
+              </div>
+            </div>
+
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Attributes" : "คุณสมบัติสินค้า"}
+                </h3>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.sizes_comma')}</label>
+                  <input type="text" id="add-sizes" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="S, M, L" />
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.colors_comma')}</label>
+                  <input type="text" id="add-colors" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="#000000, #ffffff" />
+                  <div class="mt-2 flex flex-col gap-2 bg-white p-3 border border-stone-100 rounded-sm shadow-2xs">
+                    <div>
+                      <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold mb-1.5">{lang === 'en' ? 'Presets' : 'สีแนะนำ'}</div>
+                      <div class="flex flex-wrap gap-1.5" id="add-colors-presets-container">
+                        {colorPalette.map(color => (
+                          <button
+                            type="button"
+                            data-color={color.hex}
+                            class="color-palette-btn-add w-6 h-6 rounded-full cursor-pointer transition-all border hover:scale-110 active:scale-95 flex items-center justify-center text-[10px] font-bold shadow-xs shrink-0"
+                            style={`background-color: ${color.hex}; color: ${color.text}; border-color: ${color.border ? '#d6d3d1' : color.hex};`}
+                            title={color.name}
+                          >
+                            <span class="hidden check-icon">✓</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div class="border-t border-stone-100 pt-2 flex flex-wrap items-center gap-2">
+                      <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{lang === 'en' ? 'Custom' : 'สีอื่นๆ'}</div>
+                      <div class="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          id="add-custom-color-btn"
+                          class="w-6 h-6 rounded-full border border-dashed border-stone-300 hover:border-brand-charcoal cursor-pointer flex items-center justify-center text-xs text-stone-500 hover:text-brand-charcoal transition-colors bg-white shadow-xs font-bold"
+                          title={lang === 'en' ? 'Add Custom Color' : 'เพิ่มสีเอง'}
+                        >
+                          +
+                        </button>
+                        <input type="color" id="add-color-picker" class="hidden" value="#ffffff" />
+                      </div>
+                      <div class="flex flex-wrap gap-1.5 pl-1.5 border-l border-stone-200" id="add-custom-colors-container"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Media, Status & Categorization -->
+          <div class="lg:col-span-5 space-y-6">
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Status & Visibility" : "สถานะสินค้า"}
+                </h3>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.product_status')}</label>
+                <select id="add-status" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white">
+                  <option value="active">{t('admin.status_active')}</option>
+                  <option value="inactive">{t('admin.status_inactive')}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Media & Images" : "รูปภาพประกอบ"}
+                </h3>
+              </div>
+              
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                  <input type="file" id="add-product-images-file" accept="image/*" multiple class="hidden" />
+                  <button type="button" id="btn-add-product-images" class="w-full px-3 py-2.5 border border-dashed border-stone-300 hover:border-brand-charcoal text-[10px] uppercase tracking-widest font-semibold rounded-sm bg-white cursor-pointer transition-colors flex items-center justify-center gap-1.5 text-stone-600">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    {lang === 'en' ? 'Upload Images (Multiple)' : 'เลือกรูปภาพ (อัพโหลดพร้อมกันได้หลายรูป)'}
+                  </button>
+                </div>
+                <div id="add-product-images-upload-status" class="text-[9px] text-stone-500 font-medium text-center"></div>
+
+                <div id="add-product-combined-images-list" class="space-y-2 max-h-60 overflow-y-auto">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Categorization" : "หมวดหมู่และป้ายกำกับ"}
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
+                <div class="flex gap-2">
+                  <select id="add-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white">
+                    {productCategories.map((cat: any) => (
+                      <option value={cat.id}>{cat.name}</option>
+                    ))}
+                    {productCategories.length === 0 && (
+                      <option value="">{t('admin.no_categories_available')}</option>
+                    )}
+                  </select>
+                  <button type="button" id="btn-create-category-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer" title="Create New Category Inline">+</button>
+                </div>
+                <!-- Inline Category Form -->
+                <div id="inline-category-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-white space-y-2 rounded-sm shadow-2xs">
+                  <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_category')}</div>
+                  <div class="flex gap-2">
+                    <input type="text" id="inline-category-name-add" placeholder={t('admin.category_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+                    <button type="button" id="btn-submit-category-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+                    <button type="button" id="btn-cancel-category-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
+                  </div>
+                  <div id="inline-category-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_tags')}</label>
+                <div class="flex gap-2">
+                  <div class="w-full flex flex-wrap gap-2 max-h-24 overflow-y-auto border border-stone-200 p-2 rounded-sm bg-white" id="add-tags-checkboxes-container">
+                    {productTagsList.map((tag: any) => (
+                      <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors">
+                        <input type="checkbox" value={tag.name} class="tag-checkbox-add border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+                        <span>{tag.name}</span>
+                      </label>
+                    ))}
+                    {productTagsList.length === 0 && (
+                      <span class="text-[10px] text-stone-400 font-light">{t('admin.no_tags_available')}</span>
+                    )}
+                  </div>
+                  <button type="button" id="btn-create-tag-inline-add" class="px-3 border border-stone-200 hover:border-brand-charcoal text-xs font-semibold uppercase tracking-wider rounded-sm cursor-pointer flex items-center justify-center shrink-0 min-h-[38px]" title="Create New Tag Inline">+</button>
+                </div>
+
+                <!-- Inline Tag Form -->
+                <div id="inline-tag-form-add" class="hidden mt-2 border border-stone-100 p-3 bg-white space-y-2 rounded-sm shadow-2xs">
+                  <div class="text-[9px] uppercase tracking-widest text-stone-400 font-semibold">{t('admin.create_tag')}</div>
+                  <div class="flex gap-2">
+                    <input type="text" id="inline-tag-name-add" placeholder={t('admin.tag_placeholder')} class="w-full border border-stone-200 px-2.5 py-1.5 text-xs rounded-sm focus:outline-none focus:border-brand-charcoal bg-white" />
+                    <button type="button" id="btn-submit-tag-inline-add" class="bg-brand-charcoal text-white px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:bg-stone-800 rounded-sm cursor-pointer">{t('admin.btn_add')}</button>
+                    <button type="button" id="btn-cancel-tag-inline-add" class="border border-stone-200 text-stone-600 px-2.5 py-1.5 text-[9px] uppercase tracking-widest font-semibold hover:border-brand-charcoal rounded-sm cursor-pointer">{t('admin.dialog_cancel')}</button>
+                  </div>
+                  <div id="inline-tag-error-add" class="hidden text-[9px] text-red-500 font-light"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-stone-200/80 flex justify-end gap-3 mt-8">
+          <a href={`/${lang}/admin`} class="border border-stone-200 text-stone-600 hover:border-stone-400 hover:text-brand-charcoal px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors flex items-center justify-center">{t('admin.dialog_cancel')}</a>
+          <button type="submit" class="bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors shadow-sm">{t('admin.dialog_save')}</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Draggable Custom Color Picker for Add Product -->
+    <dialog id="add-draggable-color-picker" class="fixed bg-stone-900 border border-stone-800 text-stone-100 p-3 rounded-md shadow-2xl z-[9999] w-64 select-none outline-none" style="margin: 0; padding: 12px; border: none;">
+      <div id="add-draggable-color-picker-handle" class="flex justify-between items-center bg-stone-800 -mx-3 -mt-3 px-3 py-1.5 rounded-t-md cursor-move text-[10px] font-bold tracking-wider text-stone-300">
+        <span>COLOR PICKER (DRAG ME)</span>
+        <button type="button" class="close-picker-btn text-stone-400 hover:text-white font-bold cursor-pointer text-sm">&times;</button>
+      </div>
+
+      <div class="color-picker-sv-box relative w-full h-32 mt-3 cursor-crosshair rounded-sm overflow-hidden" style="background-color: hsl(0, 100%, 50%);">
+        <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+        <div class="color-picker-sv-cursor absolute w-3 h-3 border border-white rounded-full -translate-x-1.5 -translate-y-1.5 pointer-events-none shadow-md" style="left: 100%; top: 0%; box-shadow: 0 0 0 1.5px black;"></div>
+      </div>
+
+      <div class="mt-3">
+        <input
+          type="range"
+          class="color-picker-hue w-full h-3 rounded-lg appearance-none cursor-pointer outline-none"
+          min="0"
+          max="360"
+          value="0"
+          style="background: linear-gradient(to right, red, #ff0, lime, cyan, blue, #f0f, red);"
+        />
+      </div>
+
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <div class="color-picker-preview w-8 h-8 rounded-full border border-stone-700 shadow-sm shrink-0" style="background-color: #ff0000;"></div>
+        <button
+          type="button"
+          class="color-picker-dropper-btn hidden bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white p-1.5 rounded transition-colors border border-stone-700 cursor-pointer shrink-0"
+          title="Eye Dropper"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 22l4-4" />
+            <path d="M12.5 11.5l1.5-1.5" />
+            <path d="M6 18l12.5-12.5c.8-.8 2-1 3-.7s1.8 1.4 1.5 2.5c-.3 1-1.2 1.8-2 2.7L8.5 20 6 18z" />
+            <path d="M16 6l2 2" />
+          </svg>
+        </button>
+        <input
+          type="text"
+          class="color-picker-hex-input w-24 bg-stone-800 border border-stone-700 text-stone-100 text-center text-xs py-1 rounded outline-none uppercase font-mono"
+          value="#FF0000"
+        />
+        <button
+          type="button"
+          class="color-picker-select-btn bg-brand-gold text-stone-900 hover:bg-opacity-90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-colors"
+        >
+          OK
+        </button>
+      </div>
+    </dialog>
+  </div>
+
+  <script>
+    // Browser-side translation and helper logic
+    const container = document.getElementById('product-editor-container');
+    const token = container ? container.dataset.token : '';
+    const lang = container ? (container.dataset.lang || 'th') : 'th';
+    const BACKEND_URL = '';
+
+    const msgs: Record<string, Record<string, string>> = {
+      en: {
+        failedCreateProduct: 'Failed to create product.',
+        failedConnectBackend: 'Failed to connect to backend.',
+        tagNameRequired: 'Tag name is required.',
+        categoryNameRequired: 'Category name is required.',
+        failedCreateTag: 'Failed to create tag.',
+        failedCreateCategory: 'Failed to create category.',
+        uploadingImage: 'Uploading image...',
+        uploadSuccess: 'Upload success',
+        uploadFailed: 'Upload failed',
+        networkErrorUpload: 'Network error during upload.'
+      },
+      th: {
+        failedCreateProduct: 'เพิ่มสินค้าไม่สำเร็จ',
+        failedConnectBackend: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
+        tagNameRequired: 'กรุณากรอกชื่อแท็ก',
+        categoryNameRequired: 'กรุณากรอกชื่อหมวดหมู่',
+        failedCreateTag: 'สร้างแท็กไม่สำเร็จ',
+        failedCreateCategory: 'สร้างหมวดหมู่ไม่สำเร็จ',
+        uploadingImage: 'กำลังอัปโหลดรูปภาพ...',
+        uploadSuccess: 'อัปโหลดสำเร็จ',
+        uploadFailed: 'อัปโหลดล้มเหลว',
+        networkErrorUpload: 'เกิดข้อผิดพลาดในการเชื่อมต่ออัปโหลด'
+      }
+    };
+
+    const getMsg = (key: string, params: Record<string, string> = {}) => {
+      let msg = msgs[lang]?.[key] || msgs['en']?.[key] || key;
+      Object.keys(params).forEach(p => {
+        msg = msg.replace(`{${p}}`, params[p]);
+      });
+      return msg;
+    };
+
+    const slugify = (text: string) => {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    };
+
+    // Auto slug generation
+    const addName = document.getElementById('add-name') as HTMLInputElement | null;
+    const addSlug = document.getElementById('add-slug') as HTMLInputElement | null;
+    if (addName && addSlug) {
+      addName.addEventListener('input', () => {
+        addSlug.value = slugify(addName.value);
+      });
+    }
+
+    // Draggable Picker Support
+    function makeElementDraggable(el: HTMLElement, handle: HTMLElement) {
+      let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+      handle.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e: MouseEvent) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e: MouseEvent) {
+        e.preventDefault();
+        posX = mouseX - e.clientX;
+        posY = mouseY - e.clientY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        const rect = el.getBoundingClientRect();
+        let newTop = rect.top - posY;
+        let newLeft = rect.left - posX;
+
+        const maxLeft = window.innerWidth - el.offsetWidth;
+        const maxTop = window.innerHeight - el.offsetHeight;
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop > maxTop) newTop = maxTop;
+
+        el.style.top = newTop + 'px';
+        el.style.left = newLeft + 'px';
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+
+      handle.ontouchstart = dragTouchStart;
+      function dragTouchStart(e: TouchEvent) {
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          mouseX = touch.clientX;
+          mouseY = touch.clientY;
+          document.ontouchend = closeTouchDrag;
+          document.ontouchmove = touchDrag;
+        }
+      }
+      function touchDrag(e: TouchEvent) {
+        if (e.touches.length === 1) {
+          const touch = e.touches[0];
+          posX = mouseX - touch.clientX;
+          posY = mouseY - touch.clientY;
+          mouseX = touch.clientX;
+          mouseY = touch.clientY;
+
+          const rect = el.getBoundingClientRect();
+          let newTop = rect.top - posY;
+          let newLeft = rect.left - posX;
+
+          const maxLeft = window.innerWidth - el.offsetWidth;
+          const maxTop = window.innerHeight - el.offsetHeight;
+          if (newLeft < 0) newLeft = 0;
+          if (newTop < 0) newTop = 0;
+          if (newLeft > maxLeft) newLeft = maxLeft;
+          if (newTop > maxTop) newTop = maxTop;
+
+          el.style.top = newTop + 'px';
+          el.style.left = newLeft + 'px';
+        }
+      }
+      function closeTouchDrag() {
+        document.ontouchend = null;
+        document.ontouchmove = null;
+      }
+    }
+
+    // Color conversion
+    function hsvToHex(h: number, s: number, v: number): string {
+      s /= 100;
+      v /= 100;
+      const k = (n: number) => (n + h / 60) % 6;
+      const f = (n: number) => v - v * s * Math.max(0, Math.min(k(n), 4 - k(n), 1));
+      const decToHex = (x: number) => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+      return `#${decToHex(f(5))}${decToHex(f(3))}${decToHex(f(1))}`;
+    }
+
+    function hexToHsv(hex: string) {
+      let c = hex.replace(/^#/, '');
+      if (c.length === 3) {
+        c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+      }
+      if (c.length !== 6) return null;
+      const r = parseInt(c.substring(0, 2), 16) / 255;
+      const g = parseInt(c.substring(2, 4), 16) / 255;
+      const b = parseInt(c.substring(4, 6), 16) / 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      
+      let h = 0;
+      const s = max === 0 ? 0 : (d / max) * 100;
+      const v = max * 100;
+
+      if (max !== min) {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h * 360), s: Math.round(s), v: Math.round(v) };
+    }
+
+    // Color swatches & draggable setup
+    function setupColorPalette(
+      inputId: string,
+      buttonClass: string,
+      customContainerId: string,
+      draggablePickerId: string,
+      draggableHandleId: string,
+      pickerBtnId: string
+    ) {
+      const inputEl = document.getElementById(inputId) as HTMLInputElement | null;
+      if (!inputEl) return;
+
+      const presets = document.querySelectorAll(buttonClass) as NodeListOf<HTMLButtonElement>;
+      const customContainer = document.getElementById(customContainerId);
+      const draggablePicker = document.getElementById(draggablePickerId) as HTMLDialogElement | null;
+      const handle = document.getElementById(draggableHandleId);
+      const pickerBtn = document.getElementById(pickerBtnId);
+
+      const getSelectedColors = () => {
+        return inputEl.value
+          .split(',')
+          .map(c => c.trim())
+          .filter(c => /^#[0-9A-F]{3,6}$/i.test(c));
+      };
+
+      const updateButtonStates = () => {
+        const selectedColors = getSelectedColors();
+        const lowerSelected = selectedColors.map(c => c.toLowerCase());
+
+        presets.forEach(btn => {
+          const hex = (btn.dataset.color || '').toLowerCase();
+          const isActive = lowerSelected.includes(hex);
+          const checkIcon = btn.querySelector('.check-icon');
+          if (isActive) {
+            btn.classList.add('ring-2', 'ring-stone-800', 'ring-offset-1', 'scale-110');
+            if (checkIcon) checkIcon.classList.remove('hidden');
+          } else {
+            btn.classList.remove('ring-2', 'ring-stone-800', 'ring-offset-1', 'scale-110');
+            if (checkIcon) checkIcon.classList.add('hidden');
+          }
+        });
+
+        if (customContainer) {
+          customContainer.innerHTML = '';
+          const presetHexs = Array.from(presets).map(btn => (btn.dataset.color || '').toLowerCase());
+          const customColors = selectedColors.filter(c => !presetHexs.includes(c.toLowerCase()));
+          
+          customColors.forEach(hex => {
+            const badge = document.createElement('button');
+            badge.type = 'button';
+            badge.className = 'w-6 h-6 rounded-full cursor-pointer border border-stone-300 shadow-xs flex items-center justify-center text-[10px] font-bold transition-all hover:scale-110 active:scale-95 shrink-0';
+            badge.style.backgroundColor = hex;
+            
+            const isLightColor = (hexStr: string) => {
+              let c = hexStr.substring(1);
+              if (c.length === 3) {
+                c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+              }
+              const rgb = parseInt(c, 16);
+              const r = (rgb >> 16) & 0xff;
+              const g = (rgb >> 8) & 0xff;
+              const b = (rgb >> 0) & 0xff;
+              const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              return luma > 180;
+            };
+            badge.style.color = isLightColor(hex) ? '#1a1a1a' : '#ffffff';
+            badge.title = `${hex} (Click to remove)`;
+            badge.innerHTML = '✕';
+
+            badge.addEventListener('click', () => {
+              const current = getSelectedColors();
+              const filtered = current.filter(c => c.toLowerCase() !== hex.toLowerCase());
+              inputEl.value = filtered.join(', ');
+              updateButtonStates();
+              inputEl.dispatchEvent(new Event('input'));
+            });
+
+            customContainer.appendChild(badge);
+          });
+        }
+      };
+
+      presets.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const hex = btn.dataset.color || '';
+          const current = getSelectedColors();
+          const lowerColors = current.map(c => c.toLowerCase());
+          const index = lowerColors.indexOf(hex.toLowerCase());
+
+          if (index > -1) {
+            current.splice(index, 1);
+          } else {
+            current.push(hex);
+          }
+
+          inputEl.value = current.join(', ');
+          updateButtonStates();
+          inputEl.dispatchEvent(new Event('input'));
+        });
+      });
+
+      if (draggablePicker && handle && pickerBtn) {
+        makeElementDraggable(draggablePicker, handle);
+
+        const closeBtn = draggablePicker.querySelector('.close-picker-btn');
+        const svBox = draggablePicker.querySelector('.color-picker-sv-box') as HTMLElement;
+        const svCursor = draggablePicker.querySelector('.color-picker-sv-cursor') as HTMLElement;
+        const hueSlider = draggablePicker.querySelector('.color-picker-hue') as HTMLInputElement;
+        const preview = draggablePicker.querySelector('.color-picker-preview') as HTMLElement;
+        const hexInput = draggablePicker.querySelector('.color-picker-hex-input') as HTMLInputElement;
+        const selectBtn = draggablePicker.querySelector('.color-picker-select-btn');
+        const dropperBtn = draggablePicker.querySelector('.color-picker-dropper-btn') as HTMLButtonElement | null;
+
+        let currentH = 0;
+        let currentS = 100;
+        let currentV = 100;
+
+        const updatePickerUi = (hexVal: string) => {
+          preview.style.backgroundColor = hexVal;
+          hexInput.value = hexVal.toUpperCase();
+          svBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+          svCursor.style.left = `${currentS}%`;
+          svCursor.style.top = `${100 - currentV}%`;
+          hueSlider.value = String(currentH);
+        };
+
+        const updateFromHsv = () => {
+          const hex = hsvToHex(currentH, currentS, currentV);
+          updatePickerUi(hex);
+        };
+
+        if (dropperBtn && 'EyeDropper' in window) {
+          dropperBtn.classList.remove('hidden');
+          dropperBtn.addEventListener('click', async () => {
+            try {
+              const eyeDropper = new (window as any).EyeDropper();
+              const result = await eyeDropper.open();
+              const hex = result.sRGBHex;
+              const hsv = hexToHsv(hex);
+              if (hsv) {
+                currentH = hsv.h;
+                currentS = hsv.s;
+                currentV = hsv.v;
+                updatePickerUi(hex);
+              }
+            } catch (err) {
+              console.error('EyeDropper failed:', err);
+            }
+          });
+        }
+
+        pickerBtn.addEventListener('click', () => {
+          draggablePicker.showModal();
+          const topVal = Math.max(20, (window.innerHeight - draggablePicker.offsetHeight) / 2);
+          const leftVal = Math.max(20, (window.innerWidth - draggablePicker.offsetWidth) / 2);
+          draggablePicker.style.top = `${topVal}px`;
+          draggablePicker.style.left = `${leftVal}px`;
+          draggablePicker.style.transform = 'none';
+          
+          const currentVal = hexInput.value;
+          const hsv = hexToHsv(currentVal);
+          if (hsv) {
+            currentH = hsv.h;
+            currentS = hsv.s;
+            currentV = hsv.v;
+          }
+          updateFromHsv();
+        });
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            draggablePicker.close();
+          });
+        }
+
+        hueSlider.addEventListener('input', () => {
+          currentH = parseInt(hueSlider.value, 10);
+          updateFromHsv();
+        });
+
+        let isMouseDownOnSv = false;
+        const handleSvEvent = (e: MouseEvent | TouchEvent) => {
+          const rect = svBox.getBoundingClientRect();
+          let clientX = 0;
+          let clientY = 0;
+          
+          if ('touches' in e) {
+            if (e.touches.length === 0) return;
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+          
+          let x = clientX - rect.left;
+          let y = clientY - rect.top;
+          
+          if (x < 0) x = 0;
+          if (x > rect.width) x = rect.width;
+          if (y < 0) y = 0;
+          if (y > rect.height) y = rect.height;
+          
+          currentS = Math.round((x / rect.width) * 100);
+          currentV = Math.round((1 - y / rect.height) * 100);
+          updateFromHsv();
+        };
+
+        svBox.addEventListener('mousedown', (e) => {
+          isMouseDownOnSv = true;
+          handleSvEvent(e);
+        });
+        document.addEventListener('mousemove', (e) => {
+          if (isMouseDownOnSv) handleSvEvent(e);
+        });
+        document.addEventListener('mouseup', () => {
+          isMouseDownOnSv = false;
+        });
+
+        svBox.addEventListener('touchstart', (e) => {
+          handleSvEvent(e);
+        }, { passive: true });
+        svBox.addEventListener('touchmove', (e) => {
+          handleSvEvent(e);
+        }, { passive: true });
+
+        hexInput.addEventListener('change', () => {
+          const hsv = hexToHsv(hexInput.value);
+          if (hsv) {
+            currentH = hsv.h;
+            currentS = hsv.s;
+            currentV = hsv.v;
+            updatePickerUi(hexInput.value);
+          }
+        });
+
+        if (selectBtn) {
+          selectBtn.addEventListener('click', () => {
+            const hex = hsvToHex(currentH, currentS, currentV);
+            const current = getSelectedColors();
+            if (!current.map(c => c.toLowerCase()).includes(hex.toLowerCase())) {
+              current.push(hex);
+              inputEl.value = current.join(', ');
+              updateButtonStates();
+              inputEl.dispatchEvent(new Event('input'));
+            }
+            draggablePicker.close();
+          });
+        }
+      }
+
+      inputEl.addEventListener('input', updateButtonStates);
+      updateButtonStates();
+    }
+
+    setupColorPalette(
+      'add-colors',
+      '.color-palette-btn-add',
+      'add-custom-colors-container',
+      'add-draggable-color-picker',
+      'add-draggable-color-picker-handle',
+      'add-custom-color-btn'
+    );
+
+    // Combined Image list and upload
+    let addProductCombinedImages: { imageUrl: string; color: string; isMain: boolean }[] = [];
+
+    const renderCombinedImagesList = (formType: 'add') => {
+      const listEl = document.getElementById(`${formType}-product-combined-images-list`);
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      let imagesArr = addProductCombinedImages;
+      if (!Array.isArray(imagesArr)) return;
+
+      imagesArr.forEach((img, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = "flex items-center justify-between gap-3 p-2 bg-white border border-stone-200 rounded-sm shadow-2xs";
+
+        const leftEl = document.createElement('div');
+        leftEl.className = "flex items-center gap-3";
+
+        const imgEl = document.createElement('img');
+        imgEl.src = img.imageUrl;
+        imgEl.className = "w-12 h-12 object-cover border border-stone-200 rounded-sm bg-stone-50";
+        leftEl.appendChild(imgEl);
+
+        const infoEl = document.createElement('div');
+        infoEl.className = "flex flex-col";
+
+        const typeEl = document.createElement('span');
+        typeEl.className = "text-[9px] uppercase tracking-widest text-stone-400 font-bold";
+        typeEl.textContent = img.isMain 
+          ? (lang === 'en' ? 'Main Cover Image' : 'รูปหน้าปกหลัก') 
+          : (lang === 'en' ? 'Detail Image' : 'รูปรายละเอียดสินค้า');
+        infoEl.appendChild(typeEl);
+
+        const colorSelectContainer = document.createElement('div');
+        colorSelectContainer.className = "flex items-center gap-1.5 mt-1";
+
+        const labelSelect = document.createElement('label');
+        labelSelect.className = "text-[8px] uppercase tracking-widest text-stone-500 font-semibold";
+        labelSelect.textContent = lang === 'en' ? 'Link Color:' : 'ผูกกับสี:';
+        colorSelectContainer.appendChild(labelSelect);
+
+        const selectEl = document.createElement('select');
+        selectEl.className = `${formType}-combined-image-color-select text-[9px] border border-stone-200 px-1 py-0.5 rounded bg-stone-50 focus:outline-none focus:border-brand-charcoal`;
+        selectEl.value = img.color || '';
+
+        selectEl.addEventListener('change', () => {
+          img.color = selectEl.value;
+        });
+
+        colorSelectContainer.appendChild(selectEl);
+        infoEl.appendChild(colorSelectContainer);
+        leftEl.appendChild(infoEl);
+
+        const rightEl = document.createElement('div');
+        rightEl.className = "flex items-center gap-2";
+
+        if (!img.isMain) {
+          const makeMainBtn = document.createElement('button');
+          makeMainBtn.type = 'button';
+          makeMainBtn.className = "text-[8px] uppercase tracking-widest font-bold border border-stone-200 text-stone-500 hover:text-brand-charcoal hover:border-brand-charcoal px-2 py-1 rounded transition-all cursor-pointer";
+          makeMainBtn.textContent = lang === 'en' ? 'Set Cover' : 'ตั้งเป็นหน้าปก';
+          makeMainBtn.addEventListener('click', () => {
+            imagesArr.forEach(i => i.isMain = false);
+            img.isMain = true;
+            renderCombinedImagesList(formType);
+          });
+          rightEl.appendChild(makeMainBtn);
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = "text-red-500 hover:text-red-700 text-xs px-2 py-1 cursor-pointer font-bold";
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          const wasMain = img.isMain;
+          imagesArr.splice(index, 1);
+          if (wasMain && imagesArr.length > 0) {
+            imagesArr[0].isMain = true;
+          }
+          renderCombinedImagesList(formType);
+        });
+
+        rightEl.appendChild(removeBtn);
+        itemEl.appendChild(leftEl);
+        itemEl.appendChild(rightEl);
+        listEl.appendChild(itemEl);
+      });
+
+      updateCombinedImageColorSelectors(formType);
+    };
+
+    const updateCombinedImageColorSelectors = (formType: 'add') => {
+      const colorsInput = document.getElementById(`${formType}-colors`) as HTMLInputElement | null;
+      if (!colorsInput) return;
+      const colors = colorsInput.value.split(',').map(c => c.trim()).filter(Boolean);
+
+      const dropdowns = document.querySelectorAll(`.${formType}-combined-image-color-select`);
+      dropdowns.forEach((selectEl: any) => {
+        const currentValue = selectEl.value;
+        selectEl.innerHTML = '';
+        
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = lang === 'en' ? 'No Color' : 'ไม่มีสี';
+        selectEl.appendChild(defOpt);
+        
+        colors.forEach(col => {
+          const opt = document.createElement('option');
+          opt.value = col;
+          opt.textContent = col;
+          selectEl.appendChild(opt);
+        });
+        
+        if (colors.includes(currentValue) || currentValue === '') {
+          selectEl.value = currentValue;
+        } else {
+          selectEl.value = '';
+        }
+      });
+    };
+
+    const addColorsInput = document.getElementById('add-colors') as HTMLInputElement | null;
+    if (addColorsInput) {
+      addColorsInput.addEventListener('input', () => {
+        updateCombinedImageColorSelectors('add');
+        renderCombinedImagesList('add');
+      });
+    }
+
+    const btnAdd = document.getElementById('btn-add-product-images');
+    const fileInput = document.getElementById('add-product-images-file') as HTMLInputElement | null;
+    const statusEl = document.getElementById('add-product-images-upload-status');
+
+    btnAdd?.addEventListener('click', () => {
+      fileInput?.click();
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const files = fileInput.files;
+      if (!files || files.length === 0) return;
+
+      if (statusEl) {
+        statusEl.textContent = lang === 'en' 
+          ? `Uploading ${files.length} image(s)...` 
+          : `กำลังอัปโหลด ${files.length} รูปภาพ...`;
+        statusEl.className = "text-[10px] text-stone-500 font-semibold";
+      }
+
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('/api/products/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            return { success: true, imageUrl: data.imageUrl };
+          } else {
+            const data = await res.json();
+            return { success: false, error: data.message || 'Upload failed' };
+          }
+        } catch (err) {
+          console.error(err);
+          return { success: false, error: 'Network error' };
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+
+      successful.forEach(res => {
+        const isFirst = addProductCombinedImages.length === 0;
+        addProductCombinedImages.push({ imageUrl: res.imageUrl!, color: '', isMain: isFirst });
+      });
+
+      if (statusEl) {
+        if (failed.length > 0) {
+          statusEl.textContent = lang === 'en'
+            ? `Uploaded ${successful.length} success, ${failed.length} failed.`
+            : `อัปโหลดสำเร็จ ${successful.length} รูป, ล้มเหลว ${failed.length} รูป`;
+          statusEl.className = "text-[10px] text-red-500 font-semibold";
+        } else {
+          statusEl.textContent = lang === 'en' ? 'All uploads successful' : 'อัปโหลดรูปภาพสำเร็จทั้งหมด';
+          statusEl.className = "text-[10px] text-green-600 font-semibold";
+        }
+      }
+
+      renderCombinedImagesList('add');
+    });
+
+    // Inline tags and categories logic
+    const initInlineCategoryForm = (mode: 'add') => {
+      const btnOpen = document.getElementById(`btn-create-category-inline-${mode}`);
+      const btnCancel = document.getElementById(`btn-cancel-category-inline-${mode}`);
+      const btnSubmit = document.getElementById(`btn-submit-category-inline-${mode}`);
+      const form = document.getElementById(`inline-category-form-${mode}`);
+      const input = document.getElementById(`inline-category-name-${mode}`) as HTMLInputElement;
+      const errorDiv = document.getElementById(`inline-category-error-${mode}`);
+      const select = document.getElementById(`${mode}-category`) as HTMLSelectElement;
+
+      if (!btnOpen || !btnCancel || !btnSubmit || !form || !input || !errorDiv || !select) return;
+
+      btnOpen.addEventListener('click', () => {
+        form.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        errorDiv.classList.add('hidden');
+      });
+
+      btnCancel.addEventListener('click', () => {
+        form.classList.add('hidden');
+      });
+
+      btnSubmit.addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (!name) {
+          errorDiv.textContent = getMsg('categoryNameRequired');
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        const slug = slugify(name);
+
+        try {
+          const res = await fetch('/api/products/categories', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, slug })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            const newId = data.id;
+            const newOption = new Option(name, String(newId));
+            select.add(newOption);
+            select.value = String(newId);
+            form.classList.add('hidden');
+          } else {
+            errorDiv.textContent = data.message || getMsg('failedCreateCategory');
+            errorDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          console.error(err);
+          errorDiv.textContent = getMsg('failedConnectBackend');
+          errorDiv.classList.remove('hidden');
+        }
+      });
+    };
+
+    const initInlineTagForm = (mode: 'add') => {
+      const btnOpen = document.getElementById(`btn-create-tag-inline-${mode}`);
+      const btnCancel = document.getElementById(`btn-cancel-tag-inline-${mode}`);
+      const btnSubmit = document.getElementById(`btn-submit-tag-inline-${mode}`);
+      const form = document.getElementById(`inline-tag-form-${mode}`);
+      const input = document.getElementById(`inline-tag-name-${mode}`) as HTMLInputElement;
+      const errorDiv = document.getElementById(`inline-tag-error-${mode}`);
+
+      if (!btnOpen || !btnCancel || !btnSubmit || !form || !input || !errorDiv) return;
+
+      btnOpen.addEventListener('click', () => {
+        form.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        errorDiv.classList.add('hidden');
+      });
+
+      btnCancel.addEventListener('click', () => {
+        form.classList.add('hidden');
+      });
+
+      btnSubmit.addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (!name) {
+          errorDiv.textContent = getMsg('tagNameRequired');
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        const slug = slugify(name);
+
+        try {
+          const res = await fetch('/api/products/tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, slug })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            const container = document.getElementById(`${mode}-tags-checkboxes-container`);
+            if (container) {
+              const emptySpan = container.querySelector('span.text-stone-400');
+              if (emptySpan) emptySpan.remove();
+
+              const exists = Array.from(container.querySelectorAll('input')).some(i => i.value === name);
+              if (!exists) {
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-1.5 text-xs cursor-pointer select-none border border-stone-100 px-2.5 py-1 rounded-sm bg-stone-50/50 hover:bg-stone-50 transition-colors';
+                label.innerHTML = `
+                  <input type="checkbox" value="${name}" checked class="tag-checkbox-${mode} border-stone-300 rounded-sm text-brand-charcoal focus:ring-brand-charcoal" />
+                  <span>${name}</span>
+                `;
+                container.appendChild(label);
+              } else {
+                const existingCheckbox = Array.from(container.querySelectorAll('input')).find(i => i.value === name);
+                if (existingCheckbox) {
+                  existingCheckbox.checked = true;
+                }
+              }
+            }
+            form.classList.add('hidden');
+          } else {
+            errorDiv.textContent = data.message || getMsg('failedCreateTag');
+            errorDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          console.error(err);
+          errorDiv.textContent = getMsg('failedConnectBackend');
+          errorDiv.classList.remove('hidden');
+        }
+      });
+    };
+
+    initInlineCategoryForm('add');
+    initInlineTagForm('add');
+
+    // Submit handler
+    const addForm = document.getElementById('add-product-form');
+    const addError = document.getElementById('add-error');
+
+    addForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addError) addError.classList.add('hidden');
+
+      const submitBtn = addForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const originalText = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = lang === 'en' ? 'Saving...' : 'กำลังบันทึกข้อมูล...';
+      }
+
+      const name = (document.getElementById('add-name') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-slug') as HTMLInputElement).value;
+      const price = parseFloat((document.getElementById('add-price') as HTMLInputElement).value);
+      const stockQuantity = parseInt((document.getElementById('add-stock') as HTMLInputElement).value, 10);
+      const allowOnOrder = (document.getElementById('add-allow-on-order') as HTMLInputElement).checked;
+      const onOrderQuantity = parseInt((document.getElementById('add-on-order-qty') as HTMLInputElement).value, 10) || 0;
+      const description = (document.getElementById('add-desc') as HTMLInputElement).value;
+      
+      const sizesStr = (document.getElementById('add-sizes') as HTMLInputElement).value;
+      const sizes = sizesStr.split(',').map((s: string) => s.trim()).filter(Boolean);
+      
+      const colorsStr = (document.getElementById('add-colors') as HTMLInputElement).value;
+      const colors = colorsStr.split(',').map((c: string) => c.trim()).filter(Boolean);
+
+      const tags: string[] = [];
+      document.querySelectorAll('.tag-checkbox-add:checked').forEach((cb) => {
+        tags.push((cb as HTMLInputElement).value);
+      });
+
+      const categoryId = parseInt((document.getElementById('add-category') as HTMLInputElement).value, 10);
+      const status = (document.getElementById('add-status') as HTMLSelectElement).value;
+
+      const mainImageObj = addProductCombinedImages.find(img => img.isMain);
+      const imageUrl = mainImageObj ? mainImageObj.imageUrl : '';
+      const images = addProductCombinedImages
+        .filter(img => !img.isMain)
+        .map(img => ({ imageUrl: img.imageUrl, color: img.color || '' }));
+
+      const payload = { name, slug, price, stockQuantity, allowOnOrder, onOrderQuantity, imageUrl, images, description, sizes, colors, tags, categoryId, status };
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.showStatusAlert(
+            200,
+            lang === 'en' ? 'Product created successfully.' : 'สร้างสินค้าเสร็จสมบูรณ์',
+            null,
+            true,
+            () => {
+              window.location.href = `/${lang}/admin?tab=products`;
+            }
+          );
+        } else {
+          const data = await res.json();
+          window.showStatusAlert(res.status, null, data ? data.message : getMsg('failedCreateProduct'));
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        window.showStatusAlert(0, getMsg('failedConnectBackend'));
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+  </script>
+</Layout>

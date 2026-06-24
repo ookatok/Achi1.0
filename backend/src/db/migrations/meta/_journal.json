@@ -71,6 +71,41 @@
       "when": 1781840417770,
       "tag": "0009_narrow_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1782100772921,
+      "tag": "0010_true_spencer_smythe",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1782112051586,
+      "tag": "0011_slimy_hawkeye",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1782204407424,
+      "tag": "0012_groovy_oracle",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1782270135546,
+      "tag": "0013_rapid_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1782271136990,
+      "tag": "0014_melodic_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

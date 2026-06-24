@@ -17,6 +17,9 @@ export default defineConfig({
     define: {
       BACKEND_URL: JSON.stringify(process.env.BACKEND_URL || 'http://localhost:3001'),
     },
+    server: {
+      allowedHosts: true,
+    },
   },
-  output: 'server', // Enable Server-Side Rendering (SSR) for Auth.js integration
+  output: 'server',
 });

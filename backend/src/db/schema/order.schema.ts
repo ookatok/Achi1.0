@@ -1,4 +1,4 @@
-import { mysqlTable, bigint, varchar, decimal, int, timestamp, mysqlEnum } from 'drizzle-orm/mysql-core';
+import { mysqlTable, bigint, varchar, decimal, int, timestamp, mysqlEnum, boolean } from 'drizzle-orm/mysql-core';
 import { users } from './user.schema';
 import { products } from './product.schema';
 
@@ -8,6 +8,7 @@ export const orders = mysqlTable('orders', {
   status: mysqlEnum('status', ['pending', 'paid', 'shipped', 'cancelled', 'refunded']).notNull().default('pending'),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
   shippingAddress: varchar('shipping_address', { length: 500 }).notNull(),
+  isPreOrder: boolean('is_pre_order').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });

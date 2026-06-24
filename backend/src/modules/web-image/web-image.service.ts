@@ -36,9 +36,13 @@ export class WebImageService implements OnModuleInit {
         const outputFilename = `${path.parse(file).name}.webp`;
         const outputPath = path.join(this.imagesDir, outputFilename);
 
-        // Check if WebP version already exists
+        // Check if WebP version already exists and is newer than the source image
         if (fs.existsSync(outputPath)) {
-          continue;
+          const sourceStat = fs.statSync(inputPath);
+          const destStat = fs.statSync(outputPath);
+          if (destStat.mtimeMs >= sourceStat.mtimeMs) {
+            continue;
+          }
         }
 
         try {

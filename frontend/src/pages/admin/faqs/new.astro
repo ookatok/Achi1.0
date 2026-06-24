@@ -1,0 +1,184 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
+}
+
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let pendingOrdersCount = 0;
+
+try {
+  // Fetch orders count
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    const orders = await ordRes.json();
+    pendingOrdersCount = orders.filter((o: any) => o.status === 'pending').length;
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching admin data failed.', err);
+}
+---
+
+<Layout title={lang === 'en' ? "Add FAQ | ACHI Studio" : "เพิ่มคำถามที่พบบ่อย | ACHI Studio"} isAdminPanel={true} pendingOrdersCount={pendingOrdersCount}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 bg-[#FAF9F6] min-h-screen" id="faq-editor-container" data-token={token} data-lang={lang}>
+    <div class="w-full bg-white border border-stone-200 p-8 sm:p-12 rounded-sm shadow-xs space-y-8">
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+        <h2 class="font-serif text-2xl tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? "Add New FAQ" : "เพิ่มคำถามที่พบบ่อยใหม่"}
+        </h2>
+        <a href={`/${lang}/admin?tab=faqs`} class="text-stone-400 hover:text-brand-charcoal text-xs uppercase tracking-wider font-semibold transition-colors">
+          &larr; {lang === 'en' ? "Back to FAQs" : "กลับไปยังหน้ารายการคำถาม"}
+        </a>
+      </div>
+
+      <form id="add-faq-form" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Left Column: Questions and Answers -->
+          <div class="lg:col-span-8 space-y-6">
+            <!-- English Section -->
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  English FAQ Details
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Question (English) *</label>
+                <textarea id="add-faq-question-en" required rows="3" class="w-full border border-stone-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm leading-relaxed"></textarea>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">Answer (English) *</label>
+                <textarea id="add-faq-answer-en" required rows="6" class="w-full border border-stone-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm leading-relaxed"></textarea>
+              </div>
+            </div>
+
+            <!-- Thai Section -->
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  รายละเอียดภาษาไทย
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">คำถาม (ภาษาไทย) *</label>
+                <textarea id="add-faq-question-th" required rows="3" class="w-full border border-stone-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm leading-relaxed"></textarea>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">คำตอบ (ภาษาไทย) *</label>
+                <textarea id="add-faq-answer-th" required rows="6" class="w-full border border-stone-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm leading-relaxed"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Settings -->
+          <div class="lg:col-span-4 space-y-6">
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  Settings
+                </h3>
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? "Sorting Order" : "ลำดับการแสดงผล"}</label>
+                <input type="number" id="add-faq-order" value="0" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              id="add-faq-submit-btn"
+              class="w-full bg-brand-charcoal text-white hover:bg-stone-800 py-3 rounded-sm text-[10px] uppercase tracking-widest font-semibold transition-all duration-300 cursor-pointer block text-center"
+            >
+              {lang === 'en' ? "Save FAQ" : "บันทึกคำถาม"}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('add-faq-form');
+    const container = document.getElementById('faq-editor-container');
+    const token = container?.getAttribute('data-token');
+    const lang = container?.getAttribute('data-lang') || 'en';
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('add-faq-submit-btn') as HTMLButtonElement | null;
+      const originalText = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = lang === 'en' ? 'SAVING...' : 'กำลังบันทึก...';
+      }
+
+      const questionEn = (document.getElementById('add-faq-question-en') as HTMLTextAreaElement).value;
+      const questionTh = (document.getElementById('add-faq-question-th') as HTMLTextAreaElement).value;
+      const answerEn = (document.getElementById('add-faq-answer-en') as HTMLTextAreaElement).value;
+      const answerTh = (document.getElementById('add-faq-answer-th') as HTMLTextAreaElement).value;
+      const order = parseInt((document.getElementById('add-faq-order') as HTMLInputElement).value || '0', 10);
+
+      const payload = { questionEn, questionTh, answerEn, answerTh, order };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/faqs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.showStatusAlert(
+            200,
+            lang === 'en' ? 'FAQ created successfully.' : 'สร้างคำถามที่พบบ่อยเสร็จสมบูรณ์',
+            null,
+            true,
+            () => {
+              window.location.href = `/${lang}/admin?tab=faqs`;
+            }
+          );
+        } else {
+          const data = await res.json();
+          window.showStatusAlert(res.status, null, data ? data.message : (lang === 'en' ? 'Failed to create FAQ.' : 'สร้างคำถามล้มเหลว'));
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        window.showStatusAlert(0, lang === 'en' ? 'Failed to connect to server.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+  </script>
+</Layout>

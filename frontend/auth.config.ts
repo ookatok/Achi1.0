@@ -2,6 +2,8 @@ import Credentials from "@auth/core/providers/credentials";
 import { defineConfig } from "auth-astro";
 
 export default defineConfig({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET || "f22e86ea19142bdf9d1cf37c05059ad83be1703db5d54a5a54db68ad7ea1dcde",
   providers: [
     Credentials({
       name: "Credentials",

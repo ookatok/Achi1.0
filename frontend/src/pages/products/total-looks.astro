@@ -10,11 +10,11 @@ const limit = 8;
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 let productsList = [] as any[];
@@ -59,7 +59,7 @@ const getColorsArray = (colors: any) => {
 
 <Layout title={lang === 'en' ? "Total Looks | ACHI Studio" : "ลุคทั้งหมด | ACHI Studio"} description={lang === 'en' ? "Complete outfit configurations designed as matching sets." : "ชุดแต่งกายครบชุดที่ออกแบบมาให้เข้าชุดกันอย่างลงตัว"} showHeroHeader={true}>
   <section class="w-full relative h-[60vh] bg-[#282828] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/set1.png?v=2');"></div>
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/set1.png?v=3');"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">

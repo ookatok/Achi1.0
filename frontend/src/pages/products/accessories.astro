@@ -12,11 +12,11 @@ const limit = 8;
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 let productsList = [] as any[];
@@ -64,7 +64,7 @@ const getColorsArray = (colors: any) => {
     title={lang === 'en' ? "Accessories" : "เครื่องประดับ"}
     subtitle={lang === 'en' ? "Curated Essentials" : "ของใช้จำเป็นที่คัดสรรมาอย่างดี"}
     rightText={lang === 'en' ? "Complete Your Look" : "เติมเต็มลุคของคุณ"}
-    imageUrl="/assets/images/banners/accessories.png?v=2"
+    imageUrl="/assets/images/banners/accessories.png?v=3"
     bgColor="#2E312F"
   />
 

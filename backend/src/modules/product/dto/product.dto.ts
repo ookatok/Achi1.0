@@ -6,6 +6,8 @@ export const CreateProductSchema = z.object({
   description: z.string().optional(),
   price: z.string().or(z.number()).transform((val) => Number(val)),
   stockQuantity: z.number().int().nonnegative().default(0),
+  allowOnOrder: z.boolean().optional().default(false),
+  onOrderQuantity: z.number().int().nonnegative().optional().default(0),
   categoryId: z.number().int().positive().nullable().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   images: z.array(z.object({

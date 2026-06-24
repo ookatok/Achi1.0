@@ -15,6 +15,8 @@ export class ProductService {
       description: dto.description,
       price: String(dto.price),
       stockQuantity: dto.stockQuantity,
+      allowOnOrder: dto.allowOnOrder,
+      onOrderQuantity: dto.onOrderQuantity,
       categoryId: dto.categoryId,
       imageUrl: dto.imageUrl,
       images: dto.images as { color?: string; imageUrl: string }[],
@@ -48,6 +50,8 @@ export class ProductService {
     if (dto.description !== undefined) updateFields.description = dto.description;
     if (dto.price !== undefined) updateFields.price = String(dto.price);
     if (dto.stockQuantity !== undefined) updateFields.stockQuantity = dto.stockQuantity;
+    if (dto.allowOnOrder !== undefined) updateFields.allowOnOrder = dto.allowOnOrder;
+    if (dto.onOrderQuantity !== undefined) updateFields.onOrderQuantity = dto.onOrderQuantity;
     if (dto.categoryId !== undefined) updateFields.categoryId = dto.categoryId;
     if (dto.imageUrl !== undefined) updateFields.imageUrl = dto.imageUrl;
     if (dto.images !== undefined) updateFields.images = dto.images as { color?: string; imageUrl: string }[];

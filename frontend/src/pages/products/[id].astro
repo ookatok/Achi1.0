@@ -10,11 +10,11 @@ const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' |
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 const parseArray = (val: any) => {
@@ -52,6 +52,7 @@ let title = '';
 let desc = '';
 let coverImage = null;
 let collectionTotalPages = 1;
+let collectionData = null as any;
 
 if (isNumericId) {
   // Fetch user session for token authorization
@@ -83,7 +84,6 @@ if (isNumericId) {
   const limit = 8;
 
   let productsList = [] as any[];
-  let collectionData = null as any;
   let totalCollectionProducts = 0;
 
   try {
@@ -116,6 +116,112 @@ if (isNumericId) {
   coverImage = collectionData ? collectionData.imageUrl : null;
   collectionTotalPages = Math.max(1, Math.ceil(totalCollectionProducts / limit));
 }
+
+const SEEDED_COLLECTIONS_FALLBACK: Record<string, {
+  storyTitle: { en: string; th: string };
+  storySubtitle: { en: string; th: string };
+  storyParagraphs: { en: string[]; th: string[] };
+  sideImage: string;
+  galleryImages: string[];
+}> = {
+  'spring-blossom-2026': {
+    storyTitle: {
+      en: "Chasing the Vernal Light",
+      th: "เมื่อแสงแรกแห่งฤดูใบไม้ผลิมาเยือน"
+    },
+    storySubtitle: {
+      en: "A study in fresh beginnings, tailored fluidity, and breathable premium linen.",
+      th: "การค้นหารูปแบบการแต่งกายที่เบาสบาย ทรงเสื้อที่พริ้วไหวประณีต และความหรูหราของผ้าลินินคุณภาพสูง"
+    },
+    storyParagraphs: {
+      en: [
+        "The Spring Blossom 2026 collection marks a return to nature's softest textures and clean architectural lines. Inspired by the quiet bloom of cherry blossoms against raw concrete structures, this collection explores the dialogue between soft seasonal transitions and daily urban utility.",
+        "We focus on carefully selected light linen, organic cotton, and breathable knits that flow with movement. From transitional trench coats to daily polo shirts and minimal leather sneakers, each silhouette is tailored to represent a sense of refined ease and natural comfort for your daily routines."
+      ],
+      th: [
+        "คอลเลกชัน Spring Blossom 2026 เป็นสัญลักษณ์ของการหวนคืนสู่ผิวสัมผัสที่อ่อนโยนของธรรมชาติและเส้นสายทางสถาปัตยกรรมที่เรียบง่าย ได้รับแรงบันดาลใจจากการเบ่งบานอย่างเงียบสงบของดอกซากุระตัดกับโครงสร้างคอนกรีตที่ดิบเท่ คอลเลกชันนี้สำรวจบทสนทนาระหว่างการเปลี่ยนผ่านของฤดูกาลที่อ่อนโยนและประโยชน์ใช้สอยในเมืองใหญ่",
+        "เราเน้นที่การคัดสรรผ้าลินินเนื้อบางเบา ผ้าฝ้ายออร์แกนิก และเสื้อถักที่ระบายอากาศได้ดี ซึ่งเคลื่อนไหวไปพร้อมกับคุณ ตั้งแต่เสื้อโค้ทเทรนช์สำหรับช่วงเปลี่ยนฤดู ไปจนถึงเสื้อโปโลที่สวมใส่ได้ทุกวันและรองเท้าผ้าใบหนังดีไซน์มินิมอล ทุกชิ้นส่วนถูกตัดเย็บเพื่อสะท้อนถึงความประณีตและความสบายตามธรรมชาติในชีวิตประจำวันของคุณ"
+      ]
+    },
+    sideImage: "/assets/images/editorial-side.png",
+    galleryImages: [
+      "/assets/images/spring_lookbook1.png",
+      "/assets/images/spring_lookbook2.png",
+      "/assets/images/spring_lookbook3.png"
+    ]
+  },
+  'summer-essentials-2026': {
+    storyTitle: {
+      en: "Sun-Drenched Simplicity",
+      th: "ความเรียบง่ายภายใต้แสงแดดอบอุ่น"
+    },
+    storySubtitle: {
+      en: "Breathable fabrics, relaxed cuts, and curated essentials for the warm season.",
+      th: "ผ้าที่ระบายอากาศได้ดี ทรงหลวมสบาย และไอเท็มจำเป็นที่ได้รับการคัดสรรสำหรับฤดูร้อน"
+    },
+    storyParagraphs: {
+      en: [
+        "Our Summer Essentials 2026 collection is inspired by sun-drenched coastlines and slow living. Emphasizing ease and breathability, the collection highlights lightweight linens, relaxed trousers, and versatile accessories designed to keep you cool and chic.",
+        "Designed for the hottest days, the selection features minimalist watches, cream tailored trousers, and soft leather sandals. Each piece is crafted to transition effortlessly from beachside strolls to warm city nights, capturing the ultimate summer mood."
+      ],
+      th: [
+        "คอลเลกชัน Summer Essentials 2026 ของเราได้รับแรงบันดาลใจจากชายฝั่งทะเลที่อาบไปด้วยแสงแดดและการใช้ชีวิตที่ช้าลง โดยเน้นที่ความสบายและการระบายอากาศเป็นหลัก คอลเลกชันนี้นำเสนอผ้าลินินน้ำหนักเบา กางเกงทรงหลวม และเครื่องประดับสารพัดประโยชน์ที่ออกแบบมาเพื่อให้คุณรู้สึกเย็นและมีสไตล์",
+        "ออกแบบมาสำหรับวันที่มีอากาศร้อนที่สุด คอลเลกชันนี้ประกอบด้วยนาฬิกาดีไซน์มินิมอล กางเกงสแล็กสีครีม และรองเท้าแตะหนังนุ่ม ทุกชิ้นสร้างสรรค์ขึ้นเพื่อสวมใส่ได้อย่างง่ายดายตั้งแต่การเดินเล่นริมหาดไปจนถึงค่ำคืนที่อบอุ่นในเมืองใหญ่ สะท้อนถึงอารมณ์แห่งฤดูร้อนที่แท้จริง"
+      ]
+    },
+    sideImage: "/assets/images/set1.png",
+    galleryImages: [
+      "/assets/images/women-hero.png",
+      "/assets/images/set2.png",
+      "/assets/images/set3.png"
+    ]
+  }
+};
+
+let parsedStoryParagraphsEn = [];
+let parsedStoryParagraphsTh = [];
+let parsedGalleryImages = [];
+
+if (collectionData) {
+  try {
+    parsedStoryParagraphsEn = collectionData.storyParagraphsEn ? JSON.parse(collectionData.storyParagraphsEn) : [];
+  } catch (e) {
+    parsedStoryParagraphsEn = collectionData.storyParagraphsEn ? [collectionData.storyParagraphsEn] : [];
+  }
+
+  try {
+    parsedStoryParagraphsTh = collectionData.storyParagraphsTh ? JSON.parse(collectionData.storyParagraphsTh) : [];
+  } catch (e) {
+    parsedStoryParagraphsTh = collectionData.storyParagraphsTh ? [collectionData.storyParagraphsTh] : [];
+  }
+
+  try {
+    parsedGalleryImages = collectionData.galleryImages ? JSON.parse(collectionData.galleryImages) : [];
+  } catch (e) {
+    parsedGalleryImages = [];
+  }
+}
+
+// Check if database contains story details, otherwise use fallback for seeded ones
+const dbHasStory = collectionData && (collectionData.storyTitleEn || collectionData.storyTitleTh);
+const fallbackMeta = id && !isNumericId ? SEEDED_COLLECTIONS_FALLBACK[id] : null;
+
+const metadata = dbHasStory ? {
+  storyTitle: {
+    en: collectionData.storyTitleEn || collectionData.title,
+    th: collectionData.storyTitleTh || collectionData.title,
+  },
+  storySubtitle: {
+    en: collectionData.storySubtitleEn || '',
+    th: collectionData.storySubtitleTh || '',
+  },
+  storyParagraphs: {
+    en: parsedStoryParagraphsEn,
+    th: parsedStoryParagraphsTh,
+  },
+  sideImage: collectionData.storyImageUrl || collectionData.imageUrl || '/assets/images/editorial-side.png',
+  galleryImages: parsedGalleryImages,
+} : fallbackMeta;
 
 const productId = displayProduct?.id || null;
 ---
@@ -182,17 +288,48 @@ const productId = displayProduct?.id || null;
               {displayProduct?.name}
             </h1>
             
-            {displayProduct?.status === 'inactive' && (
-              <div class="mb-4">
-                <span class="inline-block bg-red-50 text-red-600 border border-red-100 text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded-sm">
-                  {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
-                </span>
-              </div>
-            )}
+             {displayProduct?.status === 'inactive' ? (
+               <div class="mb-4">
+                 <span class="inline-block bg-red-50 text-red-600 border border-red-100 text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded-sm">
+                   {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
+                 </span>
+               </div>
+             ) : displayProduct?.stockQuantity === 0 ? (
+               displayProduct?.allowOnOrder ? (
+                 <div class="mb-4">
+                   <span class="inline-block bg-amber-50 text-amber-700 border border-amber-200 text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded-sm">
+                     {lang === 'en' ? 'On-Order / Pre-Order' : 'เปิดรับสั่งจองแบบ On-Order'}
+                   </span>
+                 </div>
+               ) : (
+                 <div class="mb-4">
+                   <span class="inline-block bg-red-50 text-red-600 border border-red-100 text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded-sm">
+                     {lang === 'en' ? 'Out of Stock' : 'สินค้าหมดชั่วคราว'}
+                   </span>
+                 </div>
+               )
+             ) : null}
             
-            <div class="text-xl font-semibold text-brand-charcoal mb-6">
-              ${Number(displayProduct?.price).toLocaleString()}
-            </div>
+            <div class="flex items-center gap-3.5 mb-6">
+               <span class="text-xl font-semibold text-brand-charcoal">
+                 ${Number(displayProduct?.price).toLocaleString()}
+               </span>
+               {displayProduct?.status !== 'inactive' && (
+                 displayProduct?.stockQuantity > 0 ? (
+                   <span class="text-[10px] uppercase tracking-wider font-semibold text-green-700 bg-green-50 border border-green-200/60 px-2.5 py-0.5 rounded-sm">
+                      {displayProduct?.stockQuantity} pcs
+                   </span>
+                 ) : displayProduct?.allowOnOrder ? (
+                   <span class="text-[10px] uppercase tracking-wider font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-2.5 py-0.5 rounded-sm">
+                     {lang === 'en' ? 'Pre-Order Only' : 'สั่งจองพรีออเดอร์เท่านั้น'}
+                   </span>
+                 ) : (
+                   <span class="text-[10px] uppercase tracking-wider font-semibold text-red-700 bg-red-50 border border-red-200/60 px-2.5 py-0.5 rounded-sm">
+                     {lang === 'en' ? 'Out of stock' : 'สินค้าหมด'}
+                   </span>
+                 )
+               )}
+             </div>
             
             <p class="text-xs text-gray-500 font-light leading-relaxed mb-4">
               {lang === 'en' 
@@ -261,18 +398,52 @@ const productId = displayProduct?.id || null;
               </div>
             </div>
           )}
+           {/* Quantity Selector Row */}
+           <div class="mb-6">
+             <h4 class="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-3">
+               {lang === 'en' ? "Quantity" : "จำนวนสินค้า"}
+             </h4>
+             <div class="flex items-center w-32 border border-gray-200 rounded-sm bg-white">
+               <button 
+                 type="button" 
+                 id="qty-minus-btn"
+                 class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-charcoal transition-all cursor-pointer font-bold focus:outline-none"
+               >
+                 &minus;
+               </button>
+               <input 
+                 type="number" 
+                 id="qty-input" 
+                 value="1" 
+                 min="1" 
+                 max="99" 
+                 class="w-12 h-10 text-center text-xs font-semibold text-brand-charcoal focus:outline-none bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+               />
+               <button 
+                 type="button" 
+                 id="qty-plus-btn"
+                 class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-brand-charcoal transition-all cursor-pointer font-bold focus:outline-none"
+               >
+                 &#43;
+               </button>
+             </div>
+           </div>
 
           {/* Add To Cart & Favorite Row */}
           <div>
             <div class="flex gap-4">
               <button
                 id="add-to-cart-btn"
-                disabled={displayProduct?.status === 'inactive'}
-                class={`flex-grow py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 ${displayProduct?.status === 'inactive' ? 'bg-stone-200 text-stone-400 border border-stone-300 cursor-not-allowed' : 'bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal cursor-pointer'}`}
+                disabled={displayProduct?.status === 'inactive' || (displayProduct?.stockQuantity === 0 && !displayProduct?.allowOnOrder)}
+                class={`flex-grow py-4 rounded-sm text-xs uppercase tracking-[0.2em] font-semibold transition-all duration-300 ${(displayProduct?.status === 'inactive' || (displayProduct?.stockQuantity === 0 && !displayProduct?.allowOnOrder)) ? 'bg-stone-200 text-stone-400 border border-stone-300 cursor-not-allowed' : 'bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal cursor-pointer'}`}
               >
                 {displayProduct?.status === 'inactive'
                   ? (lang === 'en' ? "NOT AVAILABLE" : "งดจำหน่าย")
-                  : (lang === 'en' ? "ADD TO CART" : "เพิ่มลงในตะกร้า")
+                  : displayProduct?.stockQuantity === 0
+                    ? displayProduct?.allowOnOrder
+                      ? (lang === 'en' ? "PRE-ORDER NOW" : "สั่งจองแบบ On-Order")
+                      : (lang === 'en' ? "OUT OF STOCK" : "สินค้าหมด")
+                    : (lang === 'en' ? "ADD TO CART" : "เพิ่มลงในตะกร้า")
                 }
               </button>
               <button
@@ -407,8 +578,33 @@ const productId = displayProduct?.id || null;
         });
       }
 
+      // Quantity Selector Logic
+      const qtyMinusBtn = document.getElementById('qty-minus-btn');
+      const qtyPlusBtn = document.getElementById('qty-plus-btn');
+      const qtyInput = document.getElementById('qty-input');
+
+      if (qtyMinusBtn && qtyPlusBtn && qtyInput) {
+        qtyMinusBtn.addEventListener('click', () => {
+          let currentVal = parseInt(qtyInput.value, 10) || 1;
+          if (currentVal > 1) {
+            qtyInput.value = currentVal - 1;
+          }
+        });
+
+        qtyPlusBtn.addEventListener('click', () => {
+          let currentVal = parseInt(qtyInput.value, 10) || 1;
+          qtyInput.value = currentVal + 1;
+        });
+
+        qtyInput.addEventListener('change', () => {
+          let currentVal = parseInt(qtyInput.value, 10);
+          if (isNaN(currentVal) || currentVal < 1) {
+            qtyInput.value = 1;
+          }
+        });
+      }
+
       const addToCartBtn = document.getElementById('add-to-cart-btn');
-      const cartMsg = document.getElementById('cart-msg');
 
       if (addToCartBtn) {
         addToCartBtn.addEventListener('click', async () => {
@@ -420,6 +616,8 @@ const productId = displayProduct?.id || null;
           addToCartBtn.disabled = true;
           addToCartBtn.textContent = isEn ? 'ADDING TO CART...' : 'กำลังเพิ่มลงในตะกร้า...';
 
+          const quantity = qtyInput ? parseInt(qtyInput.value, 10) || 1 : 1;
+
           try {
             const res = await fetch('http://localhost:3001/api/cart/add', {
               method: 'POST',
@@ -429,7 +627,7 @@ const productId = displayProduct?.id || null;
               },
               body: JSON.stringify({
                 productId,
-                quantity: 1,
+                quantity,
                 size: selectedSize || undefined,
                 color: selectedColor || undefined
               })
@@ -438,20 +636,14 @@ const productId = displayProduct?.id || null;
             const data = await res.json();
 
             if (res.ok) {
-              if (cartMsg) {
-                cartMsg.textContent = isEn ? 'Item added to your cart successfully!' : 'เพิ่มสินค้าลงในตะกร้าของคุณเรียบร้อยแล้ว!';
-                cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-green-50 border-l-2 border-green-500 text-green-600 block';
-              }
+              window.showStatusAlert(200, isEn ? 'Item added to your cart successfully!' : 'เพิ่มสินค้าลงในตะกร้าของคุณเรียบร้อยแล้ว!', null, true);
               window.dispatchEvent(new CustomEvent('cart-updated'));
             } else {
-              throw new Error(data.message || (isEn ? 'Could not add item' : 'ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้'));
+              window.showStatusAlert(res.status, null, data ? data.message : (isEn ? 'Could not add item' : 'ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้'));
             }
           } catch (err) {
             console.error(err);
-            if (cartMsg) {
-              cartMsg.textContent = err.message || (isEn ? 'An error occurred.' : 'เกิดข้อผิดพลาดขึ้น');
-              cartMsg.className = 'mt-4 p-4 text-xs font-medium rounded-sm bg-red-50 border-l-2 border-red-500 text-red-600 block';
-            }
+            window.showStatusAlert(0, isEn ? 'Failed to connect to backend server.' : 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์แบ็คเอนด์ได้');
           } finally {
             addToCartBtn.disabled = false;
             addToCartBtn.textContent = isEn ? 'ADD TO CART' : 'เพิ่มลงในตะกร้า';
@@ -485,11 +677,12 @@ const productId = displayProduct?.id || null;
     description={desc || (lang === 'en' ? "Shop seasonal collection items." : "ช้อปสินค้าประจำคอลเลกชัน")} 
     showHeroHeader={true}
   >
+    {/* Cover Header Banner */}
     <section class="w-full relative h-[60vh] bg-[#222222] flex items-center justify-center text-white overflow-hidden">
       {coverImage ? (
         <div class="absolute inset-0 bg-cover bg-center" style={`background-image: url('${resolveImage(coverImage)}');`}></div>
       ) : (
-        <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('/assets/images/collection-hero.png?v=2');"></div>
+        <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image: url('/assets/images/collection-hero.png?v=3');"></div>
       )}
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70"></div>
       
@@ -512,7 +705,8 @@ const productId = displayProduct?.id || null;
       </div>
     </section>
 
-    <section class="border-b border-gray-100 bg-white">
+    {/* Breadcrumbs navigation */}
+    <section class="border-b border-stone-200/50 bg-white">
       <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] uppercase tracking-wider font-light text-gray-400">
         <nav class="flex items-center gap-2">
           <a href="/" class="hover:text-brand-charcoal transition-colors">{lang === 'en' ? "Home" : "หน้าแรก"}</a>
@@ -525,10 +719,141 @@ const productId = displayProduct?.id || null;
       </div>
     </section>
 
-    <div class="max-w-[1440px] mx-auto px-6 py-16">
+    {/* Editorial Storytelling Section */}
+    {metadata && (
+      <section class="bg-[#FAF9F6] border-b border-stone-200/40 py-24 px-6 overflow-hidden">
+        <div class="max-w-[1440px] mx-auto">
+          {/* Header */}
+          <div class="mb-16 text-center max-w-3xl mx-auto space-y-4">
+            <span class="text-[10px] tracking-[0.25em] font-semibold text-stone-400 uppercase block">
+              {lang === 'en' ? "THE NARRATIVE" : "เรื่องราวประจำคอลเลกชัน"}
+            </span>
+            <h2 class="font-serif text-3xl sm:text-5xl font-light tracking-wide text-brand-charcoal uppercase leading-tight">
+              {metadata.storyTitle[lang]}
+            </h2>
+            <div class="w-16 h-[1px] bg-brand-gold/60 mx-auto my-6"></div>
+            <p class="text-sm sm:text-base font-light text-stone-500 italic leading-relaxed max-w-2xl mx-auto">
+              "{metadata.storySubtitle[lang]}"
+            </p>
+          </div>
+
+          {/* Grid Layout */}
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left: Beautiful editorial image with subtle shadow and border */}
+            <div class="relative group overflow-hidden bg-stone-100 rounded-xs aspect-[4/3] border border-stone-200/40 shadow-xs">
+              <img 
+                src={resolveImage(metadata.sideImage)} 
+                alt="Editorial side photo" 
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-102"
+              />
+              <div class="absolute inset-0 bg-stone-900/5 group-hover:bg-stone-900/0 transition-all duration-500"></div>
+            </div>
+
+            {/* Right: Story content */}
+            <div class="space-y-6 text-stone-600 font-light text-sm sm:text-[15px] leading-relaxed tracking-wide editorial-story-content">
+              {metadata.storyParagraphs[lang].map((paragraph: string) => {
+                if (typeof paragraph === 'string' && (paragraph.trim().startsWith('<') || paragraph.trim().includes('</p>'))) {
+                  return <div set:html={paragraph} />;
+                }
+                return <p class="text-justify leading-relaxed">{paragraph}</p>;
+              })}
+              
+              <div class="pt-6 flex items-center gap-4">
+                <span class="h-[1px] w-12 bg-brand-gold/60"></span>
+                <span class="text-[9px] tracking-[0.2em] font-semibold text-brand-charcoal uppercase">
+                  {lang === 'en' ? "ACHI STUDIO DESIGN LAB" : "ห้องปฏิบัติการออกแบบ ACHI STUDIO"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {/* Lookbook Gallery Section */}
+    {metadata && metadata.galleryImages && metadata.galleryImages.length > 0 && (
+      <section class="bg-white border-b border-stone-200/20 py-24 px-6">
+        <div class="max-w-[1440px] mx-auto">
+          {/* Section Header */}
+          <div class="mb-16 flex flex-col items-center space-y-4">
+            <span class="text-[10px] tracking-[0.25em] font-semibold text-stone-400 uppercase block">
+              {lang === 'en' ? "VISUAL NARRATIVE" : "ภาพถ่ายคอลเลกชัน"}
+            </span>
+            <h2 class="font-serif text-3xl sm:text-4xl font-light tracking-wide text-brand-charcoal uppercase text-center">
+              {lang === 'en' ? "LOOKBOOK GALLERY" : "ลุคบุคแกลเลอรี"}
+            </h2>
+            <div class="w-16 h-[1px] bg-brand-gold/60"></div>
+          </div>
+
+          {/* Asymmetric lookbook grid wrapper with navigation arrows */}
+          <div class="relative px-10 sm:px-16">
+            <!-- Left Arrow Button -->
+            <button 
+              id="gallery-prev-btn" 
+              class="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-20 p-2 text-stone-300 hover:text-brand-charcoal disabled:opacity-0 transition-all cursor-pointer focus:outline-none"
+              aria-label="Previous set"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+
+            <!-- Grid container -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch w-full overflow-hidden" id="lookbook-gallery-grid">
+              {metadata.galleryImages.map((imgSrc: string, index: number) => (
+                <div 
+                  class="lookbook-frame relative overflow-hidden bg-stone-50 border border-stone-200/30 rounded-xs shadow-xs group aspect-[3/4] transition-opacity duration-300" 
+                  data-index={index}
+                  style={index >= 3 ? "display: none; opacity: 0;" : ""}
+                >
+                  <img 
+                    src={resolveImage(imgSrc)} 
+                    alt={`Lookbook frame ${index + 1}`} 
+                    class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103" 
+                  />
+                  <div class="absolute inset-0 bg-stone-900/10 group-hover:bg-black/35 transition-all duration-500 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100">
+                    <span class="text-white text-[9px] tracking-[0.3em] font-light uppercase mb-1">
+                      {lang === 'en' ? "FRAME" : "เฟรม"} 0{index + 1}
+                    </span>
+                    <span class="text-white font-serif text-xs tracking-[0.15em] uppercase font-light">
+                      {title}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <!-- Right Arrow Button -->
+            <button 
+              id="gallery-next-btn" 
+              class="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-20 p-2 text-stone-300 hover:text-brand-charcoal disabled:opacity-0 transition-all cursor-pointer focus:outline-none"
+              aria-label="Next set"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {/* Products Listing Catalog */}
+    <div class="max-w-[1440px] mx-auto px-6 py-24">
+      {/* Catalog Title */}
+      <div class="mb-16 flex flex-col items-center space-y-4">
+        <span class="text-[10px] tracking-[0.25em] font-semibold text-stone-400 uppercase block">
+          {lang === 'en' ? "CURATED PIECES" : "สินค้าที่คัดสรร"}
+        </span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-light tracking-wide text-brand-charcoal uppercase text-center">
+          {lang === 'en' ? "SHOP THE COLLECTION" : "ช้อปสินค้าในคอลเลกชัน"}
+        </h2>
+        <div class="w-16 h-[1px] bg-brand-gold/60"></div>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {displayProducts.map((product: any) => (
-          <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
+          <div class="flex flex-col justify-between p-6 bg-white border border-stone-200/50 rounded-xs product-card-hover group relative">
             <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
@@ -536,9 +861,9 @@ const productId = displayProduct?.id || null;
             </button>
 
             <!-- Product Image Box -->
-            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
+            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-stone-50/50 border border-stone-100 rounded-xs mb-6 relative group">
               {product.imageUrl ? (
-                <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102" />
               ) : (
                 <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
                   [Image: {product.name}]
@@ -583,7 +908,145 @@ const productId = displayProduct?.id || null;
       <!-- Pagination Component -->
       {displayProducts.length > 0 && <Pagination totalPages={collectionTotalPages} />}
     </div>
+
+    <script is:inline>
+      (function() {
+        const frames = document.querySelectorAll('.lookbook-frame');
+        const prevBtn = document.getElementById('gallery-prev-btn');
+        const nextBtn = document.getElementById('gallery-next-btn');
+
+        if (frames.length > 3) {
+          let currentPage = 0;
+          const totalPages = Math.ceil(frames.length / 3);
+
+          const updateGallery = () => {
+            frames.forEach((frame) => {
+              const idx = parseInt(frame.getAttribute('data-index') || '0', 10);
+              const start = currentPage * 3;
+              const end = start + 3;
+
+              if (idx >= start && idx < end) {
+                frame.style.display = '';
+                // Force redraw for opacity transition
+                setTimeout(() => {
+                  frame.style.opacity = '1';
+                }, 10);
+              } else {
+                frame.style.opacity = '0';
+                frame.style.display = 'none';
+              }
+            });
+
+            // Update prev button state
+            if (prevBtn) {
+              if (currentPage === 0) {
+                prevBtn.setAttribute('disabled', 'true');
+                prevBtn.style.opacity = '0';
+                prevBtn.style.pointerEvents = 'none';
+              } else {
+                prevBtn.removeAttribute('disabled');
+                prevBtn.style.opacity = '1';
+                prevBtn.style.pointerEvents = 'auto';
+              }
+            }
+
+            // Update next button state
+            if (nextBtn) {
+              if (currentPage === totalPages - 1) {
+                nextBtn.setAttribute('disabled', 'true');
+                nextBtn.style.opacity = '0';
+                nextBtn.style.pointerEvents = 'none';
+              } else {
+                nextBtn.removeAttribute('disabled');
+                nextBtn.style.opacity = '1';
+                nextBtn.style.pointerEvents = 'auto';
+              }
+            }
+          };
+
+          // Event listeners
+          prevBtn?.addEventListener('click', () => {
+            if (currentPage > 0) {
+              currentPage--;
+              updateGallery();
+            }
+          });
+
+          nextBtn?.addEventListener('click', () => {
+            if (currentPage < totalPages - 1) {
+              currentPage++;
+              updateGallery();
+            }
+          });
+
+          // Initialize
+          updateGallery();
+        } else {
+          if (prevBtn) prevBtn.style.display = 'none';
+          if (nextBtn) nextBtn.style.display = 'none';
+        }
+      })();
+    </script>
   </Layout>
 )}
+
+<style is:global>
+  .editorial-story-content h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: #1c1917; /* brand-charcoal */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .editorial-story-content h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #1c1917;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .editorial-story-content h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #1c1917;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .editorial-story-content p {
+    margin-bottom: 1.5rem;
+  }
+  .editorial-story-content p:last-child {
+    margin-bottom: 0;
+  }
+  .editorial-story-content strong {
+    font-weight: 600;
+    color: #1c1917; /* brand-charcoal */
+  }
+  .editorial-story-content em {
+    font-style: italic;
+  }
+  .editorial-story-content ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .editorial-story-content ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+</style>
 
 The above content shows the entire, complete file contents of the requested file.

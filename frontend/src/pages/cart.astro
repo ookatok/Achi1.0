@@ -94,7 +94,7 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
                 {/* Card Top: Title */}
                 <div class="text-center">
                   <h3 class="font-serif text-base font-medium text-brand-charcoal uppercase tracking-wider">
-                    {translateProductName(item.productName, lang)} {item.quantity} {item.size || ''}
+                    {translateProductName(item.productName, lang)} {item.size ? `(${item.size})` : ''}
                   </h3>
                   {item.color && (
                     <span class="text-[10px] tracking-widest text-gray-400 uppercase font-light mt-1 block">
@@ -114,7 +114,33 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
 
                 {/* Card Bottom: Quantity and Subtotal */}
                 <div class="border-t border-gray-100 pt-4 flex items-center justify-between text-xs tracking-wider font-light text-gray-500 uppercase">
-                  <span>{item.quantity} X</span>
+                  <div class="flex items-center border border-gray-200 rounded-sm bg-white overflow-hidden shadow-sm">
+                    <button 
+                      type="button" 
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-brand-charcoal hover:bg-stone-50 transition-all cursor-pointer font-bold focus:outline-none cart-qty-minus-btn"
+                      data-item-id={item.id}
+                      data-current-qty={item.quantity}
+                    >
+                      &minus;
+                    </button>
+                    <input 
+                      type="number" 
+                      value={item.quantity} 
+                      min="1" 
+                      max="99" 
+                      class="w-10 h-8 text-center text-xs font-semibold text-brand-charcoal focus:outline-none bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cart-qty-input"
+                      data-item-id={item.id}
+                      data-current-qty={item.quantity}
+                    />
+                    <button 
+                      type="button" 
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-brand-charcoal hover:bg-stone-50 transition-all cursor-pointer font-bold focus:outline-none cart-qty-plus-btn"
+                      data-item-id={item.id}
+                      data-current-qty={item.quantity}
+                    >
+                      &#43;
+                    </button>
+                  </div>
                   <div class="flex items-center gap-4">
                     <span class="text-brand-charcoal font-medium">{lang === 'en' ? 'Subtotal' : 'ยอดรวมย่อย'}</span>
                     <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
@@ -201,6 +227,66 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
             console.error(err);
             alert(isEn ? 'A network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย');
           }
+        }
+      });
+    });
+
+    // Update quantity function helper
+    const updateCartItemQuantity = async (itemId, newQty) => {
+      if (!itemId || !token) return;
+      const isEn = lang === 'en';
+      try {
+        const res = await fetch(`http://localhost:3001/api/cart/item/${itemId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ quantity: newQty })
+        });
+
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data && data.message ? data.message : (isEn ? 'Failed to update quantity.' : 'ปรับปรุงจำนวนสินค้าล้มเหลว'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert(isEn ? 'A network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย');
+      }
+    };
+
+    // Setup listeners for cart quantity adjustment buttons
+    document.querySelectorAll('.cart-qty-minus-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const itemId = btn.getAttribute('data-item-id');
+        const currentQty = parseInt(btn.getAttribute('data-current-qty'), 10) || 1;
+        if (currentQty > 1) {
+          await updateCartItemQuantity(itemId, currentQty - 1);
+        }
+      });
+    });
+
+    document.querySelectorAll('.cart-qty-plus-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const itemId = btn.getAttribute('data-item-id');
+        const currentQty = parseInt(btn.getAttribute('data-current-qty'), 10) || 1;
+        await updateCartItemQuantity(itemId, currentQty + 1);
+      });
+    });
+
+    document.querySelectorAll('.cart-qty-input').forEach(input => {
+      input.addEventListener('change', async () => {
+        const itemId = input.getAttribute('data-item-id');
+        const originalQty = parseInt(input.getAttribute('data-current-qty'), 10) || 1;
+        let newQty = parseInt(input.value, 10);
+        if (isNaN(newQty) || newQty < 1) {
+          input.value = originalQty;
+          return;
+        }
+        if (newQty !== originalQty) {
+          await updateCartItemQuantity(itemId, newQty);
         }
       });
     });

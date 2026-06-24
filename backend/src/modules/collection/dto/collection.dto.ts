@@ -7,6 +7,14 @@ export const CreateCollectionSchema = z.object({
   imageUrl: z.string().optional().nullable(),
   publishDate: z.string().optional().nullable(),
   productIds: z.array(z.number()).optional().default([]),
+  storyTitleEn: z.string().optional().nullable(),
+  storyTitleTh: z.string().optional().nullable(),
+  storySubtitleEn: z.string().optional().nullable(),
+  storySubtitleTh: z.string().optional().nullable(),
+  storyParagraphsEn: z.string().optional().nullable(),
+  storyParagraphsTh: z.string().optional().nullable(),
+  storyImageUrl: z.string().optional().nullable(),
+  galleryImages: z.string().optional().nullable(),
 });
 
 export type CreateCollectionDto = z.infer<typeof CreateCollectionSchema>;

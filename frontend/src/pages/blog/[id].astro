@@ -23,7 +23,7 @@ const resolveImage = (url: string) => {
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
   if (url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   return url;
 };

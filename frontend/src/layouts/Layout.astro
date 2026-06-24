@@ -100,6 +100,27 @@ const displayTags = tagsList.length > 0
       nameEn: t.name.charAt(0).toUpperCase() + t.name.slice(1),
       nameTh: t.name === 'summer' ? 'ฤดูร้อน' : t.name === 'basics' ? 'เบสิก' : t.name === 'new' ? 'ใหม่' : t.name
     }));
+
+const pathname = Astro.url.pathname;
+const urlParams = Astro.url.searchParams;
+const tabParam = urlParams.get('tab');
+
+let resolvedActiveTab = 'dashboard';
+if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arrival-sets')) {
+  resolvedActiveTab = 'products';
+} else if (pathname.includes('/admin/collections')) {
+  resolvedActiveTab = 'collections';
+} else if (pathname.includes('/admin/blogs')) {
+  resolvedActiveTab = 'blogs';
+} else if (pathname.includes('/admin/orders')) {
+  resolvedActiveTab = 'orders';
+} else if (pathname.includes('/admin/faqs')) {
+  resolvedActiveTab = 'faqs';
+} else if (pathname.includes('/admin/contacts')) {
+  resolvedActiveTab = 'contacts';
+} else if (tabParam) {
+  resolvedActiveTab = tabParam;
+}
 ---
 
 <!DOCTYPE html>
@@ -150,22 +171,26 @@ const displayTags = tagsList.length > 0
       }
 
       /* Admin tab buttons active and hover state overrides */
-      header nav button[id^="nav-tab-"] {
+      header nav button[id^="nav-tab-"],
+      header nav a[id^="nav-tab-"] {
         border-bottom: 2px solid transparent;
         padding-bottom: 4px;
         transition: border-color 0.3s ease-in-out, color 0.3s ease-in-out;
       }
-      header nav button[id^="nav-tab-"].active {
+      header nav button[id^="nav-tab-"].active,
+      header nav a[id^="nav-tab-"].active {
         border-bottom-color: #1c1917 !important; /* text-brand-charcoal */
         color: #1c1917 !important;
         font-weight: 600 !important;
       }
-      header nav button[id^="nav-tab-"]:not(.active) {
+      header nav button[id^="nav-tab-"]:not(.active),
+      header nav a[id^="nav-tab-"]:not(.active) {
         border-bottom-color: transparent !important;
         color: #a8a29e !important; /* text-stone-400 / text-gray-400 */
         font-weight: 300 !important;
       }
-      header nav button[id^="nav-tab-"]:not(.active):hover {
+      header nav button[id^="nav-tab-"]:not(.active):hover,
+      header nav a[id^="nav-tab-"]:not(.active):hover {
         color: #1c1917 !important;
       }
 
@@ -237,27 +262,86 @@ const displayTags = tagsList.length > 0
         <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full">
           {isAdminPanel ? (
             <>
-              <button id="nav-tab-dashboard" class="border-b-2 border-brand-charcoal pb-1 text-xs font-semibold uppercase tracking-widest text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+              <a 
+                href={l('/admin')} 
+                id="nav-tab-dashboard" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'dashboard' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 {t('nav.dashboard')}
-              </button>
-              <button id="nav-tab-orders" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0 gap-1.5">
+              </a>
+              <a 
+                href={l('/admin?tab=orders')} 
+                id="nav-tab-orders" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 gap-1.5 decoration-transparent ${
+                  resolvedActiveTab === 'orders' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 <span>{t('nav.orders')}</span>
                 <span id="nav-orders-badge" class={`inline-flex items-center justify-center bg-red-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1 rounded-full ${pendingOrdersCount > 0 ? '' : 'hidden'}`}>
                   {pendingOrdersCount}
                 </span>
-              </button>
-              <button id="nav-tab-products" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+              </a>
+              <a 
+                href={l('/admin?tab=products')} 
+                id="nav-tab-products" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'products' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 {t('nav.products')}
-              </button>
-              <button id="nav-tab-collections" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+              </a>
+              <a 
+                href={l('/admin?tab=collections')} 
+                id="nav-tab-collections" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'collections' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 {t('nav.collections')}
-              </button>
-              <button id="nav-tab-blogs" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+              </a>
+              <a 
+                href={l('/admin?tab=blogs')} 
+                id="nav-tab-blogs" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'blogs' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 {t('nav.blogs')}
-              </button>
-              <button id="nav-tab-contacts" class="border-b-2 border-transparent pb-1 text-xs font-semibold uppercase tracking-widest text-gray-400 hover:text-brand-charcoal cursor-pointer transition-all duration-300 bg-transparent border-none outline-none h-full flex items-center p-0 m-0">
+              </a>
+              <a 
+                href={l('/admin?tab=contacts')} 
+                id="nav-tab-contacts" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'contacts' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
                 {t('nav.contacts')}
-              </button>
+              </a>
+              <a 
+                href={l('/admin?tab=faqs')} 
+                id="nav-tab-faqs" 
+                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
+                  resolvedActiveTab === 'faqs' 
+                    ? 'border-brand-charcoal text-brand-charcoal active' 
+                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
+                }`}
+              >
+                {t('nav.faqs')}
+              </a>
             </>
           ) : (
             <>
@@ -609,9 +693,9 @@ const displayTags = tagsList.length > 0
         if (!url) return '/assets/images/placeholder-product.png';
         if (url.startsWith('http') || url.startsWith('data:')) return url;
         if (url.startsWith('/assets/uploads/')) {
-          return `http://localhost:3001${url}`;
+          return url;
         }
-        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
       };
 
       let debounceTimer: number;
@@ -882,6 +966,11 @@ const displayTags = tagsList.length > 0
         const id = link.getAttribute('id');
         const normalizedCurrent = currentPathName.endsWith('/') ? currentPathName.slice(0, -1) : currentPathName;
 
+        if (id && id.startsWith('nav-tab-')) {
+          // Skip admin navigation tabs to handle them precisely below
+          return;
+        }
+
         if (id === 'shop-menu-btn') {
           // Active if pathname starts with /products
           if (window.location.pathname.startsWith('/products')) {
@@ -899,6 +988,33 @@ const displayTags = tagsList.length > 0
           }
         }
       });
+
+      // 2b. Highlight active Admin Panel tabs precisely (DASHBOARD, ORDERS, PRODUCTS, COLLECTIONS, BLOGS, CONTACTS)
+      if (window.location.pathname.includes('/admin')) {
+        let activeTab = 'dashboard';
+        const path = window.location.pathname;
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+
+        if (path.includes('/admin/products') || path.includes('/admin/new-arrival-sets')) {
+          activeTab = 'products';
+        } else if (path.includes('/admin/collections')) {
+          activeTab = 'collections';
+        } else if (path.includes('/admin/blogs')) {
+          activeTab = 'blogs';
+        } else if (path.includes('/admin/orders')) {
+          activeTab = 'orders';
+        } else if (path.includes('/admin/faqs')) {
+          activeTab = 'faqs';
+        } else if (tabParam) {
+          activeTab = tabParam;
+        }
+
+        const activeTabEl = document.getElementById(`nav-tab-${activeTab}`);
+        if (activeTabEl) {
+          activeTabEl.classList.add('active');
+        }
+      }
 
       // 3. Obsolete clothing subcategory toggle logic removed
     </script>
@@ -1094,130 +1210,134 @@ const displayTags = tagsList.length > 0
       })();
     </script>
 
-    <!-- Client-side script for Product Card Image Sliders -->
+    <!-- Client-side script for Product Card Image Sliders (Dynamically loads real product images) -->
     <script is:inline>
       (function() {
-        const clientResolveImage = (url) => {
-          if (!url) return '/assets/images/placeholder-product.png';
-          if (url.startsWith('http') || url.startsWith('data:')) return url;
-          if (url.startsWith('/assets/uploads/')) {
-            return `http://localhost:3001${url}`;
-          }
-          return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
-        };
-
-        const getProductImages = (name, mainImage) => {
-          const nameLower = (name || '').toLowerCase();
-          const alternates = [];
-
-          if (nameLower.includes('tshirt') || nameLower.includes('t-shirt') || nameLower.includes('tee') || nameLower.includes('tank top')) {
-            alternates.push('/assets/images/tshirt-1.png', '/assets/images/products/tshirt.png', '/assets/images/polo-dark.png');
-          } else if (nameLower.includes('polo') || nameLower.includes('shirt') || nameLower.includes('blouse')) {
-            alternates.push('/assets/images/polo-dark.png', '/assets/images/shirt-cat-men.png', '/assets/images/products/tshirt.png');
-          } else if (nameLower.includes('hoodie') || nameLower.includes('cardigan') || nameLower.includes('jacket') || nameLower.includes('trench') || nameLower.includes('coat')) {
-            alternates.push('/assets/images/products/hoodie.png', '/assets/images/products/cardigan.png', '/assets/images/products/leatherjacket.png', '/assets/images/products/trenchcoat.png');
-          } else if (nameLower.includes('pants') || nameLower.includes('shorts') || nameLower.includes('jeans') || nameLower.includes('sweatpants') || nameLower.includes('trouser') || nameLower.includes('skirt') || nameLower.includes('chinos')) {
-            alternates.push('/assets/images/pants-cream.png', '/assets/images/products/sweatpants.png', '/assets/images/bottoms-cat-men.png');
-          } else if (nameLower.includes('belt') || nameLower.includes('sunglasses') || nameLower.includes('necklace') || nameLower.includes('candle') || nameLower.includes('bag') || nameLower.includes('cap')) {
-            alternates.push('/assets/images/products/belt.png', '/assets/images/products/sunglasses.png', '/assets/images/products/necklace.png', '/assets/images/products/candle.png');
-          } else {
-            alternates.push('/assets/images/tshirt-1.png', '/assets/images/polo-dark.png', '/assets/images/pants-cream.png', '/assets/images/shoes-white.png');
-          }
-
-          const all = [mainImage, ...alternates]
-            .map(u => u ? u.trim() : '')
-            .filter(Boolean);
-          
-          const unique = [...new Set(all)];
-          return unique.slice(0, 3);
-        };
-
         const initProductCardSliders = () => {
           const cards = document.querySelectorAll('.product-card-hover');
-          cards.forEach(card => {
+          cards.forEach(async (card) => {
             if (card.dataset.sliderInitialized === 'true') return;
             if (card.id && card.id.startsWith('cart-item')) return;
+            
+            // Get product ID from the favorite button dataset
+            const favBtn = card.querySelector('[data-id]');
+            const productId = favBtn ? favBtn.getAttribute('data-id') : null;
+            if (!productId) return;
+
+            // Mark as initialized immediately to prevent duplicate requests
             card.dataset.sliderInitialized = 'true';
 
-            const img = card.querySelector('img');
-            if (!img) return;
+            try {
+              const res = await fetch(`http://localhost:3001/api/products/${productId}`);
+              if (!res.ok) return;
+              const product = await res.json();
 
-            const imgContainer = img.parentElement;
-            if (!imgContainer) return;
-
-            // Ensure container has relative styling
-            imgContainer.classList.add('relative');
-
-            const mainImage = img.getAttribute('src') || '';
-            const name = (card.querySelector('h3')?.textContent || card.querySelector('[data-name]')?.getAttribute('data-name') || img.alt || '').trim();
-
-            const images = getProductImages(name, mainImage);
-            if (images.length <= 1) return;
-
-            imgContainer.dataset.currentIndex = '0';
-
-            // Create Left Arrow
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'absolute left-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none prev-img-btn';
-            prevBtn.setAttribute('aria-label', 'Previous image');
-            prevBtn.innerHTML = `
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-              </svg>
-            `;
-
-            // Create Right Arrow
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none next-img-btn';
-            nextBtn.setAttribute('aria-label', 'Next image');
-            nextBtn.innerHTML = `
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
-            `;
-
-            // Create Dot Indicators
-            const dotsContainer = document.createElement('div');
-            dotsContainer.className = 'absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-30 dot-indicators-container';
-            dotsContainer.innerHTML = images.map((_, i) => `
-              <span class="w-1.5 h-1.5 rounded-full border border-white/50 transition-all ${i === 0 ? 'bg-brand-charcoal scale-110' : 'bg-white/60'}" data-index="${i}"></span>
-            `).join('');
-
-            // Append to container
-            imgContainer.appendChild(prevBtn);
-            imgContainer.appendChild(nextBtn);
-            imgContainer.appendChild(dotsContainer);
-
-            const updateImage = (index) => {
-              img.src = clientResolveImage(images[index]);
-              imgContainer.dataset.currentIndex = String(index);
-              
-              const dots = dotsContainer.querySelectorAll('span');
-              dots.forEach((dot, i) => {
-                if (i === index) {
-                  dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-brand-charcoal scale-110';
-                } else {
-                  dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-white/60';
+              const mainImage = product.imageUrl || '';
+              let alternateImages = [];
+              if (product.images) {
+                let parsedImages = [];
+                if (Array.isArray(product.images)) {
+                  parsedImages = product.images;
+                } else if (typeof product.images === 'string') {
+                  try {
+                    parsedImages = JSON.parse(product.images);
+                  } catch (e) {
+                    console.error('Error parsing product.images string', e);
+                  }
                 }
+                if (Array.isArray(parsedImages)) {
+                  alternateImages = parsedImages.map(imgItem => imgItem.imageUrl).filter(Boolean);
+                }
+              }
+
+              // Combine main image with alternate color images
+              const allImages = [mainImage, ...alternateImages];
+              const uniqueImages = [...new Set(allImages)].map(u => {
+                if (!u) return '';
+                if (u.startsWith('http') || u.startsWith('data:')) return u;
+                if (u.startsWith('/assets/uploads/')) {
+                  return `http://localhost:3001${u}`;
+                }
+                return u;
+              }).filter(Boolean);
+
+              // Only initialize slider if there is more than 1 image
+              if (uniqueImages.length <= 1) return;
+
+              const img = card.querySelector('img');
+              if (!img) return;
+
+              const imgContainer = img.parentElement;
+              if (!imgContainer) return;
+
+              imgContainer.classList.add('relative');
+              imgContainer.dataset.currentIndex = '0';
+
+              // Create Left Arrow
+              const prevBtn = document.createElement('button');
+              prevBtn.className = 'absolute left-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none prev-img-btn';
+              prevBtn.setAttribute('aria-label', 'Previous image');
+              prevBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+              `;
+
+              // Create Right Arrow
+              const nextBtn = document.createElement('button');
+              nextBtn.className = 'absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-brand-charcoal border border-gray-100 flex items-center justify-center shadow-sm z-30 cursor-pointer focus:outline-none select-none next-img-btn';
+              nextBtn.setAttribute('aria-label', 'Next image');
+              nextBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+              `;
+
+              // Create Dot Indicators
+              const dotsContainer = document.createElement('div');
+              dotsContainer.className = 'absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-30 dot-indicators-container';
+              dotsContainer.innerHTML = uniqueImages.map((_, i) => `
+                <span class="w-1.5 h-1.5 rounded-full border border-white/50 transition-all ${i === 0 ? 'bg-brand-charcoal scale-110' : 'bg-white/60'}" data-index="${i}"></span>
+              `).join('');
+
+              // Append to container
+              imgContainer.appendChild(prevBtn);
+              imgContainer.appendChild(nextBtn);
+              imgContainer.appendChild(dotsContainer);
+
+              const updateImage = (index) => {
+                img.src = uniqueImages[index];
+                imgContainer.dataset.currentIndex = String(index);
+                
+                const dots = dotsContainer.querySelectorAll('span');
+                dots.forEach((dot, i) => {
+                  if (i === index) {
+                    dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-brand-charcoal scale-110';
+                  } else {
+                    dot.className = 'w-1.5 h-1.5 rounded-full border border-white/50 transition-all bg-white/60';
+                  }
+                });
+              };
+
+              // Event listeners with click event isolation
+              prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
+                index = (index - 1 + uniqueImages.length) % uniqueImages.length;
+                updateImage(index);
               });
-            };
 
-            // Event listeners with click event isolation
-            prevBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
-              index = (index - 1 + images.length) % images.length;
-              updateImage(index);
-            });
-
-            nextBtn.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
-              index = (index + 1) % images.length;
-              updateImage(index);
-            });
+              nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                let index = parseInt(imgContainer.dataset.currentIndex || '0', 10);
+                index = (index + 1) % uniqueImages.length;
+                updateImage(index);
+              });
+            } catch (err) {
+              console.error('Failed to initialize dynamic slider for product', productId, err);
+            }
           });
         };
 
@@ -1228,7 +1348,7 @@ const displayTags = tagsList.length > 0
           initProductCardSliders();
         }
 
-        // Also watch for DOM changes (like live search popup adding new product elements)
+        // Watch for DOM changes (like filter updates, new pages, etc.)
         const observer = new MutationObserver((mutations) => {
           let hasNewCards = false;
           mutations.forEach(m => {
@@ -1241,6 +1361,173 @@ const displayTags = tagsList.length > 0
           }
         });
         observer.observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>
+
+    <!-- Global Status Alert Modal -->
+    <div id="status-alert-modal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-xs z-[9999] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+      <div class="bg-white border border-stone-200 shadow-xl max-w-sm w-full mx-4 rounded-sm p-6 transform scale-95 transition-transform duration-300 flex flex-col items-center text-center">
+        <!-- Icon Container -->
+        <div id="status-alert-icon-container" class="w-12 h-12 rounded-full flex items-center justify-center mb-4">
+          <!-- Icon injected dynamically -->
+        </div>
+        <!-- Status Title -->
+        <h3 id="status-alert-title" class="font-serif text-xs font-bold text-brand-charcoal mb-2 uppercase tracking-wider"></h3>
+        <!-- Status Meaning/Friendly Message -->
+        <p id="status-alert-friendly-msg" class="text-xs text-gray-500 font-light leading-relaxed mb-4"></p>
+        <!-- Backend Message details (hidden if empty) -->
+        <p id="status-alert-backend-details" class="text-[10px] text-gray-400 font-mono bg-stone-50 border border-stone-100 p-2.5 rounded-sm w-full text-left hidden overflow-x-auto max-h-24"></p>
+        <!-- OK Button -->
+        <button id="status-alert-ok-btn" type="button" class="w-full bg-brand-charcoal hover:bg-stone-800 text-white font-semibold text-[10px] tracking-widest uppercase py-3 rounded-sm transition-colors cursor-pointer mt-5 select-none focus:outline-none">
+          {lang === 'en' ? 'OK' : 'ตกลง'}
+        </button>
+      </div>
+    </div>
+
+    <!-- Script for status popup alert -->
+    <script is:inline define:vars={{ lang }}>
+      (function() {
+        const modal = document.getElementById('status-alert-modal');
+        const iconContainer = document.getElementById('status-alert-icon-container');
+        const titleEl = document.getElementById('status-alert-title');
+        const friendlyEl = document.getElementById('status-alert-friendly-msg');
+        const detailsEl = document.getElementById('status-alert-backend-details');
+        const okBtn = document.getElementById('status-alert-ok-btn');
+
+        if (!modal || !iconContainer || !titleEl || !friendlyEl || !detailsEl || !okBtn) return;
+
+        let closeCallback = null;
+
+        const closeModal = () => {
+          modal.classList.add('opacity-0');
+          modal.querySelector('div').classList.add('scale-95');
+          modal.querySelector('div').classList.remove('scale-100');
+          setTimeout(() => {
+            modal.classList.add('hidden');
+            if (closeCallback) {
+              closeCallback();
+              closeCallback = null;
+            }
+          }, 300);
+        };
+
+        okBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+
+        // Global status meaning database
+        const getStatusMeaning = (status, isSuccess) => {
+          if (isSuccess) {
+            return {
+              title: lang === 'en' ? 'Success' : 'ทำรายการสำเร็จ',
+              friendly: lang === 'en' ? 'Your action has been completed successfully.' : 'การดำเนินการของคุณเสร็จสมบูรณ์เรียบร้อยแล้ว'
+            };
+          }
+
+          let title = '';
+          let friendly = '';
+
+          switch (status) {
+            case 400:
+              title = lang === 'en' ? 'Status 400: Invalid Input' : 'สถานะ 400: ข้อมูลไม่ถูกต้อง';
+              friendly = lang === 'en' 
+                ? 'The server was unable to process the request due to invalid input fields. Please check your entries.' 
+                : 'เซิร์ฟเวอร์ไม่สามารถประมวลผลได้เนื่องจากข้อมูลบางอย่างไม่ถูกต้อง กรุณาตรวจสอบข้อมูลที่กรอก';
+              break;
+            case 401:
+              title = lang === 'en' ? 'Status 401: Unauthorized' : 'สถานะ 401: กรุณาเข้าสู่ระบบ';
+              friendly = lang === 'en'
+                ? 'Your session has expired or you are not signed in. Please sign in to proceed.'
+                : 'เซสชันหมดอายุหรือคุณยังไม่ได้เข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่อีกครั้ง';
+              break;
+            case 403:
+              title = lang === 'en' ? 'Status 403: Forbidden' : 'สถานะ 403: ไม่มีสิทธิ์เข้าถึง';
+              friendly = lang === 'en'
+                ? 'You do not have permission to perform this action. Admin rights are required.'
+                : 'คุณไม่มีสิทธิ์เข้าถึงหรือดำเนินการในส่วนนี้ (จำเป็นต้องใช้สิทธิ์ผู้ดูแลระบบ)';
+              break;
+            case 404:
+              title = lang === 'en' ? 'Status 404: Not Found' : 'สถานะ 404: ไม่พบข้อมูล';
+              friendly = lang === 'en'
+                ? 'The requested page or item could not be found on the server. It might have been deleted.'
+                : 'ไม่พบข้อมูลหรือหน้าที่ต้องการบนเซิร์ฟเวอร์ ข้อมูลอาจถูกลบหรือไม่มีอยู่จริง';
+              break;
+            case 409:
+              title = lang === 'en' ? 'Status 409: Conflict' : 'สถานะ 409: ข้อมูลซ้ำซ้อน';
+              friendly = lang === 'en'
+                ? 'A conflict occurred. The value you entered (e.g. email or web slug) already exists in the system.'
+                : 'เกิดการขัดแย้งของข้อมูล ข้อมูลที่คุณกรอก (เช่น อีเมล หรือลิงก์สินค้า) มีอยู่ในระบบแล้ว';
+              break;
+            case 500:
+              title = lang === 'en' ? 'Status 500: Server Error' : 'สถานะ 500: เซิร์ฟเวอร์ขัดข้อง';
+              friendly = lang === 'en'
+                ? 'An internal error occurred on the server side. Please contact support if this persists.'
+                : 'เกิดข้อผิดพลาดขัดข้องภายในระบบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง';
+              break;
+            case 502:
+            case 503:
+            case 504:
+              title = `Status ${status}: Service Offline`;
+              title = lang === 'en' ? `Status ${status}: Service Offline` : `สถานะ ${status}: บริการออฟไลน์`;
+              friendly = lang === 'en'
+                ? 'The backend server is offline or under maintenance. Please try again later.'
+                : 'เซิร์ฟเวอร์ขัดข้องชั่วคราวหรือปิดเพื่อปรับปรุงระบบ กรุณาตรวจสอบสถานะการเชื่อมต่อ';
+              break;
+            default:
+              title = status ? `Status ${status}: Error` : (lang === 'en' ? 'Error occurred' : 'เกิดข้อผิดพลาด');
+              friendly = lang === 'en'
+                ? 'An unexpected network error occurred while connecting to the service.'
+                : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายที่ไม่คาดคิด';
+          }
+
+          return { title, friendly };
+        };
+
+        // Attach global alert trigger to window
+        window.showStatusAlert = (status, customFriendlyMsg, backendMsg, isSuccess = false, callback = null) => {
+          closeCallback = callback;
+          
+          const meaning = getStatusMeaning(status, isSuccess);
+
+          // Clear previous icon classes
+          iconContainer.className = "w-12 h-12 rounded-full flex items-center justify-center mb-4";
+
+          let iconHtml = '';
+          if (isSuccess) {
+            iconContainer.classList.add('bg-green-50', 'text-green-600', 'border', 'border-green-100');
+            iconHtml = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            `;
+          } else {
+            iconContainer.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-100');
+            iconHtml = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+            `;
+          }
+
+          iconContainer.innerHTML = iconHtml;
+          titleEl.textContent = meaning.title;
+          friendlyEl.textContent = customFriendlyMsg || meaning.friendly;
+
+          if (backendMsg) {
+            detailsEl.textContent = Array.isArray(backendMsg) ? backendMsg.join(', ') : String(backendMsg);
+            detailsEl.classList.remove('hidden');
+          } else {
+            detailsEl.classList.add('hidden');
+          }
+
+          // Open modal
+          modal.classList.remove('hidden');
+          modal.offsetHeight; // Force layout reflow
+          modal.classList.remove('opacity-0');
+          modal.querySelector('div').classList.remove('scale-95');
+          modal.querySelector('div').classList.add('scale-100');
+        };
       })();
     </script>
   </body>

@@ -7,18 +7,19 @@ const t = useTranslations(lang);
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+    return url;
   }
   if (!url) return '/assets/images/placeholder-product.png';
   if (url.startsWith('http')) return url;
-  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+  return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
 let collections = [] as any[];
 try {
   const res = await fetch(`${BACKEND_URL}/api/collections`);
   if (res.ok) {
-    collections = await res.json();
+    const rawCols = await res.json();
+    collections = rawCols.filter((c: any) => c.slug !== 'new-arrivals' && !c.slug.startsWith('new-arrivals-'));
   }
 } catch (err) {
   console.error('[NestJS API Error] Fetching collections failed in collections.astro', err);

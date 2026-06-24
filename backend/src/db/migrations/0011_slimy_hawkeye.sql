@@ -1,0 +1,1 @@
+ALTER TABLE `collections` ADD `story_image_url` varchar(500);

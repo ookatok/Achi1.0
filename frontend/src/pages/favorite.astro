@@ -57,9 +57,9 @@ const t = useTranslations(lang);
         if (!url) return '/assets/images/placeholder-product.png';
         if (url.startsWith('http') || url.startsWith('data:')) return url;
         if (url.startsWith('/assets/uploads/')) {
-          return `http://localhost:3001${url}`;
+          return url;
         }
-        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=2';
+        return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
       };
 
       const renderFavorites = () => {

@@ -29,3 +29,10 @@ Thumbs.db
 
 /backend/public/assets/uploads/*
 !/backend/public/assets/uploads/.gitkeep
+
+# AI config folder
+.gemini/
+
+# Frontend uploads folder
+/frontend/src/pages/assets/uploads/*
+!/frontend/src/pages/assets/uploads/.gitkeep

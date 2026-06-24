@@ -24,6 +24,14 @@ export class CollectionService {
         description: dto.description ?? null,
         imageUrl: dto.imageUrl ?? null,
         publishDate: parsedPublishDate,
+        storyTitleEn: dto.storyTitleEn ?? null,
+        storyTitleTh: dto.storyTitleTh ?? null,
+        storySubtitleEn: dto.storySubtitleEn ?? null,
+        storySubtitleTh: dto.storySubtitleTh ?? null,
+        storyParagraphsEn: dto.storyParagraphsEn ?? null,
+        storyParagraphsTh: dto.storyParagraphsTh ?? null,
+        storyImageUrl: dto.storyImageUrl ?? null,
+        galleryImages: dto.galleryImages ?? null,
       });
       const collectionId = result[0].insertId;
 

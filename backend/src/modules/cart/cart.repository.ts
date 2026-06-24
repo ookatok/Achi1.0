@@ -37,6 +37,8 @@ export class CartRepository {
         productPrice: products.price,
         productImageUrl: products.imageUrl,
         stockQuantity: products.stockQuantity,
+        allowOnOrder: products.allowOnOrder,
+        onOrderQuantity: products.onOrderQuantity,
       })
       .from(cartItems)
       .innerJoin(products, eq(cartItems.productId, products.id))

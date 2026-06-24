@@ -1,0 +1,312 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
+}
+
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let pendingOrdersCount = 0;
+let products = [] as any[];
+
+try {
+  // Fetch orders count
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    const orders = await ordRes.json();
+    pendingOrdersCount = orders.filter((o: any) => o.status === 'pending').length;
+  }
+
+  // Fetch active products
+  const prodRes = await fetch('http://localhost:3001/api/products');
+  if (prodRes.ok) {
+    products = await prodRes.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching admin data failed.', err);
+}
+
+const activeProducts = products.filter((p: any) => p.status !== 'inactive');
+
+const resolveImage = (url: string) => {
+  if (!url) return '/assets/images/placeholder-product.png';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  if (url.startsWith('/')) return url;
+  if (url.startsWith('assets/')) return '/' + url;
+  return url;
+};
+---
+
+<Layout title={lang === 'en' ? "Create New Arrival Set | ACHI Studio" : "สร้างเซ็ตสินค้ามาใหม่ | ACHI Studio"} isAdminPanel={true} pendingOrdersCount={pendingOrdersCount}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 bg-[#FAF9F6] min-h-screen" id="set-editor-container" data-token={token} data-lang={lang}>
+    <div class="w-full bg-white border border-stone-200 p-8 sm:p-12 rounded-sm shadow-xs space-y-8">
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+        <h2 class="font-serif text-2xl tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? "Create New Arrival Set" : "สร้างเซ็ตสินค้ามาใหม่"}
+        </h2>
+        <a href={`/${lang}/admin?tab=products&subtab=new-arrivals`} class="text-stone-400 hover:text-brand-charcoal text-xs uppercase tracking-wider font-semibold transition-colors">
+          &larr; {lang === 'en' ? "Back to sets" : "กลับไปยังรายการเซ็ต"}
+        </a>
+      </div>
+
+      <form id="new-arrival-set-form" class="space-y-8">
+        <!-- Set Name Section -->
+        <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
+          <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider border-b border-stone-100 pb-2">
+            {lang === 'en' ? '1. Set Name' : '1. ตั้งชื่อเซ็ต'}
+          </h3>
+          <input
+            type="text"
+            id="set-title-input"
+            required
+            placeholder={lang === 'en' ? "e.g. Winter Editorial Set" : "เช่น เซ็ตเสื้อผ้าฤดูหนาวประจำปี"}
+            class="w-full max-w-lg border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white"
+          />
+        </div>
+
+        <!-- Cover Image Selection -->
+        <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
+          <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider border-b border-stone-100 pb-2">
+            {lang === 'en' ? '2. Set Cover Image' : '2. อัปโหลดรูปภาพปกของเซ็ต'}
+          </h3>
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div class="w-32 h-44 border border-stone-200 rounded-sm overflow-hidden bg-stone-50 flex items-center justify-center relative shadow-sm">
+              <img 
+                id="new-arrival-cover-preview" 
+                src="/assets/images/set2.png" 
+                class="w-full h-full object-cover" 
+              />
+            </div>
+            <div class="space-y-3">
+              <input 
+                type="file" 
+                id="new-arrival-cover-file" 
+                accept="image/*" 
+                class="hidden" 
+              />
+              <button 
+                type="button" 
+                id="new-arrival-upload-btn" 
+                class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors block text-center shadow-xs"
+              >
+                {lang === 'en' ? 'Choose Cover Image' : 'เลือกรูปภาพปก'}
+              </button>
+              <span id="new-arrival-upload-status" class="text-[10px] text-stone-500 block hidden"></span>
+              <input 
+                type="hidden" 
+                id="new-arrival-cover-url" 
+                value="" 
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Selection -->
+        <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
+          <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+            <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider">
+              {lang === 'en' ? '3. Select Products' : '3. เลือกสินค้าเข้ามาใส่ในเซ็ต'}
+            </h3>
+            <span class="text-[10px] text-stone-400 font-light lowercase">
+              {lang === 'en' ? 'check items to include' : 'ติ๊กเลือกสินค้าที่ต้องการใส่ในเซ็ต'}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[450px] overflow-y-auto p-2 border border-stone-100 rounded-sm bg-stone-50/30" id="new-arrival-products-selector">
+            {activeProducts.map((product: any) => {
+              return (
+                <label class="flex items-center gap-3 p-3 hover:bg-stone-50 rounded-sm cursor-pointer transition-all border border-stone-100 bg-white shadow-sm hover:border-stone-300">
+                  <input 
+                    type="checkbox" 
+                    name="new-arrival-products" 
+                    value={product.id} 
+                    class="w-4 h-4 rounded border-gray-300 text-brand-charcoal focus:ring-brand-charcoal cursor-pointer"
+                  />
+                  {product.imageUrl ? (
+                    <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-10 h-12 object-cover rounded-sm border border-stone-100 shrink-0" />
+                  ) : (
+                    <div class="w-10 h-12 bg-stone-100 flex items-center justify-center text-[8px] text-stone-400 rounded-sm shrink-0">{lang === 'en' ? 'No img' : 'ไม่มีรูป'}</div>
+                  )}
+                  <div class="text-xs truncate min-w-0">
+                    <div class="font-semibold text-brand-charcoal truncate">{product.name}</div>
+                    <div class="text-stone-400 text-[10px] mt-0.5">${Number(product.price).toLocaleString()}</div>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="pt-4 flex justify-end gap-4">
+          <a
+            href={`/${lang}/admin?tab=products&subtab=new-arrivals`}
+            class="border border-stone-200 hover:border-brand-charcoal text-stone-600 hover:text-brand-charcoal px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold cursor-pointer transition-all duration-300 bg-white flex items-center justify-center"
+          >
+            {lang === 'en' ? 'Cancel' : 'ยกเลิก'}
+          </a>
+          <button 
+            type="submit" 
+            id="save-set-btn" 
+            class="bg-brand-charcoal text-white hover:bg-brand-gold hover:text-brand-charcoal px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold cursor-pointer transition-all duration-300 shadow-md"
+          >
+            {lang === 'en' ? 'Save Set' : 'บันทึกเซ็ต'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('new-arrival-set-form');
+    const container = document.getElementById('set-editor-container');
+    const token = container?.getAttribute('data-token');
+    const lang = container?.getAttribute('data-lang') || 'en';
+
+    const newArrivalCoverFile = document.getElementById('new-arrival-cover-file') as HTMLInputElement | null;
+    const newArrivalUploadBtn = document.getElementById('new-arrival-upload-btn');
+    const newArrivalCoverPreview = document.getElementById('new-arrival-cover-preview') as HTMLImageElement | null;
+    const newArrivalCoverUrl = document.getElementById('new-arrival-cover-url') as HTMLInputElement | null;
+    const newArrivalUploadStatus = document.getElementById('new-arrival-upload-status');
+
+    const isEn = lang === 'en';
+
+    // File Upload Handler
+    if (newArrivalUploadBtn && newArrivalCoverFile) {
+      newArrivalUploadBtn.addEventListener('click', () => {
+        newArrivalCoverFile.click();
+      });
+
+      newArrivalCoverFile.addEventListener('change', async (e: any) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (newArrivalUploadStatus) {
+          newArrivalUploadStatus.textContent = isEn ? 'Uploading...' : 'กำลังอัปโหลด...';
+          newArrivalUploadStatus.classList.remove('hidden');
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch('http://localhost:3001/api/collections/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (newArrivalCoverPreview) {
+              newArrivalCoverPreview.src = `http://localhost:3001${data.imageUrl}`;
+            }
+            if (newArrivalCoverUrl) {
+              newArrivalCoverUrl.value = data.imageUrl;
+            }
+            if (newArrivalUploadStatus) {
+              newArrivalUploadStatus.textContent = isEn ? 'Uploaded successfully!' : 'อัปโหลดสำเร็จ!';
+            }
+          } else {
+            if (newArrivalUploadStatus) {
+              newArrivalUploadStatus.textContent = isEn ? 'Upload failed.' : 'อัปโหลดล้มเหลว';
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (newArrivalUploadStatus) {
+            newArrivalUploadStatus.textContent = isEn ? 'Network error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+          }
+        }
+      });
+    }
+
+    // Form Submission
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = (document.getElementById('set-title-input') as HTMLInputElement).value.trim();
+      const coverUrl = newArrivalCoverUrl ? newArrivalCoverUrl.value : '';
+      const checkedCheckboxes = document.querySelectorAll('input[name="new-arrival-products"]:checked') as NodeListOf<HTMLInputElement>;
+      const productIds = Array.from(checkedCheckboxes).map((cb) => parseInt(cb.value, 10));
+
+      if (!coverUrl) {
+        window.showStatusAlert(400, null, isEn ? 'Please upload a cover image.' : 'กรุณาอัปโหลดภาพปกของเซ็ต');
+        return;
+      }
+
+      const saveSetBtn = document.getElementById('save-set-btn') as HTMLButtonElement | null;
+      if (saveSetBtn) {
+        saveSetBtn.disabled = true;
+        saveSetBtn.textContent = isEn ? 'Saving...' : 'กำลังบันทึก...';
+      }
+
+      // Generate slug dynamically
+      const slugTitle = title
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-');
+      const slug = `new-arrivals-${slugTitle || 'set'}-${Date.now()}`;
+
+      const payload = {
+        title,
+        slug,
+        imageUrl: coverUrl,
+        productIds
+      };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/collections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.showStatusAlert(
+            200,
+            isEn ? 'New Arrival Set created successfully!' : 'สร้างเซ็ตสินค้ามาใหม่เรียบร้อยแล้ว!',
+            null,
+            true,
+            () => {
+              window.location.href = `/${lang}/admin?tab=products&subtab=new-arrivals`;
+            }
+          );
+        } else {
+          const data = await res.json();
+          window.showStatusAlert(res.status, null, data ? data.message : (isEn ? 'Failed to create set.' : 'สร้างเซ็ตไม่สำเร็จ'));
+          if (saveSetBtn) {
+            saveSetBtn.disabled = false;
+            saveSetBtn.textContent = isEn ? 'Save Set' : 'บันทึกเซ็ต';
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        window.showStatusAlert(0, isEn ? 'Connection error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+        if (saveSetBtn) {
+          saveSetBtn.disabled = false;
+          saveSetBtn.textContent = isEn ? 'Save Set' : 'บันทึกเซ็ต';
+        }
+      }
+    });
+  </script>
+</Layout>

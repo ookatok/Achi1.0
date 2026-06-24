@@ -1,0 +1,481 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+import { useTranslations } from '../../../lib/translations';
+
+const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
+const t = useTranslations(lang);
+
+const session = await getSession(Astro.request);
+const token = (session as any)?.accessToken;
+
+if (!token) {
+  return Astro.redirect(`/${lang}/auth/signin?callbackUrl=/${lang}/admin`);
+}
+
+if ((session?.user as any)?.role !== 'admin') {
+  return new Response('Forbidden: Admin access only.', { status: 403 });
+}
+
+let blogCategories = [] as any[];
+let pendingOrdersCount = 0;
+
+try {
+  // Fetch blog categories
+  const catRes = await fetch('http://localhost:3001/api/blogs/categories');
+  if (catRes.ok) {
+    blogCategories = await catRes.json();
+  }
+
+  // Fetch orders count
+  const ordRes = await fetch('http://localhost:3001/api/orders', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (ordRes.ok) {
+    const orders = await ordRes.json();
+    pendingOrdersCount = orders.filter((o: any) => o.status === 'pending').length;
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching admin blog data failed.', err);
+}
+---
+
+<Layout title={lang === 'en' ? "Add Blog Post | ACHI Studio" : "เพิ่มบทความ | ACHI Studio"} isAdminPanel={true} pendingOrdersCount={pendingOrdersCount}>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 bg-[#FAF9F6] min-h-screen" id="blog-editor-container" data-token={token} data-lang={lang}>
+    <div class="w-full bg-white border border-stone-200 p-8 sm:p-12 rounded-sm shadow-xs space-y-8">
+      <div class="flex items-center justify-between pb-4 border-b border-stone-100 mb-6">
+        <h2 class="font-serif text-2xl tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? "Add New Blog Post" : "เพิ่มบทความใหม่"}
+        </h2>
+        <a href={`/${lang}/admin`} class="text-stone-400 hover:text-brand-charcoal text-xs uppercase tracking-wider font-semibold transition-colors">
+          &larr; {lang === 'en' ? "Back to Dashboard" : "กลับไปยังแดชบอร์ด"}
+        </a>
+      </div>
+
+      <div id="add-blog-error" class="hidden text-xs text-red-500 bg-red-50 p-4 border-l-4 border-red-500 rounded-xs font-light"></div>
+
+      <form id="add-blog-form" class="space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Left Column: Title & Editor -->
+          <div class="lg:col-span-8 space-y-6">
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Article Details" : "รายละเอียดบทความ"}
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.article_title')} *</label>
+                <input type="text" id="add-blog-title" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')} *</label>
+                <input type="text" id="add-blog-slug" required class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.summary_preview')}</label>
+                <input type="text" id="add-blog-summary" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder={t('admin.summary_placeholder')} />
+              </div>
+            </div>
+
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Content Body" : "เนื้อหาบทความ"}
+                </h3>
+              </div>
+              
+              <div class="border border-stone-200 rounded-sm overflow-hidden bg-white shadow-2xs">
+                <div class="flex flex-wrap items-center gap-1.5 p-2 bg-stone-50 border-b border-stone-200 text-xs" id="add-blog-toolbar">
+                  <button type="button" data-cmd="h1" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H1</button>
+                  <button type="button" data-cmd="h2" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H2</button>
+                  <button type="button" data-cmd="h3" class="h-8 px-3 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">H3</button>
+                  <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                  <button type="button" data-cmd="bold" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-bold text-[11px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">B</button>
+                  <button type="button" data-cmd="italic" class="h-8 px-3.5 hover:bg-stone-100 rounded-md font-serif italic font-bold text-xs border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center min-w-[34px] text-stone-700">/</button>
+                  <span class="w-[1px] h-5 bg-stone-300 mx-1.5 block"></span>
+                  <button type="button" data-cmd="bulletList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">• List</button>
+                  <button type="button" data-cmd="orderedList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">1. List</button>
+                </div>
+                <div id="add-blog-editor" class="p-4 min-h-[350px] max-h-[600px] overflow-y-auto font-sans text-xs focus:outline-none bg-white"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Settings, Category & Media -->
+          <div class="lg:col-span-4 space-y-6">
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Categorization" : "หมวดหมู่บทความ"}
+                </h3>
+              </div>
+              
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.th_category')}</label>
+                <select id="add-blog-category" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white">
+                  <option value="">{t('admin.select_category_opt')}</option>
+                  {blogCategories.map((cat: any) => (
+                    <option value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div class="bg-stone-50/50 p-6 border border-stone-200/60 rounded-sm space-y-4">
+              <div class="flex items-center gap-2.5 border-b border-stone-200/60 pb-3 mb-4">
+                <span class="w-1 h-3.5 bg-[#D4AF37]"></span>
+                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase">
+                  {lang === 'en' ? "Cover Image" : "รูปภาพหน้าปก"}
+                </h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_file')}</label>
+                  <input type="file" id="add-blog-image-file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:tracking-widest file:font-semibold file:bg-stone-100 file:text-brand-charcoal hover:file:bg-stone-200 cursor-pointer" />
+                </div>
+                
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.banner_image_url')}</label>
+                  <input type="text" id="add-blog-image" class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="/assets/uploads/image.jpg" />
+                </div>
+                
+                <div id="add-blog-upload-status" class="text-[9px] font-semibold text-stone-500"></div>
+
+                <div id="add-blog-image-preview-container" class="hidden w-full h-48 border border-stone-200 rounded-sm overflow-hidden flex-shrink-0 bg-stone-100">
+                  <img id="add-blog-image-preview" src="" class="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-stone-200/80 flex justify-end gap-3 mt-8">
+          <a href={`/${lang}/admin`} class="border border-stone-200 text-stone-600 hover:border-stone-400 hover:text-brand-charcoal px-6 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors flex items-center justify-center">{t('admin.dialog_cancel')}</a>
+          <button type="submit" class="bg-brand-charcoal text-white hover:bg-stone-800 px-8 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors shadow-sm">{t('admin.publish_post')}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { Editor } from '@tiptap/core';
+    import StarterKit from '@tiptap/starter-kit';
+
+    const container = document.getElementById('blog-editor-container');
+    const token = container ? container.dataset.token : '';
+    const lang = container ? (container.dataset.lang || 'th') : 'th';
+    const BACKEND_URL = '';
+
+    const msgs: Record<string, Record<string, string>> = {
+      en: {
+        failedCreateBlogPost: 'Failed to create blog post.',
+        failedConnectBackend: 'Failed to connect to backend.',
+        uploadingImage: 'Uploading image...',
+        uploadSuccess: 'Upload success',
+        uploadFailed: 'Upload failed',
+        networkErrorUpload: 'Network error during upload.'
+      },
+      th: {
+        failedCreateBlogPost: 'เพิ่มบทความไม่สำเร็จ',
+        failedConnectBackend: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
+        uploadingImage: 'กำลังอัปโหลดรูปภาพ...',
+        uploadSuccess: 'อัปโหลดสำเร็จ',
+        uploadFailed: 'อัปโหลดล้มเหลว',
+        networkErrorUpload: 'เกิดข้อผิดพลาดในการเชื่อมต่ออัปโหลด'
+      }
+    };
+
+    const getMsg = (key: string, params: Record<string, string> = {}) => {
+      let msg = msgs[lang]?.[key] || msgs['en']?.[key] || key;
+      Object.keys(params).forEach(p => {
+        msg = msg.replace(`{${p}}`, params[p]);
+      });
+      return msg;
+    };
+
+    const slugify = (text: string) => {
+      return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    };
+
+    // Auto slug generation
+    const addBlogTitle = document.getElementById('add-blog-title') as HTMLInputElement | null;
+    const addBlogSlug = document.getElementById('add-blog-slug') as HTMLInputElement | null;
+    if (addBlogTitle && addBlogSlug) {
+      addBlogTitle.addEventListener('input', () => {
+        addBlogSlug.value = slugify(addBlogTitle.value);
+      });
+    }
+
+    // Initialize Tiptap Editor
+    let addEditor: any = null;
+    try {
+      const addEditorEl = document.getElementById('add-blog-editor');
+      if (addEditorEl) {
+        addEditor = new Editor({
+          element: addEditorEl,
+          extensions: [StarterKit],
+          content: '',
+        });
+      }
+    } catch (e) {
+      console.error('Failed to initialize add-blog TipTap editor:', e);
+    }
+
+    // Toolbar logic helper
+    const setupToolbar = (toolbarId: string, editorInstance: Editor | null) => {
+      const toolbar = document.getElementById(toolbarId);
+      if (!toolbar || !editorInstance) return;
+
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
+        btn.addEventListener('click', (e: any) => {
+          e.preventDefault();
+          const cmd = btn.dataset.cmd;
+          if (!cmd) return;
+
+          if (cmd === 'h1') {
+            editorInstance.chain().focus().toggleHeading({ level: 1 }).run();
+          } else if (cmd === 'h2') {
+            editorInstance.chain().focus().toggleHeading({ level: 2 }).run();
+          } else if (cmd === 'h3') {
+            editorInstance.chain().focus().toggleHeading({ level: 3 }).run();
+          } else if (cmd === 'bold') {
+            editorInstance.chain().focus().toggleBold().run();
+          } else if (cmd === 'italic') {
+            editorInstance.chain().focus().toggleItalic().run();
+          } else if (cmd === 'bulletList') {
+            editorInstance.chain().focus().toggleBulletList().run();
+          } else if (cmd === 'orderedList') {
+            editorInstance.chain().focus().toggleOrderedList().run();
+          }
+          
+          updateButtonStates(toolbar, editorInstance);
+        });
+      });
+
+      editorInstance.on('selectionUpdate', () => updateButtonStates(toolbar, editorInstance));
+      editorInstance.on('transaction', () => updateButtonStates(toolbar, editorInstance));
+    };
+
+    const updateButtonStates = (toolbar: any, editorInstance: any) => {
+      toolbar.querySelectorAll('button').forEach((btn: any) => {
+        const cmd = btn.dataset.cmd;
+        let isActive = false;
+
+        if (cmd === 'h1') isActive = editorInstance.isActive('heading', { level: 1 });
+        else if (cmd === 'h2') isActive = editorInstance.isActive('heading', { level: 2 });
+        else if (cmd === 'h3') isActive = editorInstance.isActive('heading', { level: 3 });
+        else if (cmd === 'bold') isActive = editorInstance.isActive('bold');
+        else if (cmd === 'italic') isActive = editorInstance.isActive('italic');
+        else if (cmd === 'bulletList') isActive = editorInstance.isActive('bulletList');
+        else if (cmd === 'orderedList') isActive = editorInstance.isActive('orderedList');
+        
+        if (isActive) {
+          btn.classList.add('bg-[#e6e6e6]', 'border-stone-300', 'text-stone-900', 'font-bold');
+          btn.classList.remove('bg-white', 'border-stone-200', 'text-stone-700', 'font-semibold');
+        } else {
+          btn.classList.remove('bg-[#e6e6e6]', 'border-stone-300', 'text-stone-900', 'font-bold');
+          btn.classList.add('bg-white', 'border-stone-200', 'text-stone-700', 'font-semibold');
+        }
+      });
+    };
+
+    if (addEditor) {
+      setupToolbar('add-blog-toolbar', addEditor);
+    }
+
+    // Image Upload
+    const setupImageUpload = (fileInputId: string, textInputId: string, previewContainerId: string, previewId: string, statusId: string, uploadUrl: string = '/api/blogs/upload') => {
+      const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null;
+      const textInput = document.getElementById(textInputId) as HTMLInputElement | null;
+      const previewContainer = document.getElementById(previewContainerId);
+      const preview = document.getElementById(previewId) as HTMLImageElement | null;
+      const status = document.getElementById(statusId);
+
+      if (!fileInput || !textInput) return;
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+
+        if (status) {
+          status.textContent = getMsg('uploadingImage');
+          status.classList.remove('hidden', 'text-red-500', 'text-green-600');
+          status.classList.add('text-stone-500');
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            textInput.value = data.imageUrl;
+            
+            if (preview && previewContainer) {
+              preview.src = data.imageUrl;
+              previewContainer.classList.remove('hidden');
+            }
+
+            if (status) {
+              status.textContent = getMsg('uploadSuccess');
+              status.classList.remove('text-stone-500', 'text-red-500');
+              status.classList.add('text-green-600');
+            }
+          } else {
+            const data = await res.json();
+            if (status) {
+              status.textContent = data.message || getMsg('uploadFailed');
+              status.classList.remove('text-stone-500', 'text-green-600');
+              status.classList.add('text-red-500');
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (status) {
+            status.textContent = getMsg('networkErrorUpload');
+            status.classList.remove('text-stone-500', 'text-green-600');
+            status.classList.add('text-red-500');
+          }
+        }
+      });
+
+      textInput.addEventListener('input', () => {
+        if (textInput.value) {
+          let src = textInput.value;
+          if (preview && previewContainer) {
+            preview.src = src;
+            previewContainer.classList.remove('hidden');
+          }
+        } else {
+          if (previewContainer) {
+            previewContainer.classList.add('hidden');
+          }
+        }
+      });
+    };
+
+    setupImageUpload('add-blog-image-file', 'add-blog-image', 'add-blog-image-preview-container', 'add-blog-image-preview', 'add-blog-upload-status');
+
+    // Submit handler
+    const addBlogForm = document.getElementById('add-blog-form');
+    const addBlogError = document.getElementById('add-blog-error');
+
+    addBlogForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (addBlogError) addBlogError.classList.add('hidden');
+
+      const submitBtn = addBlogForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const originalText = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = lang === 'en' ? 'Publishing...' : 'กำลังเผยแพร่บทความ...';
+      }
+
+      const title = (document.getElementById('add-blog-title') as HTMLInputElement).value;
+      const slug = (document.getElementById('add-blog-slug') as HTMLInputElement).value;
+      const summary = (document.getElementById('add-blog-summary') as HTMLInputElement).value;
+      const imageUrl = (document.getElementById('add-blog-image') as HTMLInputElement).value;
+      const content = addEditor ? addEditor.getHTML() : '';
+      const categoryIdVal = (document.getElementById('add-blog-category') as HTMLInputElement).value;
+      const categoryId = categoryIdVal ? parseInt(categoryIdVal, 10) : null;
+
+      const payload = { title, slug, summary, imageUrl, content, categoryId };
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/blogs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          window.showStatusAlert(
+            200,
+            lang === 'en' ? 'Blog post created successfully.' : 'สร้างบทความเสร็จสมบูรณ์',
+            null,
+            true,
+            () => {
+              window.location.href = `/${lang}/admin`;
+            }
+          );
+        } else {
+          const data = await res.json();
+          window.showStatusAlert(res.status, null, data ? data.message : getMsg('failedCreateBlogPost'));
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        window.showStatusAlert(0, getMsg('failedConnectBackend'));
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+  </script>
+
+  <style is:global>
+    .ProseMirror {
+      outline: none;
+      min-height: 250px;
+    }
+    .ProseMirror p {
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      margin-bottom: 0.4rem;
+    }
+    .ProseMirror h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .ProseMirror ul {
+      list-style-type: disc;
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .ProseMirror ol {
+      list-style-type: decimal;
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</Layout>

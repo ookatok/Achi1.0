@@ -29,6 +29,7 @@ export class OrderRepository {
         status: orders.status,
         totalPrice: orders.totalPrice,
         shippingAddress: orders.shippingAddress,
+        isPreOrder: orders.isPreOrder,
         createdAt: orders.createdAt,
       })
       .from(orders)
@@ -42,6 +43,7 @@ export class OrderRepository {
         status: orders.status,
         totalPrice: orders.totalPrice,
         shippingAddress: orders.shippingAddress,
+        isPreOrder: orders.isPreOrder,
         createdAt: orders.createdAt,
       })
       .from(orders);

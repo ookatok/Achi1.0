@@ -181,14 +181,13 @@ const cartTotal = subtotal;
               window.location.href = `/order-success?orderId=${data.orderId}`;
             }, 1500);
           } else {
-            throw new Error(data.message || (isEn ? 'Checkout failed' : 'การสั่งซื้อล้มเหลว'));
+            window.showStatusAlert(res.status, null, data ? data.message : (isEn ? 'Checkout failed' : 'การสั่งซื้อล้มเหลว'));
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.textContent = isEn ? 'Place Order' : 'ยืนยันการสั่งซื้อ';
           }
         } catch (err) {
           console.error(err);
-          if (errorDiv) {
-            errorDiv.textContent = err.message || (isEn ? 'Checkout failed. Please try again.' : 'ชำระเงินล้มเหลว กรุณาลองใหม่อีกครั้ง');
-            errorDiv.classList.remove('hidden');
-          }
+          window.showStatusAlert(0, isEn ? 'Checkout failed. Please check your network connection.' : 'ชำระเงินล้มเหลว กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
           placeOrderBtn.disabled = false;
           placeOrderBtn.textContent = isEn ? 'Place Order' : 'ยืนยันการสั่งซื้อ';
         }
