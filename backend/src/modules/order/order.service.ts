@@ -64,8 +64,13 @@ export class OrderService {
           await this.productRepo.update(item.productId, { stockQuantity: remainingStock }, tx);
         }
 
-        // Increment total price
-        totalPrice += Number(item.productPrice) * item.quantity;
+        // Increment total price with discount
+        const discountPercent = item.activeDiscountPercent ? Number(item.activeDiscountPercent) : 0;
+        const finalPrice = discountPercent > 0 
+          ? Number(item.productPrice) * (1 - discountPercent / 100)
+          : Number(item.productPrice);
+        
+        totalPrice += finalPrice * item.quantity;
       }
 
       // 2. Create Order
@@ -79,11 +84,16 @@ export class OrderService {
 
       // 3. Create Order Items
       for (const item of cart.items) {
+        const discountPercent = item.activeDiscountPercent ? Number(item.activeDiscountPercent) : 0;
+        const finalPrice = discountPercent > 0 
+          ? Number(item.productPrice) * (1 - discountPercent / 100)
+          : Number(item.productPrice);
+
         await this.orderRepo.createOrderItem({
           orderId,
           productId: item.productId,
           quantity: item.quantity,
-          price: item.productPrice,
+          price: String(finalPrice),
           size: item.size || null,
           color: item.color || null,
         }, tx);

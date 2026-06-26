@@ -1,12 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { translateProduct } from '../../lib/translations';
-import Pagination from '../../components/common/Pagination.astro';
-
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
-
-const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
-const limit = 8;
 
 const resolveImage = (url: string) => {
   if (url && url.startsWith('/assets/uploads/')) {
@@ -17,64 +11,49 @@ const resolveImage = (url: string) => {
   return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
-let productsList = [] as any[];
-let totalProducts = 0;
+let sets = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?collection=total-looks&page=${page}&limit=${limit}`);
+  const res = await fetch(`${BACKEND_URL}/api/collections`);
   if (res.ok) {
-    productsList = await res.json();
-  }
-
-  const countRes = await fetch(`${BACKEND_URL}/api/products?collection=total-looks`);
-  if (countRes.ok) {
-    const allProducts = await countRes.json();
-    totalProducts = allProducts.length;
+    const rawCols = await res.json();
+    sets = rawCols
+      .filter((c: any) => c.slug === 'new-arrivals' || c.slug.startsWith('new-arrivals-'))
+      .sort((a: any, b: any) => b.id - a.id);
   }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching products failed.', err);
+  console.error('[NestJS API Error] Fetching collections failed in total-looks.astro', err);
 }
-
-const displayProducts = productsList.map(p => translateProduct(p, lang));
-const paginatedList = displayProducts;
-const totalPages = Math.max(1, Math.ceil(totalProducts / limit));
-
-const getColorsArray = (colors: any) => {
-  if (!colors) return [];
-  if (Array.isArray(colors)) return colors;
-  try {
-    const parsed = typeof colors === 'string' ? JSON.parse(colors) : colors;
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    if (typeof colors === 'string' && colors.includes(',')) {
-      return colors.split(',').map(s => s.trim()).filter(Boolean);
-    }
-    if (typeof colors === 'string' && colors.trim() !== '') {
-      return [colors.trim()];
-    }
-    return [];
-  }
-};
 ---
 
-<Layout title={lang === 'en' ? "Total Looks | ACHI Studio" : "ลุคทั้งหมด | ACHI Studio"} description={lang === 'en' ? "Complete outfit configurations designed as matching sets." : "ชุดแต่งกายครบชุดที่ออกแบบมาให้เข้าชุดกันอย่างลงตัว"} showHeroHeader={true}>
-  <section class="w-full relative h-[60vh] bg-[#282828] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/set1.png?v=3');"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
+<Layout 
+  title={lang === 'en' ? "Total Looks | ACHI Studio" : "ลุคทั้งหมด | ACHI Studio"} 
+  description={lang === 'en' ? "Complete outfit configurations designed as matching sets." : "ชุดแต่งกายครบชุดที่ออกแบบมาให้เข้าชุดกันอย่างลงตัว"} 
+  showHeroHeader={true}
+>
+  {/* Editorial Collection Hero Banner */}
+  <section class="w-full relative h-[45vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style="background-image: url('/assets/images/set1.png?v=3');"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
       <div class="flex items-end justify-between w-full">
         <div>
-          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">{lang === 'en' ? "Complete Outfits" : "ชุดแต่งกายครบชุด"}</span>
-          <h1 class="font-serif text-5xl sm:text-7xl font-bold tracking-tight uppercase leading-none">{lang === 'en' ? "Total Looks" : "ลุคทั้งหมด"}</h1>
-        </div>
-        <div class="hidden sm:block text-right text-[11px] tracking-[0.35em] text-gray-300 uppercase font-light">
-          {lang === 'en' ? "Styled Outfit Sets" : "เซ็ตชุดแต่งกายสไตล์มินิมอล"}
+          <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">
+            {lang === 'en' ? "COMPLETE OUTFITS" : "ชุดแต่งกายครบชุด"}
+          </span>
+          <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight uppercase leading-none">
+            {lang === 'en' ? "Total Looks" : "ลุคทั้งหมด"}
+          </h1>
+          <p class="text-xs sm:text-sm tracking-widest font-light text-gray-300 max-w-xl mt-4 uppercase leading-relaxed">
+            {lang === 'en' ? "Styled outfit configurations designed as matching sets" : "เซ็ตเสื้อผ้าที่ได้รับการจัดสรรและออกแบบมาอย่างลงตัวในลุคเดียว"}
+          </p>
         </div>
       </div>
     </div>
   </section>
 
+  {/* Breadcrumb Bar */}
   <section class="border-b border-gray-100 bg-white">
     <div class="max-w-[1440px] mx-auto px-6 py-4 flex items-center justify-between text-[11px] uppercase tracking-wider font-light text-gray-400">
       <nav class="flex items-center gap-2">
@@ -84,54 +63,59 @@ const getColorsArray = (colors: any) => {
         <span>/</span>
         <span class="text-brand-charcoal">{lang === 'en' ? "Total Looks" : "ลุคทั้งหมด"}</span>
       </nav>
-      <span>{lang === 'en' ? `Showing ${displayProducts.length} items` : `แสดงทั้งหมด ${displayProducts.length} รายการ`}</span>
+      <span>{lang === 'en' ? `Showing ${sets.length} sets` : `แสดงทั้งหมด ${sets.length} เซ็ต`}</span>
     </div>
   </section>
 
-  <div class="max-w-[1440px] mx-auto px-6 py-16">
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {paginatedList.map((product: any) => (
-        <div class="flex flex-col justify-between p-6 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
-          <button class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
-          </button>
-
-          <!-- Product Image Box -->
-          <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            ) : (
-              <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
-                [Image: {product.name}]
+  {/* Custom Sets Grid */}
+  <section class="max-w-[1440px] mx-auto px-6 py-24 bg-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+      {sets.map((col) => (
+        <div class="flex flex-col group">
+          {/* Card Image Container */}
+          <a href={`/products/${col.slug}`} class="relative aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm block">
+            <img 
+              src={resolveImage(col.imageUrl)} 
+              alt={col.title} 
+              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all duration-300"></div>
+            
+            {/* Floating Category Label & Discount Badge */}
+            <div class="absolute top-6 left-6 flex flex-col gap-2">
+              <span class="bg-white/90 backdrop-blur-sm px-3.5 py-1.5 text-[9px] tracking-[0.2em] uppercase font-light text-brand-charcoal rounded-sm shadow-sm">
+                {lang === 'en' ? 'VIEW LOOK' : 'ดูสไตล์'}
               </span>
-            )}
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between gap-4">
-              <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-                {product.name}
-              </h3>
-              {/* Color swatches */}
-              {getColorsArray(product.colors).length > 0 && (
-                <div class="flex gap-1.5 shrink-0">
-                  {getColorsArray(product.colors).map((color: string) => (
-                    <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
-                  ))}
-                </div>
+              {col.discountPercent > 0 && (
+                <span class="bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm block w-fit">
+                  -{col.discountPercent}%
+                </span>
               )}
             </div>
-            <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+          </a>
+          
+          {/* Card Details */}
+          <div class="mt-6 flex flex-col items-start">
+            <h3 class="font-serif text-xl sm:text-2xl font-normal tracking-wide text-brand-charcoal uppercase group-hover:text-brand-gold transition-colors duration-300">
+              <a href={`/products/${col.slug}`}>{col.title}</a>
+            </h3>
+            <p class="text-xs text-gray-500 font-light tracking-wide mt-2 sm:mt-3 leading-relaxed uppercase">
+              {col.products ? `${col.products.length} ${lang === 'en' ? 'products included' : 'รายการสินค้าในเซ็ต'}` : `0 ${lang === 'en' ? 'products' : 'รายการ'}`}
+            </p>
+            <a href={`/products/${col.slug}`} class="text-[11px] tracking-[0.2em] font-medium text-brand-charcoal uppercase mt-4 inline-flex items-center gap-1.5 border-b border-brand-charcoal/30 pb-0.5 group-hover:border-brand-gold group-hover:text-brand-gold transition-all duration-300">
+              {lang === 'en' ? 'SHOP THE LOOK' : 'ช้อปสไตล์นี้'}
+              <svg class="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
           </div>
-
-          <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
         </div>
       ))}
+      {sets.length === 0 && (
+        <div class="col-span-full text-center py-12 text-stone-400 font-light italic text-sm">
+          {lang === 'en' ? 'No styled sets found' : 'ไม่พบเซ็ตชุดแต่งกายในขณะนี้'}
         </div>
-
-    <!-- Pagination Component -->
-    <Pagination totalPages={totalPages} />
-  </div>
+      )}
+    </div>
+  </section>
 </Layout>

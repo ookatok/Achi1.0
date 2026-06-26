@@ -23,59 +23,26 @@ const sizes = Astro.url.searchParams.get('sizes') || '';
 const colors = Astro.url.searchParams.get('colors') || '';
 const searchQuery = Astro.url.searchParams.get('query') || '';
 
-const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
 const limit = 8;
 
-let productsList = [] as any[];
-
-// Build query string for API
-const queryParams = new URLSearchParams();
-if (categorySlug) queryParams.set('categorySlug', categorySlug);
-if (minPrice) queryParams.set('minPrice', minPrice);
-if (maxPrice) queryParams.set('maxPrice', maxPrice);
-if (sizes) queryParams.set('sizes', sizes);
-if (colors) queryParams.set('colors', colors);
-if (searchQuery) queryParams.set('query', searchQuery);
-queryParams.set('page', String(page));
-queryParams.set('limit', String(limit));
-
-let totalCount = 0;
+let rawProducts = [] as any[];
+let rawCollections = [] as any[];
 
 try {
-  const res = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
+  // Fetch products with high limit to filter discounts on frontend
+  const res = await fetch(`${BACKEND_URL}/api/products?limit=1000`);
   if (res.ok) {
-    productsList = await res.json();
+    rawProducts = await res.json();
   }
 
-  // Fetch total count for pagination
-  const countParams = new URLSearchParams(queryParams);
-  countParams.delete('page');
-  countParams.delete('limit');
-  const countRes = await fetch(`${BACKEND_URL}/api/products?${countParams.toString()}`);
-  if (countRes.ok) {
-    const allProducts = await countRes.json();
-    totalCount = allProducts.length;
+  // Fetch collections
+  const colRes = await fetch(`${BACKEND_URL}/api/collections`);
+  if (colRes.ok) {
+    rawCollections = await colRes.json();
   }
 } catch (err) {
-  console.error('[NestJS API Error] Fetching products failed.', err);
+  console.error('[NestJS API Error] Fetching discount items failed.', err);
 }
-
-const displayList = productsList.map(product => translateProduct(product, lang));
-const pageList = displayList;
-const totalPages = Math.max(1, Math.ceil(totalCount / limit));
-const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
-
-// Helper to determine original price and discount percentage
-const getDiscountDetails = (product: any) => {
-  const priceNum = Number(product.price);
-  const percent = product.id % 2 === 0 ? 20 : 30; // 20% or 30% discount
-  const originalPrice = (priceNum / (1 - percent / 100)).toFixed(2);
-  return {
-    originalPrice,
-    salePrice: priceNum.toFixed(2),
-    percent
-  };
-};
 
 const getColorsArray = (colors: any) => {
   if (!colors) return [];
@@ -92,6 +59,61 @@ const getColorsArray = (colors: any) => {
     }
     return [];
   }
+};
+
+// 1. Filter discounted products (activeDiscountPercent > 0)
+const discountedProducts = rawProducts.filter((p: any) => p.activeDiscountPercent > 0);
+
+// Apply query filters to products
+const filteredProducts = discountedProducts.filter((product: any) => {
+  if (categorySlug && product.categorySlug !== categorySlug) return false;
+  
+  const salePrice = Number(product.price) * (1 - product.activeDiscountPercent / 100);
+  if (minPrice && salePrice < parseFloat(minPrice)) return false;
+  if (maxPrice && salePrice > parseFloat(maxPrice)) return false;
+  
+  if (sizes) {
+    const sizeArr = sizes.split(',').map(s => s.trim().toLowerCase());
+    const prodSizes = getColorsArray(product.sizes).map((s: string) => s.toLowerCase());
+    if (!sizeArr.every(s => prodSizes.includes(s))) return false;
+  }
+  
+  if (colors) {
+    const colorArr = colors.split(',').map(c => c.trim().toLowerCase());
+    const prodColors = getColorsArray(product.colors).map((c: string) => c.toLowerCase());
+    if (!colorArr.every(c => prodColors.includes(c))) return false;
+  }
+  
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const matchesName = product.name?.toLowerCase().includes(q);
+    const matchesDesc = product.description?.toLowerCase().includes(q);
+    if (!matchesName && !matchesDesc) return false;
+  }
+  
+  return true;
+});
+
+const displayProducts = filteredProducts.map(product => translateProduct(product, lang));
+const sortedProducts = [...displayProducts].sort((a: any, b: any) => (b.activeDiscountPercent || 0) - (a.activeDiscountPercent || 0));
+const totalCount = filteredProducts.length;
+const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+// 2. Filter discounted collections (discountPercent > 0)
+const discountedCollections = rawCollections.filter((c: any) => c.discountPercent > 0);
+
+const isFiltered = !!(categorySlug || minPrice || maxPrice || sizes || colors || searchQuery);
+
+// Helper to determine original price and discount percentage
+const getDiscountDetails = (product: any) => {
+  const priceNum = Number(product.price);
+  const percent = product.activeDiscountPercent || 0;
+  const salePrice = (priceNum * (1 - percent / 100)).toFixed(2);
+  return {
+    originalPrice: priceNum.toFixed(2),
+    salePrice,
+    percent
+  };
 };
 ---
 
@@ -242,81 +264,472 @@ const getColorsArray = (colors: any) => {
     });
   </script>
 
-  <div class="max-w-[1440px] mx-auto px-6 py-24">
-    {/* Clean 4-Column Grid Section of Sale Products */}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-      {pageList.map((product: any) => {
-        const details = getDiscountDetails(product);
-        return (
-          <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group relative">
-            {/* Discount Percentage Badge in top left corner */}
-            <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
-              -{details.percent}%
-            </span>
-
-            {/* Heart Favorite Button */}
-            <button
-              class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
-              data-id={product.id}
-              data-name={product.name}
-              data-price={product.price}
-              data-image={product.imageUrl}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-              </svg>
-            </button>
-
-            {/* Product Image Box */}
-            <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
-              {product.imageUrl ? (
-                <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              ) : (
-                <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
-                  [Image: {product.name}]
-                </span>
-              )}
-              {product.status === 'inactive' && (
-                <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center z-10">
-                  <span class="text-white text-[10px] uppercase tracking-widest font-semibold border border-white/60 px-3 py-1.5 rounded-sm">
-                    {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
-                  </span>
+  <div class="max-w-[1440px] mx-auto px-6 py-16 space-y-20">
+    {/* Editorial / Mixed Layout Section */}
+    {discountedCollections.length > 0 && (
+      <div class="relative mb-20 group animate-fade-in" id="editorial-sets-carousel">
+        <div class="flex justify-between items-center mb-8 border-b border-stone-100 pb-4">
+          <h2 class="font-serif text-2xl font-normal tracking-wide text-brand-charcoal uppercase">
+            {lang === 'en' ? "Discounted Looks" : "เซ็ตแต่งกายลดราคาพิเศษ"}
+          </h2>
+          <span class="text-[10px] text-stone-400 font-light tracking-widest uppercase">
+            {discountedCollections.length} {lang === 'en' ? "Looks Available" : "ลุคที่มีจำหน่าย"}
+          </span>
+        </div>
+        
+        {/* Slides Container */}
+        <div class="relative overflow-hidden w-full rounded-sm">
+          {discountedCollections.map((set: any, setIndex: number) => {
+            const setCoverImage = set.imageUrl || '/assets/images/placeholder-product.png';
+            const setProductIds = set.products ? set.products.map((p: any) => p.id) : [];
+            const setFullProducts = rawProducts.filter((p: any) => setProductIds.includes(p.id));
+            const displaySetProducts = setFullProducts.map((p: any) => translateProduct(p, lang));
+            
+            return (
+              <div 
+                class={`editorial-set-slide grid grid-cols-1 lg:grid-cols-2 gap-12 items-start transition-all duration-700 ease-in-out ${setIndex === 0 ? 'opacity-100 relative z-10' : 'opacity-0 absolute inset-0 pointer-events-none z-0'}`}
+                data-index={setIndex}
+              >
+                <!-- Left Column: Set Cover Image -->
+                <div class="relative bg-stone-100 aspect-[3/4] overflow-hidden rounded-sm shadow-xs group/img">
+                  <div 
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-[8000ms] ease-out scale-100 group-[.active-slide]:scale-105" 
+                    style={`background-image: url('${resolveImage(setCoverImage)}');`}
+                  ></div>
+                  
+                  {/* Premium Badge indicating set name & discount */}
+                  <div class="absolute bottom-6 left-6 bg-brand-charcoal/90 text-white backdrop-blur-xs px-4 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold z-20 flex flex-col gap-1 shadow-md">
+                    <span>{set.title}</span>
+                    <span class="text-red-500 font-bold text-xs">{lang === 'en' ? "SET DISCOUNT" : "ลดเซ็ตนี้"} -{set.discountPercent}%</span>
+                  </div>
                 </div>
-              )}
-            </div>
 
-            {/* Product Details */}
-            <div>
-              <div class="flex items-center justify-between gap-4">
-                <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight">
-                  {product.name}
-                </h3>
-                {/* Color swatches */}
-                {getColorsArray(product.colors).length > 0 && (
-                  <div class="flex gap-1.5 shrink-0">
-                    {getColorsArray(product.colors).map((color: string) => (
-                      <span class="w-3.5 h-3.5 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
-                    ))}
+                <!-- Right Column: Editorial Product Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  {displaySetProducts.map((product: any) => {
+                    const prodDetails = getDiscountDetails(product);
+                    return (
+                      <div class="flex flex-col justify-between p-4 bg-white border border-gray-100 rounded-sm product-card-hover group/card relative shadow-xs">
+                        {/* Heart Favorite Button */}
+                        <button
+                          class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
+                          data-favorite-btn
+                          data-id={product.id}
+                          data-name={product.name}
+                          data-price={product.price}
+                          data-image={product.imageUrl}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                          </svg>
+                        </button>
+
+                        {/* Product Image */}
+                        <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6 relative">
+                          {product.activeDiscountPercent > 0 && (
+                            <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
+                              -{product.activeDiscountPercent}% OFF
+                            </span>
+                          )}
+                          <img
+                            src={resolveImage(product.imageUrl)}
+                            alt={product.name}
+                            class="max-h-[85%] object-contain mix-blend-multiply transition-transform duration-500 group-hover/card:scale-105"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div>
+                          <div class="flex items-center justify-between gap-4">
+                            <h3 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight truncate">
+                              {product.name}
+                            </h3>
+                            {getColorsArray(product.colors).length > 0 && (
+                              <div class="flex gap-1.5 shrink-0">
+                                {getColorsArray(product.colors).slice(0, 3).map((color: string) => (
+                                  <span class="w-3 h-3 rounded-full border border-stone-300 block shadow-xs" style={{ backgroundColor: color }}></span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div class="flex items-center gap-3 mt-2">
+                            <span class="text-xs text-red-600 font-bold">${Number(prodDetails.salePrice).toLocaleString()}</span>
+                            <span class="text-[10px] text-gray-400 line-through font-light">${Number(prodDetails.originalPrice).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Clickable Area Link */}
+                        <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Carousel Navigation Indicators */}
+        {discountedCollections.length > 1 && (
+          <div class="flex justify-center items-center gap-3 mt-8">
+            <button id="carousel-prev-btn" class="text-stone-400 hover:text-brand-charcoal transition-colors p-2 text-xs uppercase tracking-widest font-semibold cursor-pointer">&larr; Prev</button>
+            <div class="flex gap-2">
+              {discountedCollections.map((_: any, idx: number) => (
+                <button 
+                  class={`carousel-indicator-bar w-8 h-1 transition-all duration-300 rounded-full cursor-pointer ${idx === 0 ? 'bg-brand-charcoal w-12' : 'bg-stone-200 hover:bg-stone-300'}`}
+                  data-slide-to={idx}
+                ></button>
+              ))}
+            </div>
+            <button id="carousel-next-btn" class="text-stone-400 hover:text-brand-charcoal transition-colors p-2 text-xs uppercase tracking-widest font-semibold cursor-pointer">Next &rarr;</button>
+          </div>
+        )}
+      </div>
+    )}
+
+    <!-- Section: Discounted Pieces -->
+    <div id="pieces-container" class="space-y-12 pt-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-stone-100 pb-4">
+        <h2 class="font-serif text-2xl font-normal tracking-wide text-brand-charcoal uppercase">
+          {lang === 'en' ? "Discounted Pieces" : "ดีลสินค้าเดี่ยวลดราคา"}
+        </h2>
+        
+        <!-- Savings Tiers Filter -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-[9px] uppercase tracking-widest font-semibold text-stone-400 mr-2">{lang === 'en' ? "Savings:" : "ระดับการลดราคา:"}</span>
+          <button class="tier-filter-btn px-3 py-1.5 rounded-full border border-stone-200 text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer bg-brand-charcoal text-white shadow-xs" data-tier="all">
+            {lang === 'en' ? "All Deals" : "ทั้งหมด"}
+          </button>
+          <button class="tier-filter-btn px-3 py-1.5 rounded-full border border-stone-200 text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer text-stone-500 hover:text-brand-charcoal bg-stone-50" data-tier="high">
+            30%+ OFF
+          </button>
+          <button class="tier-filter-btn px-3 py-1.5 rounded-full border border-stone-200 text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer text-stone-500 hover:text-brand-charcoal bg-stone-50" data-tier="mid">
+            20% - 30% OFF
+          </button>
+          <button class="tier-filter-btn px-3 py-1.5 rounded-full border border-stone-200 text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer text-stone-500 hover:text-brand-charcoal bg-stone-50" data-tier="low">
+            Up to 20% OFF
+          </button>
+        </div>
+      </div>
+
+      <!-- Standard 4-Column Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        {sortedProducts.map((product: any, index: number) => {
+          const details = getDiscountDetails(product);
+          const isMaxDiscount = index === 0 && (product.activeDiscountPercent || 0) > 0;
+          const isHidden = index >= limit && !isMaxDiscount;
+          const prodSizes = getColorsArray(product.sizes);
+          const prodColors = getColorsArray(product.colors);
+          
+          return (
+            <div 
+              class={`flex flex-col justify-between rounded-sm product-card-hover group product-card-wrapper transition-all duration-500 relative ${isMaxDiscount ? 'md:col-span-2 md:row-span-2 p-6 md:p-8 bg-stone-900 text-white border border-brand-gold/30 shadow-xl' : 'p-4 bg-white border border-stone-100'} ${isHidden ? 'js-expandable-card hidden' : ''}`}
+              data-discount-val={product.activeDiscountPercent}
+            >
+              {/* Discount Percentage Badge */}
+              <span class={`absolute z-20 bg-red-600 text-white uppercase tracking-widest font-bold rounded-sm shadow-sm animate-pulse ${isMaxDiscount ? 'text-[11px] px-3.5 py-2 top-8 left-8' : 'text-[9px] px-2.5 py-1 top-6 left-6'}`}>
+                -{details.percent}% OFF
+              </span>
+
+              {/* Heart Favorite Button */}
+              <button
+                class={`absolute z-20 transition-colors focus:outline-none cursor-pointer ${isMaxDiscount ? 'top-8 right-8 text-stone-400 hover:text-white' : 'top-6 right-6 text-gray-400 hover:text-brand-charcoal'}`}
+                data-favorite-btn data-discount={product.activeDiscountPercent || 0}
+                data-id={product.id}
+                data-name={product.name}
+                data-price={product.price}
+                data-image={product.imageUrl}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                </svg>
+              </button>
+
+              {/* Product Image Box */}
+              <div class={`aspect-[1/1] overflow-hidden flex items-center justify-center rounded-sm mb-6 relative ${isMaxDiscount ? 'bg-stone-950/40 border border-stone-800' : 'bg-gray-50 border border-gray-100/50'}`}>
+                {product.imageUrl ? (
+                  <img src={resolveImage(product.imageUrl)} alt={product.name} class={`max-h-[85%] object-contain transition-transform duration-500 group-hover:scale-105 ${isMaxDiscount ? 'mix-blend-normal' : 'mix-blend-multiply'}`} />
+                ) : (
+                  <span class="text-[9px] uppercase tracking-[0.2em] text-gray-400 text-center font-light leading-relaxed">
+                    [Image: {product.name}]
+                  </span>
+                )}
+                
+                {product.status === 'inactive' && (
+                  <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center z-10">
+                    <span class="text-white text-[10px] uppercase tracking-widest font-semibold border border-white/60 px-3 py-1.5 rounded-sm">
+                      {lang === 'en' ? 'Not Available' : 'งดจำหน่าย'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Product Details */}
+              <div class="space-y-4">
+                <div class="space-y-1">
+                  <span class="text-[8px] uppercase tracking-[0.25em] text-brand-gold font-bold block">
+                    {product.categoryName || (lang === 'en' ? 'Clothing' : 'เสื้อผ้า')}
+                  </span>
+                  <div class="flex items-start justify-between gap-4">
+                    <h3 class={`font-serif tracking-widest uppercase leading-tight ${isMaxDiscount ? 'text-lg md:text-xl font-bold' : 'text-xs font-semibold text-brand-charcoal'}`}>
+                      {product.name}
+                    </h3>
+                  </div>
+                  
+                  <!-- Pricing Row showing Sale and Original prices -->
+                  <div class="flex items-center gap-3 mt-2">
+                    <span class={`font-bold ${isMaxDiscount ? 'text-lg text-red-500' : 'text-xs text-red-600'}`}>${Number(details.salePrice).toLocaleString()}</span>
+                    <span class={`font-light line-through ${isMaxDiscount ? 'text-xs text-stone-400' : 'text-[10px] text-gray-400'}`}>${Number(details.originalPrice).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* UX Enhancement: direct display of size and color options */}
+                <div class={`pt-2.5 border-t space-y-2 ${isMaxDiscount ? 'border-stone-800' : 'border-stone-100'}`}>
+                  {prodColors.length > 0 && (
+                    <div class="flex items-center gap-2">
+                      <span class="text-[8px] uppercase tracking-wider font-semibold text-stone-400 shrink-0 w-10">{lang === 'en' ? "Colors:" : "สี:"}</span>
+                      <div class="flex flex-wrap gap-1">
+                        {prodColors.map((color: string) => (
+                          <span 
+                            class={`inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded-sm font-sans border ${isMaxDiscount ? 'bg-stone-800 border-stone-750 text-stone-300' : 'bg-stone-50 border-stone-200 text-stone-600'}`}
+                          >
+                            {color.startsWith('#') && (
+                              <span class="w-2 h-2 rounded-full border border-stone-300 shrink-0 block" style={{ backgroundColor: color }}></span>
+                            )}
+                            {color}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {prodSizes.length > 0 && (
+                    <div class="flex items-center gap-2">
+                      <span class="text-[8px] uppercase tracking-wider font-semibold text-stone-400 shrink-0 w-10">{lang === 'en' ? "Sizes:" : "ไซส์:"}</span>
+                      <div class="flex flex-wrap gap-1">
+                        {prodSizes.map((size: string) => (
+                          <span class={`text-[8px] px-1.5 py-0.5 rounded-sm font-mono font-bold uppercase ${isMaxDiscount ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-700'}`}>{size}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {isMaxDiscount && (
+                  <div class="pt-4 mt-2">
+                    <span class="inline-block text-center bg-brand-gold text-brand-charcoal hover:bg-white hover:text-brand-charcoal px-6 py-2.5 rounded-sm text-[9px] font-bold uppercase tracking-widest transition-all duration-300 w-full">
+                      {lang === 'en' ? "Claim Deal Now" : "ช้อปดีลนี้ทันที"} &rarr;
+                    </span>
                   </div>
                 )}
               </div>
               
-              <!-- Pricing Row showing Sale and Original prices -->
-              <div class="flex items-center gap-3 mt-2">
-                <span class="text-xs text-red-600 font-bold">${Number(details.salePrice).toLocaleString()}</span>
-                <span class="text-[10px] text-gray-400 line-through font-light">${Number(details.originalPrice).toLocaleString()}</span>
-              </div>
+              {/* Clickable Area Link */}
+              <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
             </div>
-            
-            {/* Clickable Area Link */}
-            <a href={`/products/${product.id}`} class="absolute inset-0 z-10" aria-label="View Details"></a>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
 
-    {/* Pagination Component */}
-    <Pagination totalPages={totalPages} />
+      {displayProducts.length === 0 && (
+        <div class="text-center py-24 text-stone-400 italic font-light text-sm bg-stone-50 border border-stone-100 rounded-sm w-full">
+          {lang === 'en' ? "No discounted products match your criteria." : "ไม่มีสินค้าลดราคาที่ตรงตามเงื่อนไขของคุณ"}
+        </div>
+      )}
+
+      {displayProducts.length > limit && (
+        <div class="flex justify-center mt-16 animate-fade-in" id="view-all-container">
+          <button
+            id="view-all-deals-btn"
+            class="px-8 py-4 border border-brand-charcoal text-brand-charcoal hover:bg-brand-charcoal hover:text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer rounded-sm"
+          >
+            {lang === 'en' ? "View All Products" : "ดูสินค้าทั้งหมด"}
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Component */}
+      {totalPages > 1 && (
+        <div id="discount-pagination" class="pt-6">
+          <Pagination totalPages={totalPages} />
+        </div>
+      )}
+    </div>
   </div>
+
+  <script is:inline>
+    (function() {
+      // 1. Editorial Sets Carousel Slider
+      const carousel = document.getElementById('editorial-sets-carousel');
+      if (carousel) {
+        const slides = carousel.querySelectorAll('.editorial-set-slide');
+        const indicators = carousel.querySelectorAll('.carousel-indicator-bar');
+        const prevBtn = document.getElementById('carousel-prev-btn');
+        const nextBtn = document.getElementById('carousel-next-btn');
+
+        if (slides.length > 1) {
+          let currentIndex = 0;
+          let intervalId = null;
+
+          const showSlide = (index) => {
+            // Handle wrapping
+            if (index >= slides.length) index = 0;
+            if (index < 0) index = slides.length - 1;
+
+            // Update active slide classes
+            slides.forEach((slide, idx) => {
+              if (idx === index) {
+                slide.classList.remove('opacity-0', 'absolute', 'pointer-events-none', 'z-0');
+                slide.classList.add('opacity-100', 'relative', 'z-10');
+                slide.classList.add('active-slide');
+              } else {
+                slide.classList.remove('opacity-100', 'relative', 'z-10');
+                slide.classList.remove('active-slide');
+                slide.classList.add('opacity-0', 'absolute', 'pointer-events-none', 'z-0');
+              }
+            });
+
+            // Update indicators
+            indicators.forEach((ind, idx) => {
+              if (idx === index) {
+                ind.classList.remove('bg-stone-200', 'hover:bg-stone-300');
+                ind.classList.add('bg-brand-charcoal', 'w-12');
+              } else {
+                ind.classList.remove('bg-brand-charcoal', 'w-12');
+                ind.classList.add('bg-stone-200', 'hover:bg-stone-300');
+              }
+            });
+
+            currentIndex = index;
+          };
+
+          const startAutoPlay = () => {
+            stopAutoPlay();
+            intervalId = setInterval(() => {
+              showSlide(currentIndex + 1);
+            }, 7000); // Rotate every 7 seconds
+          };
+
+          const stopAutoPlay = () => {
+            if (intervalId) {
+              clearInterval(intervalId);
+              intervalId = null;
+            }
+          };
+
+          // Initialize first slide
+          showSlide(0);
+          startAutoPlay();
+
+          // Event Listeners
+          prevBtn?.addEventListener('click', () => {
+            showSlide(currentIndex - 1);
+            startAutoPlay();
+          });
+
+          nextBtn?.addEventListener('click', () => {
+            showSlide(currentIndex + 1);
+            startAutoPlay();
+          });
+
+          indicators.forEach((ind, idx) => {
+            ind.addEventListener('click', () => {
+              showSlide(idx);
+              startAutoPlay();
+            });
+          });
+
+          // Pause on hover
+          carousel.addEventListener('mouseenter', stopAutoPlay);
+          carousel.addEventListener('mouseleave', startAutoPlay);
+        }
+      }
+
+      // 2. Savings Tiers Filtering
+      const tierButtons = document.querySelectorAll('.tier-filter-btn');
+      const productCards = document.querySelectorAll('.product-card-wrapper');
+      const viewAllBtn = document.getElementById('view-all-deals-btn');
+      const expandableCards = document.querySelectorAll('.js-expandable-card');
+      const paginationContainer = document.getElementById('discount-pagination');
+
+      if (tierButtons.length > 0 && productCards.length > 0) {
+        tierButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            // Update active state style
+            tierButtons.forEach(b => {
+              b.classList.remove('bg-brand-charcoal', 'text-white', 'shadow-xs');
+              b.classList.add('text-stone-500', 'bg-stone-50');
+            });
+            btn.classList.add('bg-brand-charcoal', 'text-white', 'shadow-xs');
+            btn.classList.remove('text-stone-500', 'bg-stone-50');
+
+            const tier = btn.getAttribute('data-tier');
+            
+            productCards.forEach(card => {
+              const discount = parseFloat(card.getAttribute('data-discount-val') || '0');
+              let matches = false;
+              
+              if (tier === 'all') {
+                if (viewAllBtn && viewAllBtn.classList.contains('js-clicked')) {
+                  matches = true;
+                } else {
+                  matches = !card.classList.contains('js-expandable-card');
+                }
+              }
+              else if (tier === 'high' && discount >= 30) matches = true;
+              else if (tier === 'mid' && discount >= 20 && discount < 30) matches = true;
+              else if (tier === 'low' && discount < 20) matches = true;
+
+              if (matches) {
+                card.classList.remove('hidden');
+                card.style.opacity = '0';
+                setTimeout(() => {
+                  card.style.transition = 'opacity 300ms ease';
+                  card.style.opacity = '1';
+                }, 50);
+              } else {
+                card.classList.add('hidden');
+              }
+            });
+
+            // Adjust view all button visibility depending on tier filter
+            if (viewAllBtn) {
+              if (tier === 'all') {
+                if (!viewAllBtn.classList.contains('js-clicked')) {
+                  const viewAllContainer = document.getElementById('view-all-container');
+                  if (viewAllContainer) viewAllContainer.classList.remove('hidden');
+                  viewAllBtn.classList.remove('hidden');
+                  if (paginationContainer) paginationContainer.classList.remove('hidden');
+                }
+              } else {
+                const viewAllContainer = document.getElementById('view-all-container');
+                if (viewAllContainer) viewAllContainer.classList.add('hidden');
+                viewAllBtn.classList.add('hidden');
+                if (paginationContainer) paginationContainer.classList.add('hidden');
+              }
+            }
+          });
+        });
+      }
+
+      // 3. View All Button handler
+      if (viewAllBtn && expandableCards.length > 0) {
+        viewAllBtn.addEventListener('click', () => {
+          viewAllBtn.classList.add('js-clicked');
+          expandableCards.forEach(card => {
+            card.classList.remove('hidden');
+            card.style.opacity = '0';
+            setTimeout(() => {
+              card.style.transition = 'opacity 300ms ease';
+              card.style.opacity = '1';
+            }, 50);
+          });
+          viewAllBtn.classList.add('hidden');
+          const viewAllContainer = document.getElementById('view-all-container');
+          if (viewAllContainer) viewAllContainer.classList.add('hidden');
+          if (paginationContainer) paginationContainer.classList.add('hidden');
+        });
+      }
+    })();
+  </script>
 </Layout>

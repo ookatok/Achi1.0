@@ -165,10 +165,14 @@ if (Array.isArray(detailImages)) {
                 <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.slug')} *</label>
                 <input type="text" id="edit-slug" required value={product.slug} class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.price_usd')} *</label>
                   <input type="number" id="edit-price" step="0.01" required value={product.price} class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? 'Discount Percentage (%)' : 'เปอร์เซ็นต์ส่วนลด (%)'}</label>
+                  <input type="number" id="edit-discount-percent" min="0" max="100" value={product.discountPercent ?? 0} class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
                 </div>
                 <div>
                   <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{t('admin.stock_qty')} *</label>
@@ -188,6 +192,15 @@ if (Array.isArray(detailImages)) {
                    <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? 'On-Order Booked Qty' : 'ยอดสั่งจองคงค้าง (On-Order)'}</label>
                    <input type="number" id="edit-on-order-qty" value={product.onOrderQuantity || 0} class="w-full border border-stone-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
                  </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">{lang === 'en' ? 'Best Seller' : 'สินค้าขายดี (Best Seller)'}</label>
+                    <div class="flex items-center h-[34px]">
+                      <input type="checkbox" id="edit-is-best-seller" checked={product.isBestSeller} class="w-4 h-4 text-brand-charcoal accent-brand-charcoal focus:ring-0 cursor-pointer rounded-sm" />
+                      <span class="ml-2 text-xs text-stone-500 font-light">{lang === 'en' ? 'Mark this product as a Best Seller' : 'กำหนดเป็นสินค้าขายดีประจำร้าน'}</span>
+                    </div>
+                  </div>
+                </div>
                </div>
 
                <div class="mt-4 p-4 border border-dashed border-amber-200 bg-amber-50/30 rounded-sm">
@@ -1262,9 +1275,11 @@ if (Array.isArray(detailImages)) {
       const name = (document.getElementById('edit-name') as HTMLInputElement).value;
       const slug = (document.getElementById('edit-slug') as HTMLInputElement).value;
       const price = parseFloat((document.getElementById('edit-price') as HTMLInputElement).value);
+      const discountPercent = parseInt((document.getElementById('edit-discount-percent') as HTMLInputElement).value, 10) || 0;
       const stockQuantity = parseInt((document.getElementById('edit-stock') as HTMLInputElement).value, 10);
       const allowOnOrder = (document.getElementById('edit-allow-on-order') as HTMLInputElement).checked;
       const onOrderQuantity = parseInt((document.getElementById('edit-on-order-qty') as HTMLInputElement).value, 10) || 0;
+      const isBestSeller = (document.getElementById('edit-is-best-seller') as HTMLInputElement).checked;
       const description = (document.getElementById('edit-desc') as HTMLInputElement).value;
       
       const sizesStr = (document.getElementById('edit-sizes') as HTMLInputElement).value;
@@ -1287,7 +1302,7 @@ if (Array.isArray(detailImages)) {
         .filter(img => !img.isMain)
         .map(img => ({ imageUrl: img.imageUrl, color: img.color || '' }));
 
-      const payload = { name, slug, price, stockQuantity, allowOnOrder, onOrderQuantity, imageUrl, images, description, sizes, colors, tags, categoryId, status };
+      const payload = { name, slug, price, discountPercent, stockQuantity, allowOnOrder, onOrderQuantity, imageUrl, images, description, sizes, colors, tags, categoryId, status, isBestSeller };
 
       try {
         const res = await fetch(`${BACKEND_URL}/api/products/${id}`, {

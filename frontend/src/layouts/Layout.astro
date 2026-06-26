@@ -396,7 +396,6 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
                         <li><a href={l('/products/new-arrivals')} class="hover:text-brand-gold">{t('nav.new_arrivals')}</a></li>
                         <li><a href={l('/products/best-sellers')} class="hover:text-brand-gold">{t('menu.best_sellers')}</a></li>
-                        <li><a href={l('/products/trending')} class="hover:text-brand-gold">{t('menu.trending')}</a></li>
                         <li><a href={l('/discount')} class="hover:text-brand-gold">{t('nav.discount')}</a></li>
                       </ul>
                     </div>
@@ -406,9 +405,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                       <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('menu.collections')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
                         <li><a href={l('/collections')} class="hover:text-brand-gold">{t('menu.events')}</a></li>
-                        <li><a href={l('/products/recommend')} class="hover:text-brand-gold">{t('menu.recommend')}</a></li>
                         <li><a href={l('/products/total-looks')} class="hover:text-brand-gold">{t('menu.total_looks')}</a></li>
-                        <li><a href={l('/products/basics')} class="hover:text-brand-gold">{t('menu.basics')}</a></li>
                       </ul>
                     </div>
                   </div>
@@ -768,18 +765,33 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                 searchPreviewResults.innerHTML = products.map((product: any) => {
                   const price = isNaN(Number(product.price)) ? product.price : Number(product.price).toLocaleString();
                   const displayName = (window as any).translateProductName(product.name, (window as any).currentLang);
+                  const isDiscounted = product.activeDiscountPercent > 0;
+                  const discountBadgeHtml = isDiscounted ? `
+                    <span class="absolute top-1 left-1 z-20 bg-red-600 text-white text-[7px] uppercase font-bold px-1 py-0.5 rounded-xs shadow-sm scale-95 origin-top-left">
+                      -${product.activeDiscountPercent}%
+                    </span>
+                  ` : '';
+                  const priceHtml = isDiscounted ? `
+                    <div class="flex items-center gap-2 mt-1.5">
+                      <span class="text-xs text-red-600 font-bold">$${(Number(product.price) * (1 - product.activeDiscountPercent / 100)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      <span class="text-[9px] text-gray-400 line-through font-light">$${price}</span>
+                    </div>
+                  ` : `
+                    <span class="text-xs text-brand-gold font-medium mt-1.5 block">
+                      $${price}
+                    </span>
+                  `;
                   return `
                     <div class="flex items-center gap-4 p-3 bg-gray-50/50 border border-gray-100 rounded-sm hover:border-brand-charcoal transition-all relative group">
-                      <div class="w-16 h-16 bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 rounded-sm">
+                      <div class="w-16 h-16 bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 rounded-sm relative">
+                        ${discountBadgeHtml}
                         <img src="${resolveImage(product.imageUrl)}" alt="${displayName}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       </div>
                       <div class="flex-grow">
                         <h5 class="text-xs font-semibold tracking-widest text-brand-charcoal uppercase leading-tight group-hover:text-brand-gold transition-colors">
                           ${displayName}
                         </h5>
-                        <span class="text-xs text-brand-gold font-medium mt-1.5 block">
-                          $${price}
-                        </span>
+                        ${priceHtml}
                       </div>
                       <a href="/${(window as any).currentLang}/products/${product.id}" class="absolute inset-0 z-10" aria-label="View Details"></a>
                     </div>
@@ -1020,11 +1032,12 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
     </script>
 
     <!-- Client-side script for Favorites Wishlist sync and click tracking -->
-    <script is:inline>
+    <script is:inline define:vars={{ token, lang }}>
       (function() {
         const STORAGE_KEY = 'achi_favorites';
 
         const getFavorites = () => {
+          if (!token) return [];
           try {
             const data = localStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : [];
@@ -1034,6 +1047,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
         };
 
         const saveFavorites = (favs) => {
+          if (!token) return;
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
           } catch (e) {
@@ -1073,6 +1087,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
         };
 
         const toggleFavorite = (product) => {
+          if (!token) return;
           let favs = getFavorites();
           const index = favs.findIndex(f => String(f.id) === String(product.id));
 
@@ -1101,13 +1116,34 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
             e.preventDefault();
             e.stopPropagation();
 
+            // Require sign in
+            if (!token) {
+              const isEn = lang === 'en';
+              if (window.showStatusAlert) {
+                window.showStatusAlert(
+                  401,
+                  isEn ? 'Please sign in to add favorites.' : 'กรุณาเข้าสู่ระบบเพื่อบันทึกสินค้าที่ชอบ',
+                  null,
+                  false,
+                  () => {
+                    window.location.href = `/${lang}/auth/signin`;
+                  }
+                );
+              } else {
+                alert(isEn ? 'Please sign in to add favorites.' : 'กรุณาเข้าสู่ระบบเพื่อบันทึกสินค้าที่ชอบ');
+                window.location.href = `/${lang}/auth/signin`;
+              }
+              return;
+            }
+
             const id = btn.getAttribute('data-id');
             const name = btn.getAttribute('data-name') || '';
             const price = btn.getAttribute('data-price') || '';
             const imageUrl = btn.getAttribute('data-image') || '';
+            const activeDiscountPercent = parseInt(btn.getAttribute('data-discount') || '0', 10);
 
             if (id) {
-              toggleFavorite({ id, name, price, imageUrl });
+              toggleFavorite({ id, name, price, imageUrl, activeDiscountPercent });
             }
           });
         };

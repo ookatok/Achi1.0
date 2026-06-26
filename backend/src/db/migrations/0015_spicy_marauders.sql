@@ -1,0 +1,1 @@
+ALTER TABLE `collections` ADD `is_visible` boolean DEFAULT false NOT NULL;

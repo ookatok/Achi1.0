@@ -66,7 +66,7 @@ try {
               1. {lang === 'en' ? "Basic Information" : "ข้อมูลพื้นฐาน"}
             </h3>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
                 {t('admin.collection_title')} *
@@ -78,6 +78,12 @@ try {
                 {t('admin.slug')} *
               </label>
               <input type="text" id="add-col-slug" required class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" placeholder="e.g. spring-blossom-2026" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Discount Percentage (%)" : "เปอร์เซ็นต์ส่วนลด (%)"}
+              </label>
+              <input type="number" id="add-col-discount-percent" min="0" max="100" value="0" class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
             </div>
           </div>
           <div>
@@ -588,6 +594,7 @@ try {
 
       const title = (document.getElementById('add-col-title') as HTMLInputElement).value;
       const slug = (document.getElementById('add-col-slug') as HTMLInputElement).value;
+      const discountPercent = parseInt((document.getElementById('add-col-discount-percent') as HTMLInputElement).value, 10) || 0;
       const imageUrl = (document.getElementById('add-col-image') as HTMLInputElement).value;
       const description = (document.getElementById('add-col-desc') as HTMLTextAreaElement).value;
       const publishDateStr = (document.getElementById('add-col-publish') as HTMLInputElement).value;
@@ -615,7 +622,7 @@ try {
       const storyImageUrl = (document.getElementById('story-side-image-url') as HTMLInputElement).value;
 
       const payload = { 
-        title, slug, description, imageUrl, publishDate, productIds,
+        title, slug, discountPercent, description, imageUrl, publishDate, productIds,
         storyTitleEn, storyTitleTh, storySubtitleEn, storySubtitleTh,
         storyParagraphsEn, storyParagraphsTh, storyImageUrl, galleryImages
       };

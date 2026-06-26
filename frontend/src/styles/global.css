@@ -1,10 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  /* Fashion branding custom theme variables (Tailwind CSS v4 CSS-first config) */
-  --color-brand-charcoal: #1a1a1a;
-  --color-brand-cream: #fbf9f6;
-  --color-brand-gold: #c5a880;
+  /* Premium Minimalist custom theme variables (Tailwind CSS v4 CSS-first config) */
+  --color-brand-charcoal: #1c1c1a;
+  --color-brand-charcoal-light: #4c4c4a;
+  --color-brand-cream: #faf8f5;
+  --color-brand-gold: #b3a290;
+  --color-brand-stone: #e8e4dc;
+  --color-brand-sand: #d6cfc4;
   
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Outfit', sans-serif;

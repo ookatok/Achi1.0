@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { collections, collectionProducts } from '../../db/schema/collection.schema';
 import { products } from '../../db/schema/product.schema';
@@ -13,9 +13,19 @@ export class CollectionService {
   ) {}
 
   async create(dto: CreateCollectionDto) {
-    const { productIds, publishDate, ...collectionData } = dto;
+    const { productIds, publishDate } = dto;
     
     const parsedPublishDate = publishDate ? new Date(publishDate) : null;
+
+    if (dto.showOnHome === true) {
+      const activeSets = await this.db
+        .select()
+        .from(collections)
+        .where(eq(collections.showOnHome, true));
+      if (activeSets.length >= 3) {
+        throw new BadRequestException('Maximum of 3 sets can be shown on the home page');
+      }
+    }
 
     return await this.db.transaction(async (tx) => {
       const result = await tx.insert(collections).values({
@@ -32,6 +42,9 @@ export class CollectionService {
         storyParagraphsTh: dto.storyParagraphsTh ?? null,
         storyImageUrl: dto.storyImageUrl ?? null,
         galleryImages: dto.galleryImages ?? null,
+        discountPercent: dto.discountPercent ?? 0,
+        isVisible: dto.isVisible ?? false,
+        showOnHome: dto.showOnHome ?? false,
       });
       const collectionId = result[0].insertId;
 
@@ -111,6 +124,17 @@ export class CollectionService {
 
     // Verify exists
     await this.findOne(id);
+
+    if (dto.showOnHome === true) {
+      const activeSets = await this.db
+        .select()
+        .from(collections)
+        .where(eq(collections.showOnHome, true));
+      const activeCount = activeSets.filter(c => c.id !== id).length;
+      if (activeCount >= 3) {
+        throw new BadRequestException('Maximum of 3 sets can be shown on the home page');
+      }
+    }
 
     return await this.db.transaction(async (tx) => {
       // Update collection fields

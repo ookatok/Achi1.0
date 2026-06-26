@@ -33,7 +33,13 @@ try {
   errorMsg = lang === 'en' ? 'Network error: Backend server is not running.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย: เซิร์ฟเวอร์แบ็คเอนด์ไม่ได้ทำงานอยู่';
 }
 
-const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number(item.productPrice) * item.quantity), 0);
+const subtotal = cartData.items.reduce((sum: number, item: any) => {
+  const discountPercent = item.activeDiscountPercent ? Number(item.activeDiscountPercent) : 0;
+  const itemPrice = discountPercent > 0 
+    ? Number(item.productPrice) * (1 - discountPercent / 100)
+    : Number(item.productPrice);
+  return sum + (itemPrice * item.quantity);
+}, 0);
 const cartTotal = subtotal;
 ---
 
@@ -109,7 +115,16 @@ const cartTotal = subtotal;
                     <span class="text-brand-charcoal font-medium">{translateProductName(item.productName, lang)}</span>
                     <span class="block text-[10px] text-gray-400">{lang === 'en' ? 'Qty' : 'จำนวน'}: {item.quantity} | {item.size || ''}</span>
                   </div>
-                  <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
+                  <div class="flex flex-col items-end">
+                    {item.activeDiscountPercent > 0 ? (
+                      <>
+                        <span class="text-red-600 font-semibold">${(Number(item.productPrice) * (1 - Number(item.activeDiscountPercent) / 100) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span class="text-[9px] text-gray-400 line-through font-light">${(Number(item.productPrice) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      </>
+                    ) : (
+                      <span class="text-brand-charcoal font-semibold">${(Number(item.productPrice) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -117,12 +132,12 @@ const cartTotal = subtotal;
             <div class="border-t border-gray-100 pt-4 space-y-4 text-xs tracking-widest font-light text-gray-500 uppercase">
               <div class="flex justify-between">
                 <span>{lang === 'en' ? "Subtotal" : "ยอดรวมย่อย"}</span>
-                <span class="text-brand-charcoal font-medium">${subtotal}</span>
+                <span class="text-brand-charcoal font-medium">${subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
               </div>
               <hr class="border-gray-100" />
               <div class="flex justify-between text-sm font-medium text-brand-charcoal">
                 <span>{lang === 'en' ? "Total Due" : "ยอดเงินรวมทั้งสิ้น"}</span>
-                <span>${cartTotal}</span>
+                <span>${cartTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
               </div>
             </div>
           </div>

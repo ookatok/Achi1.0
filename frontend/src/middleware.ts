@@ -144,7 +144,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       if (context.request.method !== 'GET' && context.request.method !== 'HEAD' && context.request.body) {
         requestInit.body = context.request.body;
-        // @ts-ignore
+        // @ts-expect-error: RequestInit duplex option is not recognized by standard types
         requestInit.duplex = 'half';
       }
 

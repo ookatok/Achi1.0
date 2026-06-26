@@ -30,6 +30,7 @@ export class AuthService {
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
+      phone: dto.phone,
       role: 'customer', // Default registered users are customers
     });
 

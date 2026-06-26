@@ -18,6 +18,8 @@ export const CreateProductSchema = z.object({
   colors: z.array(z.string()).optional().default([]), // e.g. ["Red", "Black"]
   tags: z.array(z.string()).optional().default([]),   // e.g. ["new", "basics"]
   status: z.enum(['active', 'inactive']).optional().default('active'),
+  discountPercent: z.number().int().min(0).max(100).optional().default(0),
+  isBestSeller: z.boolean().optional().default(false),
 });
 
 export const GetProductsQuerySchema = z.object({

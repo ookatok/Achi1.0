@@ -433,6 +433,7 @@ const resolveImage = (url: string) => {
                       <th class="p-4 border border-stone-100 w-24">{t('admin.th_price')}</th>
                       <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'Stock (On-Hand)' : 'ในคลัง (On-Hand)'}</th>
                       <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'On-Order (Booked)' : 'สั่งจอง (On-Order)'}</th>
+                      <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'Sales' : 'ยอดขาย'}</th>
                       <th class="p-4 border border-stone-100">{lang === 'en' ? 'Sizes & Colors' : 'ไซส์และสี'}</th>
                       <th class="p-4 border border-stone-100 text-left w-24">{t('admin.product_status')}</th>
                       <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
@@ -481,6 +482,9 @@ const resolveImage = (url: string) => {
                               </span>
                             )}
                           </td>
+                           <td class="p-4 border border-stone-100 font-medium text-stone-700">
+                             {product.salesCount || 0}
+                           </td>
                           <td class="p-4 border border-stone-100 max-w-[200px]">
                             <div class="space-y-1">
                               {prodSizes.length > 0 && (
@@ -542,6 +546,7 @@ const resolveImage = (url: string) => {
                   </tbody>
                 </table>
               </div>
+              <div id="active-products-pagination" class="flex justify-center items-center gap-2 pt-6"></div>
             )}
           </div>
 
@@ -561,6 +566,7 @@ const resolveImage = (url: string) => {
                       <th class="p-4 border border-stone-100 w-24">{t('admin.th_price')}</th>
                       <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'Stock (On-Hand)' : 'ในคลัง (On-Hand)'}</th>
                       <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'On-Order (Booked)' : 'สั่งจอง (On-Order)'}</th>
+                      <th class="p-4 border border-stone-100 w-20">{lang === 'en' ? 'Sales' : 'ยอดขาย'}</th>
                       <th class="p-4 border border-stone-100">{lang === 'en' ? 'Sizes & Colors' : 'ไซส์และสี'}</th>
                       <th class="p-4 border border-stone-100 text-left w-24">{t('admin.product_status')}</th>
                       <th class="p-4 border border-stone-100 text-center w-32">{t('admin.th_actions')}</th>
@@ -609,6 +615,9 @@ const resolveImage = (url: string) => {
                               </span>
                             )}
                           </td>
+                           <td class="p-4 border border-stone-100 font-medium text-stone-700">
+                             {product.salesCount || 0}
+                           </td>
                           <td class="p-4 border border-stone-100 max-w-[200px]">
                             <div class="space-y-1">
                               {prodSizes.length > 0 && (
@@ -670,6 +679,7 @@ const resolveImage = (url: string) => {
                   </tbody>
                 </table>
               </div>
+              <div id="inactive-products-pagination" class="flex justify-center items-center gap-2 pt-6"></div>
             )}
           </div>
         </div>
@@ -841,13 +851,15 @@ const resolveImage = (url: string) => {
                     <th class="p-4 border border-stone-100 text-left">{lang === 'en' ? 'Set Name' : 'ชื่อเซ็ต'}</th>
                     <th class="p-4 border border-stone-100 text-left">{lang === 'en' ? 'Slug' : 'สลัก (Slug)'}</th>
                     <th class="p-4 border border-stone-100 text-left w-36">{lang === 'en' ? 'Products Included' : 'จำนวนสินค้าในเซ็ต'}</th>
+                    <th class="p-4 border border-stone-100 text-center w-28">{lang === 'en' ? 'Visibility' : 'การแสดงผล'}</th>
+                    <th class="p-4 border border-stone-100 text-center w-28">{lang === 'en' ? 'Show on Home' : 'แสดงหน้าแรก'}</th>
                     <th class="p-4 border border-stone-100 text-center w-36">{t('admin.th_actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {newArrivalSets.map((col: any) => {
                     return (
-                      <tr class="hover:bg-stone-50/50 transition-colors">
+                      <tr class="set-row hover:bg-stone-50/50 transition-colors">
                         <td class="p-4 border border-stone-100 w-16">
                           {col.imageUrl ? (
                             <img src={resolveImage(col.imageUrl)} alt={col.title} class="w-12 h-14 object-cover rounded-sm border border-stone-100" />
@@ -863,6 +875,22 @@ const resolveImage = (url: string) => {
                         </td>
                         <td class="p-4 border border-stone-100 text-[10px]">
                           {col.products ? col.products.length : 0} {lang === 'en' ? 'products' : 'รายการ'}
+                        </td>
+                        <td class="p-4 border border-stone-100 text-center">
+                          <input
+                            type="checkbox"
+                            class="visibility-toggle-checkbox w-4 h-4 rounded border-stone-300 text-brand-charcoal focus:ring-brand-charcoal cursor-pointer"
+                            data-id={col.id}
+                            checked={col.isVisible}
+                          />
+                        </td>
+                        <td class="p-4 border border-stone-100 text-center">
+                          <input
+                            type="checkbox"
+                            class="show-on-home-toggle-checkbox w-4 h-4 rounded border-stone-300 text-brand-charcoal focus:ring-brand-charcoal cursor-pointer"
+                            data-id={col.id}
+                            checked={col.showOnHome}
+                          />
                         </td>
                         <td class="p-4 border border-stone-100 text-center">
                           <div class="flex justify-center gap-1.5">
@@ -888,6 +916,7 @@ const resolveImage = (url: string) => {
                 </tbody>
               </table>
             </div>
+            <div id="sets-pagination" class="flex justify-center items-center gap-2 pt-6"></div>
           )}
         </div>
       </div>
@@ -1711,6 +1740,80 @@ const resolveImage = (url: string) => {
       console.error('[New Arrival Set Delete] Error:', e);
     }
 
+    // New Arrival Sets Visibility Toggle
+    try {
+      const isEn = lang === 'en';
+      document.querySelectorAll('.visibility-toggle-checkbox').forEach((checkbox: any) => {
+        checkbox.addEventListener('change', async () => {
+          const id = checkbox.getAttribute('data-id');
+          const isVisible = checkbox.checked;
+          if (!id) return;
+
+          try {
+            const res = await fetch(`http://localhost:3001/api/collections/${id}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ isVisible })
+            });
+
+            if (res.ok) {
+              (window as any).showStatusAlert(200, isEn ? 'Visibility updated successfully.' : 'อัปเดตการแสดงผลสำเร็จ', null, true);
+            } else {
+              const data = await res.json();
+              (window as any).showStatusAlert(res.status, null, data ? data.message : (isEn ? 'Failed to update visibility.' : 'อัปเดตการแสดงผลไม่สำเร็จ'));
+              checkbox.checked = !isVisible;
+            }
+          } catch (err) {
+            console.error(err);
+            (window as any).showStatusAlert(0, isEn ? 'Connection error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+            checkbox.checked = !isVisible;
+          }
+        });
+      });
+    } catch (e) {
+      console.error('[New Arrival Set Visibility Toggle] Error:', e);
+    }
+
+    // New Arrival Sets Show on Home Toggle
+    try {
+      const isEn = lang === 'en';
+      document.querySelectorAll('.show-on-home-toggle-checkbox').forEach((checkbox: any) => {
+        checkbox.addEventListener('change', async () => {
+          const id = checkbox.getAttribute('data-id');
+          const showOnHome = checkbox.checked;
+          if (!id) return;
+
+          try {
+            const res = await fetch(`http://localhost:3001/api/collections/${id}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ showOnHome })
+            });
+
+            if (res.ok) {
+              (window as any).showStatusAlert(200, isEn ? 'Show on Home updated successfully.' : 'อัปเดตการแสดงผลหน้าแรกสำเร็จ', null, true);
+            } else {
+              const data = await res.json();
+              (window as any).showStatusAlert(res.status, null, data ? data.message : (isEn ? 'Failed to update show on home.' : 'อัปเดตการแสดงผลหน้าแรกไม่สำเร็จ'));
+              checkbox.checked = !showOnHome;
+            }
+          } catch (err) {
+            console.error(err);
+            (window as any).showStatusAlert(0, isEn ? 'Connection error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+            checkbox.checked = !showOnHome;
+          }
+        });
+      });
+    } catch (e) {
+      console.error('[New Arrival Set Show on Home Toggle] Error:', e);
+    }
+
     // Orders sub-tabs (Normal vs Pre-Order) switcher
     try {
       const tabNormalOrders = document.getElementById('tab-normal-orders');
@@ -1737,11 +1840,182 @@ const resolveImage = (url: string) => {
       console.error('[Admin Orders Sub-tabs] Error initializing orders sub-tabs switcher:', e);
     }
 
-    // Products table filtering logic
+    // Products table filtering and pagination logic
+    let activeProductsPage = 1;
+    let inactiveProductsPage = 1;
+    let setsPage = 1;
+    const itemsPerPage = 10;
+
     const prodSearch = document.getElementById('admin-product-search') as HTMLInputElement | null;
     const prodCategoryFilter = document.getElementById('admin-product-category-filter') as HTMLSelectElement | null;
     const prodTagFilter = document.getElementById('admin-product-tag-filter') as HTMLSelectElement | null;
     const prodStockFilter = document.getElementById('admin-product-stock-filter') as HTMLSelectElement | null;
+
+    const paginateProducts = (type: 'active' | 'inactive') => {
+      const containerId = type === 'active' ? 'active-products-container' : 'inactive-products-container';
+      const paginationId = type === 'active' ? 'active-products-pagination' : 'inactive-products-pagination';
+      const rows = document.querySelectorAll(`#${containerId} .product-row`) as NodeListOf<HTMLTableRowElement>;
+      
+      const matchingRows: HTMLTableRowElement[] = [];
+      rows.forEach(row => {
+        if (row.dataset.match === 'true') {
+          matchingRows.push(row);
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+
+      const totalMatching = matchingRows.length;
+      const totalPages = Math.ceil(totalMatching / itemsPerPage) || 1;
+
+      let currentPage = type === 'active' ? activeProductsPage : inactiveProductsPage;
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+        if (type === 'active') activeProductsPage = totalPages;
+        else inactiveProductsPage = totalPages;
+      }
+      if (currentPage < 1) {
+        currentPage = 1;
+        if (type === 'active') activeProductsPage = 1;
+        else inactiveProductsPage = 1;
+      }
+
+      // Show/hide matching rows based on pagination window
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+
+      matchingRows.forEach((row, index) => {
+        if (index >= startIndex && index < endIndex) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+
+      // Render pagination UI
+      const paginationContainer = document.getElementById(paginationId);
+      if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) {
+          return;
+        }
+
+        // Prev Button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `border border-stone-200 px-3 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-stone-600 transition-colors ${currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-stone-50 cursor-pointer'}`;
+        prevBtn.innerText = lang === 'en' ? 'Prev' : 'ก่อนหน้า';
+        if (currentPage > 1) {
+          prevBtn.addEventListener('click', () => {
+            if (type === 'active') activeProductsPage--;
+            else inactiveProductsPage--;
+            paginateProducts(type);
+          });
+        }
+        paginationContainer.appendChild(prevBtn);
+
+        // Page Numbers
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `border px-2.5 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer ${
+            i === currentPage 
+              ? 'border-brand-charcoal bg-brand-charcoal text-white' 
+              : 'border-stone-200 text-stone-600 hover:bg-stone-50'
+          }`;
+          pageBtn.innerText = String(i);
+          pageBtn.addEventListener('click', () => {
+            if (type === 'active') activeProductsPage = i;
+            else inactiveProductsPage = i;
+            paginateProducts(type);
+          });
+          paginationContainer.appendChild(pageBtn);
+        }
+
+        // Next Button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `border border-stone-200 px-3 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-stone-600 transition-colors ${currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-stone-50 cursor-pointer'}`;
+        nextBtn.innerText = lang === 'en' ? 'Next' : 'ถัดไป';
+        if (currentPage < totalPages) {
+          nextBtn.addEventListener('click', () => {
+            if (type === 'active') activeProductsPage++;
+            else inactiveProductsPage++;
+            paginateProducts(type);
+          });
+        }
+        paginationContainer.appendChild(nextBtn);
+      }
+    };
+
+    const paginateSets = () => {
+      const rows = document.querySelectorAll('.set-row') as NodeListOf<HTMLTableRowElement>;
+      const totalMatching = rows.length;
+      const totalPages = Math.ceil(totalMatching / itemsPerPage) || 1;
+
+      if (setsPage > totalPages) {
+        setsPage = totalPages;
+      }
+      if (setsPage < 1) {
+        setsPage = 1;
+      }
+
+      const startIndex = (setsPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+
+      rows.forEach((row, index) => {
+        if (index >= startIndex && index < endIndex) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+
+      const paginationContainer = document.getElementById('sets-pagination');
+      if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) {
+          return;
+        }
+
+        // Prev Button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `border border-stone-200 px-3 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-stone-600 transition-colors ${setsPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-stone-50 cursor-pointer'}`;
+        prevBtn.innerText = lang === 'en' ? 'Prev' : 'ก่อนหน้า';
+        if (setsPage > 1) {
+          prevBtn.addEventListener('click', () => {
+            setsPage--;
+            paginateSets();
+          });
+        }
+        paginationContainer.appendChild(prevBtn);
+
+        // Page Numbers
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `border px-2.5 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer ${
+            i === setsPage 
+              ? 'border-brand-charcoal bg-brand-charcoal text-white' 
+              : 'border-stone-200 text-stone-600 hover:bg-stone-50'
+          }`;
+          pageBtn.innerText = String(i);
+          pageBtn.addEventListener('click', () => {
+            setsPage = i;
+            paginateSets();
+          });
+          paginationContainer.appendChild(pageBtn);
+        }
+
+        // Next Button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `border border-stone-200 px-3 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-stone-600 transition-colors ${setsPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-stone-50 cursor-pointer'}`;
+        nextBtn.innerText = lang === 'en' ? 'Next' : 'ถัดไป';
+        if (setsPage < totalPages) {
+          nextBtn.addEventListener('click', () => {
+            setsPage++;
+            paginateSets();
+          });
+        }
+        paginationContainer.appendChild(nextBtn);
+      }
+    };
 
     const filterProducts = () => {
       const productRows = document.querySelectorAll('.product-row') as NodeListOf<HTMLTableRowElement>;
@@ -1776,17 +2050,27 @@ const resolveImage = (url: string) => {
         }
 
         if (matchText && matchCategory && matchTag && matchStock) {
-          row.classList.remove('hidden');
+          row.dataset.match = 'true';
         } else {
-          row.classList.add('hidden');
+          row.dataset.match = 'false';
         }
       });
+
+      // Reset to page 1 on filter
+      activeProductsPage = 1;
+      inactiveProductsPage = 1;
+      paginateProducts('active');
+      paginateProducts('inactive');
     };
 
     prodSearch?.addEventListener('input', filterProducts);
     prodCategoryFilter?.addEventListener('change', filterProducts);
     prodTagFilter?.addEventListener('change', filterProducts);
     prodStockFilter?.addEventListener('change', filterProducts);
+
+    // Initial load call to paginate
+    filterProducts();
+    paginateSets();
 
 
 

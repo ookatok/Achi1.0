@@ -56,7 +56,7 @@ try {
 }
 
 const newArrivalSets = collections
-  .filter((c: any) => c.slug === 'new-arrivals' || c.slug.startsWith('new-arrivals-'))
+  .filter((c: any) => (c.slug === 'new-arrivals' || c.slug.startsWith('new-arrivals-')) && c.isVisible)
   .sort((a: any, b: any) => b.id - a.id);
 
 let finalSets = newArrivalSets;
@@ -217,6 +217,8 @@ const getColorsArray = (colors: any) => {
               <div 
                 class={`editorial-set-slide grid grid-cols-1 lg:grid-cols-2 gap-12 items-start transition-all duration-700 ease-in-out ${setIndex === 0 ? 'opacity-100 relative z-10' : 'opacity-0 absolute inset-0 pointer-events-none z-0'}`}
                 data-index={setIndex}
+                data-id={set.id}
+                data-slug={set.slug}
               >
                 <!-- Left Column: Set Cover Image -->
                 <div class="relative bg-stone-100 aspect-[3/4] overflow-hidden rounded-sm shadow-xs group/img">
@@ -250,7 +252,12 @@ const getColorsArray = (colors: any) => {
                       </button>
 
                       {/* Product Image */}
-                      <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
+                      <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6 relative">
+                        {product.activeDiscountPercent > 0 && (
+                          <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
+                            -{product.activeDiscountPercent}%
+                          </span>
+                        )}
                         <img
                           src={resolveImage(product.imageUrl)}
                           alt={product.name}
@@ -272,7 +279,14 @@ const getColorsArray = (colors: any) => {
                             </div>
                           )}
                         </div>
-                        <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+                        {product.activeDiscountPercent > 0 ? (
+              <div class="flex items-center gap-3 mt-2">
+                <span class="text-xs text-red-600 font-bold">${(Number(product.price) * (1 - product.activeDiscountPercent / 100)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="text-[10px] text-gray-400 line-through font-light">${Number(product.price).toLocaleString()}</span>
+              </div>
+            ) : (
+              <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+            )}
                       </div>
                       
                       {/* Clickable Area Link */}
@@ -310,7 +324,7 @@ const getColorsArray = (colors: any) => {
           {/* Heart Favorite Button */}
           <button
             class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
-            data-favorite-btn
+            data-favorite-btn data-discount={product.activeDiscountPercent || 0}
             data-id={product.id}
             data-name={product.name}
             data-price={product.price}
@@ -322,7 +336,12 @@ const getColorsArray = (colors: any) => {
           </button>
 
           {/* Product Image */}
-          <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6">
+          <div class="aspect-[1/1] overflow-hidden flex items-center justify-center bg-gray-50 mb-6 relative">
+            {product.activeDiscountPercent > 0 && (
+              <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
+                -{product.activeDiscountPercent}%
+              </span>
+            )}
             <img
               src={resolveImage(product.imageUrl)}
               alt={product.name}
@@ -345,7 +364,14 @@ const getColorsArray = (colors: any) => {
                 </div>
               )}
             </div>
-            <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+            {product.activeDiscountPercent > 0 ? (
+              <div class="flex items-center gap-3 mt-2">
+                <span class="text-xs text-red-600 font-bold">${(Number(product.price) * (1 - product.activeDiscountPercent / 100)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="text-[10px] text-gray-400 line-through font-light">${Number(product.price).toLocaleString()}</span>
+              </div>
+            ) : (
+              <span class="text-xs text-brand-gold font-medium mt-2 block">${Number(product.price).toLocaleString()}</span>
+            )}
           </div>
 
           {/* Clickable Area Link */}
@@ -419,8 +445,21 @@ const getColorsArray = (colors: any) => {
         }
       };
 
-      // Set first slide active
-      showSlide(0);
+      // Set initial slide active based on query param ?set=<id> or ?set=<slug> or ?set=<index>
+      let initialIndex = 0;
+      const params = new URLSearchParams(window.location.search);
+      const setParam = params.get('set');
+      if (setParam) {
+        slides.forEach((slide, idx) => {
+          const slideId = slide.getAttribute('data-id');
+          const slideSlug = slide.getAttribute('data-slug');
+          if (slideId === setParam || slideSlug === setParam || idx.toString() === setParam) {
+            initialIndex = idx;
+          }
+        });
+      }
+
+      showSlide(initialIndex);
       startAutoPlay();
 
       // Navigation listeners

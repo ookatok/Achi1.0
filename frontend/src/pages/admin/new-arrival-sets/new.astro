@@ -63,62 +63,230 @@ const resolveImage = (url: string) => {
       </div>
 
       <form id="new-arrival-set-form" class="space-y-8">
-        <!-- Set Name Section -->
+        <!-- Set Name & Discount Section -->
         <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
           <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider border-b border-stone-100 pb-2">
-            {lang === 'en' ? '1. Set Name' : '1. ตั้งชื่อเซ็ต'}
+            {lang === 'en' ? '1. Set Name & Discount' : '1. ตั้งชื่อเซ็ตและส่วนลด'}
           </h3>
-          <input
-            type="text"
-            id="set-title-input"
-            required
-            placeholder={lang === 'en' ? "e.g. Winter Editorial Set" : "เช่น เซ็ตเสื้อผ้าฤดูหนาวประจำปี"}
-            class="w-full max-w-lg border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white"
-          />
-        </div>
-
-        <!-- Cover Image Selection -->
-        <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
-          <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider border-b border-stone-100 pb-2">
-            {lang === 'en' ? '2. Set Cover Image' : '2. อัปโหลดรูปภาพปกของเซ็ต'}
-          </h3>
-          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div class="w-32 h-44 border border-stone-200 rounded-sm overflow-hidden bg-stone-50 flex items-center justify-center relative shadow-sm">
-              <img 
-                id="new-arrival-cover-preview" 
-                src="/assets/images/set2.png" 
-                class="w-full h-full object-cover" 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Set Name" : "ชื่อเซ็ต"} *
+              </label>
+              <input
+                type="text"
+                id="set-title-input"
+                required
+                placeholder={lang === 'en' ? "e.g. Winter Editorial Set" : "เช่น เซ็ตเสื้อผ้าฤดูหนาวประจำปี"}
+                class="w-full border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white"
               />
             </div>
-            <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Discount Percentage (%)" : "เปอร์เซ็นต์ส่วนลด (%)"}
+              </label>
+              <input
+                type="number"
+                id="set-discount-input"
+                min="0"
+                max="100"
+                value="0"
+                class="w-full border border-stone-200 px-3 py-2.5 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Set Images & Lookbook Selection -->
+        <div class="p-8 border border-stone-200 rounded-sm bg-white space-y-6 shadow-2xs">
+          <div class="border-b border-stone-100 pb-3 flex justify-between items-center">
+            <div>
+              <h3 class="font-serif text-base font-semibold text-brand-charcoal uppercase tracking-wider">
+                {lang === 'en' ? '2. Set Media & Lookbook' : '2. สื่อและรูปภาพลุคบุคประจำเซ็ต'}
+              </h3>
+              <p class="text-[10px] text-stone-400 font-light mt-1">
+                {lang === 'en' ? 'Upload the primary cover and up to 3 model lookbook photos for this set.' : 'อัปโหลดภาพปกหลักและภาพนายแบบสำหรับลุคบุคสูงสุด 3 รูปเพื่อนำไปใช้แสดงผล'}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Cover Image (Slot 1) -->
+            <div class="flex flex-col items-center p-4 border border-brand-gold/30 rounded-sm bg-stone-50/20 space-y-3 relative group">
+              <span class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-brand-gold text-[#4A3B2C] text-[8px] tracking-widest font-bold uppercase rounded-2xs">
+                {lang === 'en' ? 'Cover' : 'รูปปกหลัก'}
+              </span>
+              <div 
+                class="w-full aspect-[3/4] border border-stone-200 rounded-sm overflow-hidden bg-stone-100 flex items-center justify-center relative cursor-pointer shadow-xs group-hover:border-brand-gold transition-colors"
+                id="new-arrival-upload-area-cover"
+              >
+                <img 
+                  id="new-arrival-preview-cover" 
+                  src="/assets/images/placeholder-product.png" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103" 
+                />
+                <div class="absolute inset-0 bg-brand-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-1 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                  </svg>
+                  <span class="text-[9px] tracking-wider font-semibold uppercase">{lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}</span>
+                </div>
+              </div>
               <input 
                 type="file" 
-                id="new-arrival-cover-file" 
+                id="new-arrival-file-cover" 
                 accept="image/*" 
                 class="hidden" 
               />
               <button 
                 type="button" 
-                id="new-arrival-upload-btn" 
-                class="bg-brand-charcoal text-white hover:bg-stone-800 px-4 py-2.5 rounded-sm text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-colors block text-center shadow-xs"
+                id="new-arrival-upload-btn-cover" 
+                class="text-[9px] uppercase tracking-widest font-bold text-stone-500 hover:text-brand-charcoal hover:underline mt-1"
               >
-                {lang === 'en' ? 'Choose Cover Image' : 'เลือกรูปภาพปก'}
+                {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
               </button>
-              <span id="new-arrival-upload-status" class="text-[10px] text-stone-500 block hidden"></span>
               <input 
                 type="hidden" 
-                id="new-arrival-cover-url" 
+                id="new-arrival-url-cover" 
+                value="" 
+              />
+            </div>
+
+            <!-- Model Image 1 (Slot 2) -->
+            <div class="flex flex-col items-center p-4 border border-stone-200 rounded-sm bg-stone-50/20 space-y-3 relative group">
+              <span class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-stone-100 border border-stone-200 text-stone-600 text-[8px] tracking-widest font-medium uppercase rounded-2xs">
+                {lang === 'en' ? 'Model 1' : 'นายแบบ 1'}
+              </span>
+              <div 
+                class="w-full aspect-[3/4] border border-stone-200 rounded-sm overflow-hidden bg-stone-100 flex items-center justify-center relative cursor-pointer shadow-xs group-hover:border-brand-charcoal transition-colors"
+                id="new-arrival-upload-area-1"
+              >
+                <img 
+                  id="new-arrival-preview-1" 
+                  src="/assets/images/placeholder-product.png" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103" 
+                />
+                <div class="absolute inset-0 bg-brand-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-1 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                  </svg>
+                  <span class="text-[9px] tracking-wider font-semibold uppercase">{lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}</span>
+                </div>
+              </div>
+              <input 
+                type="file" 
+                id="new-arrival-file-1" 
+                accept="image/*" 
+                class="hidden" 
+              />
+              <button 
+                type="button" 
+                id="new-arrival-upload-btn-1" 
+                class="text-[9px] uppercase tracking-widest font-bold text-stone-500 hover:text-brand-charcoal hover:underline mt-1"
+              >
+                {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+              </button>
+              <input 
+                type="hidden" 
+                id="new-arrival-url-1" 
+                value="" 
+              />
+            </div>
+
+            <!-- Model Image 2 (Slot 3) -->
+            <div class="flex flex-col items-center p-4 border border-stone-200 rounded-sm bg-stone-50/20 space-y-3 relative group">
+              <span class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-stone-100 border border-stone-200 text-stone-600 text-[8px] tracking-widest font-medium uppercase rounded-2xs">
+                {lang === 'en' ? 'Model 2' : 'นายแบบ 2'}
+              </span>
+              <div 
+                class="w-full aspect-[3/4] border border-stone-200 rounded-sm overflow-hidden bg-stone-100 flex items-center justify-center relative cursor-pointer shadow-xs group-hover:border-brand-charcoal transition-colors"
+                id="new-arrival-upload-area-2"
+              >
+                <img 
+                  id="new-arrival-preview-2" 
+                  src="/assets/images/placeholder-product.png" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103" 
+                />
+                <div class="absolute inset-0 bg-brand-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-1 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                  </svg>
+                  <span class="text-[9px] tracking-wider font-semibold uppercase">{lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}</span>
+                </div>
+              </div>
+              <input 
+                type="file" 
+                id="new-arrival-file-2" 
+                accept="image/*" 
+                class="hidden" 
+              />
+              <button 
+                type="button" 
+                id="new-arrival-upload-btn-2" 
+                class="text-[9px] uppercase tracking-widest font-bold text-stone-500 hover:text-brand-charcoal hover:underline mt-1"
+              >
+                {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+              </button>
+              <input 
+                type="hidden" 
+                id="new-arrival-url-2" 
+                value="" 
+              />
+            </div>
+
+            <!-- Model Image 3 (Slot 4) -->
+            <div class="flex flex-col items-center p-4 border border-stone-200 rounded-sm bg-stone-50/20 space-y-3 relative group">
+              <span class="absolute top-2 left-2 z-10 px-2 py-0.5 bg-stone-100 border border-stone-200 text-stone-600 text-[8px] tracking-widest font-medium uppercase rounded-2xs">
+                {lang === 'en' ? 'Model 3' : 'นายแบบ 3'}
+              </span>
+              <div 
+                class="w-full aspect-[3/4] border border-stone-200 rounded-sm overflow-hidden bg-stone-100 flex items-center justify-center relative cursor-pointer shadow-xs group-hover:border-brand-charcoal transition-colors"
+                id="new-arrival-upload-area-3"
+              >
+                <img 
+                  id="new-arrival-preview-3" 
+                  src="/assets/images/placeholder-product.png" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103" 
+                />
+                <div class="absolute inset-0 bg-brand-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-1 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                  </svg>
+                  <span class="text-[9px] tracking-wider font-semibold uppercase">{lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}</span>
+                </div>
+              </div>
+              <input 
+                type="file" 
+                id="new-arrival-file-3" 
+                accept="image/*" 
+                class="hidden" 
+              />
+              <button 
+                type="button" 
+                id="new-arrival-upload-btn-3" 
+                class="text-[9px] uppercase tracking-widest font-bold text-stone-500 hover:text-brand-charcoal hover:underline mt-1"
+              >
+                {lang === 'en' ? 'Upload Image' : 'อัปโหลดรูปภาพ'}
+              </button>
+              <input 
+                type="hidden" 
+                id="new-arrival-url-3" 
                 value="" 
               />
             </div>
           </div>
+          <span id="new-arrival-upload-status" class="text-[10px] text-stone-500 block text-center hidden"></span>
         </div>
 
         <!-- Products Selection -->
         <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
           <div class="flex justify-between items-center border-b border-stone-100 pb-2">
             <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider">
-              {lang === 'en' ? '3. Select Products' : '3. เลือกสินค้าเข้ามาใส่ในเซ็ต'}
+              {lang === 'en' ? '4. Select Products' : '4. เลือกสินค้าเข้ามาใส่ในเซ็ต'}
             </h3>
             <span class="text-[10px] text-stone-400 font-light lowercase">
               {lang === 'en' ? 'check items to include' : 'ติ๊กเลือกสินค้าที่ต้องการใส่ในเซ็ต'}
@@ -150,6 +318,35 @@ const resolveImage = (url: string) => {
           </div>
         </div>
 
+        <!-- Storefront Visibility Section -->
+        <div class="p-6 border border-stone-200 rounded-sm bg-white space-y-4 shadow-2xs">
+          <h3 class="font-serif text-sm font-semibold text-brand-charcoal uppercase tracking-wider border-b border-stone-100 pb-2">
+            {lang === 'en' ? '5. Storefront Visibility' : '5. การแสดงผลบนหน้าเว็บ'}
+          </h3>
+          <div class="flex flex-col gap-3">
+            <label class="flex items-center gap-3 cursor-pointer select-none">
+              <input 
+                type="checkbox" 
+                id="set-visibility-input" 
+                class="w-4 h-4 rounded border-gray-300 text-brand-charcoal focus:ring-brand-charcoal cursor-pointer"
+              />
+              <span class="text-xs text-stone-600">
+                {lang === 'en' ? 'Show this set on the New Arrivals storefront page' : 'แสดงเซ็ตนี้บนหน้าสินค้ามาใหม่ (New Arrivals)'}
+              </span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer select-none">
+              <input 
+                type="checkbox" 
+                id="set-show-on-home-input" 
+                class="w-4 h-4 rounded border-gray-300 text-brand-charcoal focus:ring-brand-charcoal cursor-pointer"
+              />
+              <span class="text-xs text-stone-600">
+                {lang === 'en' ? 'Show this set on the Home Page (Maximum 3 sets)' : 'แสดงเซ็ตนี้บนหน้าแรก (สูงสุด 3 เซ็ต)'}
+              </span>
+            </label>
+          </div>
+        </div>
+
         <!-- Action Button -->
         <div class="pt-4 flex justify-end gap-4">
           <a
@@ -176,72 +373,90 @@ const resolveImage = (url: string) => {
     const token = container?.getAttribute('data-token');
     const lang = container?.getAttribute('data-lang') || 'en';
 
-    const newArrivalCoverFile = document.getElementById('new-arrival-cover-file') as HTMLInputElement | null;
-    const newArrivalUploadBtn = document.getElementById('new-arrival-upload-btn');
-    const newArrivalCoverPreview = document.getElementById('new-arrival-cover-preview') as HTMLImageElement | null;
-    const newArrivalCoverUrl = document.getElementById('new-arrival-cover-url') as HTMLInputElement | null;
-    const newArrivalUploadStatus = document.getElementById('new-arrival-upload-status');
-
+    // Setup file upload handlers for 4 slots (cover, 1, 2, 3)
+    const uploadStatus = document.getElementById('new-arrival-upload-status');
     const isEn = lang === 'en';
 
-    // File Upload Handler
-    if (newArrivalUploadBtn && newArrivalCoverFile) {
-      newArrivalUploadBtn.addEventListener('click', () => {
-        newArrivalCoverFile.click();
-      });
+    const setupUploader = (index: string | number) => {
+      const fileInput = document.getElementById(`new-arrival-file-${index}`) as HTMLInputElement | null;
+      const btn = document.getElementById(`new-arrival-upload-btn-${index}`);
+      const preview = document.getElementById(`new-arrival-preview-${index}`) as HTMLImageElement | null;
+      const urlInput = document.getElementById(`new-arrival-url-${index}`) as HTMLInputElement | null;
 
-      newArrivalCoverFile.addEventListener('change', async (e: any) => {
-        const file = e.target.files[0];
-        if (!file) return;
+      if (btn && fileInput) {
+        btn.addEventListener('click', () => {
+          fileInput.click();
+        });
 
-        if (newArrivalUploadStatus) {
-          newArrivalUploadStatus.textContent = isEn ? 'Uploading...' : 'กำลังอัปโหลด...';
-          newArrivalUploadStatus.classList.remove('hidden');
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-          const res = await fetch('http://localhost:3001/api/collections/upload', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
+        const uploadArea = document.getElementById(`new-arrival-upload-area-${index}`);
+        if (uploadArea) {
+          uploadArea.addEventListener('click', () => {
+            fileInput.click();
           });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (newArrivalCoverPreview) {
-              newArrivalCoverPreview.src = `http://localhost:3001${data.imageUrl}`;
-            }
-            if (newArrivalCoverUrl) {
-              newArrivalCoverUrl.value = data.imageUrl;
-            }
-            if (newArrivalUploadStatus) {
-              newArrivalUploadStatus.textContent = isEn ? 'Uploaded successfully!' : 'อัปโหลดสำเร็จ!';
-            }
-          } else {
-            if (newArrivalUploadStatus) {
-              newArrivalUploadStatus.textContent = isEn ? 'Upload failed.' : 'อัปโหลดล้มเหลว';
-            }
-          }
-        } catch (err) {
-          console.error(err);
-          if (newArrivalUploadStatus) {
-            newArrivalUploadStatus.textContent = isEn ? 'Network error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
-          }
         }
-      });
-    }
+
+        fileInput.addEventListener('change', async (e: any) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const label = index === 'cover' ? (isEn ? 'Cover Image' : 'รูปปก') : (isEn ? `Model Image ${index}` : `รูปนายแบบที่ ${index}`);
+
+          if (uploadStatus) {
+            uploadStatus.textContent = isEn ? `Uploading ${label}...` : `กำลังอัปโหลด${label}...`;
+            uploadStatus.classList.remove('hidden');
+          }
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          try {
+            const res = await fetch('http://localhost:3001/api/collections/upload', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              },
+              body: formData
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (preview) {
+                preview.src = `http://localhost:3001${data.imageUrl}`;
+              }
+              if (urlInput) {
+                urlInput.value = data.imageUrl;
+              }
+              if (uploadStatus) {
+                uploadStatus.textContent = isEn ? `${label} uploaded successfully!` : `อัปโหลด${label}สำเร็จ!`;
+              }
+            } else {
+              if (uploadStatus) {
+                uploadStatus.textContent = isEn ? `Upload failed for ${label}.` : `อัปโหลด${label}ล้มเหลว`;
+              }
+            }
+          } catch (err) {
+            console.error(err);
+            if (uploadStatus) {
+              uploadStatus.textContent = isEn ? 'Network error.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+            }
+          }
+        });
+      }
+    };
+
+    ['cover', 1, 2, 3].forEach(setupUploader);
 
     // Form Submission
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const title = (document.getElementById('set-title-input') as HTMLInputElement).value.trim();
-      const coverUrl = newArrivalCoverUrl ? newArrivalCoverUrl.value : '';
+      const discountPercent = parseInt((document.getElementById('set-discount-input') as HTMLInputElement).value, 10) || 0;
+      const coverUrl = (document.getElementById('new-arrival-url-cover') as HTMLInputElement)?.value || '';
+      const url1 = (document.getElementById('new-arrival-url-1') as HTMLInputElement)?.value || '';
+      const url2 = (document.getElementById('new-arrival-url-2') as HTMLInputElement)?.value || '';
+      const url3 = (document.getElementById('new-arrival-url-3') as HTMLInputElement)?.value || '';
+
       const checkedCheckboxes = document.querySelectorAll('input[name="new-arrival-products"]:checked') as NodeListOf<HTMLInputElement>;
       const productIds = Array.from(checkedCheckboxes).map((cb) => parseInt(cb.value, 10));
 
@@ -256,19 +471,30 @@ const resolveImage = (url: string) => {
         saveSetBtn.textContent = isEn ? 'Saving...' : 'กำลังบันทึก...';
       }
 
+      const isVisible = (document.getElementById('set-visibility-input') as HTMLInputElement).checked;
+      const showOnHome = (document.getElementById('set-show-on-home-input') as HTMLInputElement).checked;
+
       // Generate slug dynamically
       const slugTitle = title
         .toLowerCase()
         .replace(/\s+/g, '-')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-');
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-');
       const slug = `new-arrivals-${slugTitle || 'set'}-${Date.now()}`;
+
+      const galleryArray = [url2, url3].filter(Boolean);
+      const galleryImages = galleryArray.length > 0 ? JSON.stringify(galleryArray) : null;
 
       const payload = {
         title,
         slug,
+        discountPercent,
         imageUrl: coverUrl,
-        productIds
+        storyImageUrl: url1 || null,
+        galleryImages,
+        productIds,
+        isVisible,
+        showOnHome
       };
 
       try {

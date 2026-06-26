@@ -7,6 +7,7 @@ export const products = mysqlTable('products', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   description: varchar('description', { length: 1000 }),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+  discountPercent: int('discount_percent').default(0).notNull(),
   stockQuantity: int('stock_quantity').notNull().default(0),
   allowOnOrder: boolean('allow_on_order').notNull().default(false),
   onOrderQuantity: int('on_order_quantity').notNull().default(0),
@@ -16,6 +17,7 @@ export const products = mysqlTable('products', {
   sizes: json('sizes').$type<string[]>(),   // e.g., ["S", "M", "L", "XL"]
   colors: json('colors').$type<string[]>(), // e.g., ["Red", "Blue", "Black"]
   status: varchar('status', { length: 50 }).notNull().default('active'),
+  isBestSeller: boolean('is_best_seller').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });

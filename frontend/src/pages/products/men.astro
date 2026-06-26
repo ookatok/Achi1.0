@@ -82,7 +82,7 @@ const getColorsArray = (colors: any) => {
   <section class="max-w-[1440px] mx-auto px-6 py-24" id="men-catalog">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
       <!-- Col 1: Shirt -->
-      <a href="/products?colors=&sizes=&query=shirt" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
+      <a href="/products?categorySlug=men&query=shirt" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/shirt-cat-men.png')}');`}></div>
         <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
@@ -91,7 +91,7 @@ const getColorsArray = (colors: any) => {
       </a>
 
       <!-- Col 2: Bottoms -->
-      <a href="/products?colors=&sizes=&query=pants" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
+      <a href="/products?categorySlug=men&query=pants,shorts,jeans" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/bottoms-cat-men.png')}');`}></div>
         <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">
@@ -100,7 +100,7 @@ const getColorsArray = (colors: any) => {
       </a>
 
       <!-- Col 3: Cap -->
-      <a href="/products?colors=&sizes=&query=cap" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
+      <a href="/products?categorySlug=men&query=cap" class="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-sm group block">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={`background-image: url('${resolveImage('/assets/images/cap-cat-men.png')}');`}></div>
         <div class="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all"></div>
         <div class="absolute bottom-6 left-6 text-white z-10">

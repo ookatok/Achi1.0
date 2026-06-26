@@ -38,7 +38,7 @@ export const ALL: APIRoute = async ({ request, params, url }) => {
       headers.delete('content-type');
     }
     init.body = await request.arrayBuffer();
-    // @ts-ignore
+    // @ts-expect-error: RequestInit duplex option is not recognized by standard types
     init.duplex = 'half';
   }
 

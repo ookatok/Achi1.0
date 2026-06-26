@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { carts, cartItems } from '../../db/schema/cart.schema';
 import { products } from '../../db/schema/product.schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
 
 @Injectable()
@@ -35,6 +35,7 @@ export class CartRepository {
         color: cartItems.color,
         productName: products.name,
         productPrice: products.price,
+        activeDiscountPercent: sql<number>`greatest(coalesce(${products.discountPercent}, 0), coalesce((select max(c.discount_percent) from collection_products cp inner join collections c on cp.collection_id = c.id where cp.product_id = products.id), 0))`.as('active_discount_percent'),
         productImageUrl: products.imageUrl,
         stockQuantity: products.stockQuantity,
         allowOnOrder: products.allowOnOrder,

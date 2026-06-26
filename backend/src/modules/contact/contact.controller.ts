@@ -14,7 +14,7 @@ export class ContactController {
   @Post()
   @CheckHoneypot({
     fields: ['website'],
-    fakeResponse: (req: any) => ({
+    fakeResponse: () => ({
       success: true,
       id: Math.floor(Math.random() * 10000) + 1,
     }),

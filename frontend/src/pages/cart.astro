@@ -31,8 +31,14 @@ if (token) {
   }
 }
 
-// Compute cart totals
-const subtotal = cartData.items.reduce((sum: number, item: any) => sum + (Number(item.productPrice) * item.quantity), 0);
+// Compute cart totals with active discounts
+const subtotal = cartData.items.reduce((sum: number, item: any) => {
+  const discountPercent = item.activeDiscountPercent ? Number(item.activeDiscountPercent) : 0;
+  const itemPrice = discountPercent > 0 
+    ? Number(item.productPrice) * (1 - discountPercent / 100)
+    : Number(item.productPrice);
+  return sum + (itemPrice * item.quantity);
+}, 0);
 const cartTotal = subtotal; // Modify if taxes/shipping applies
 ---
 
@@ -143,7 +149,16 @@ const cartTotal = subtotal; // Modify if taxes/shipping applies
                   </div>
                   <div class="flex items-center gap-4">
                     <span class="text-brand-charcoal font-medium">{lang === 'en' ? 'Subtotal' : 'ยอดรวมย่อย'}</span>
-                    <span class="text-brand-charcoal font-semibold">${Number(item.productPrice) * item.quantity}</span>
+                    <div class="flex flex-col items-end">
+                      {item.activeDiscountPercent > 0 ? (
+                        <>
+                          <span class="text-red-600 font-semibold">${(Number(item.productPrice) * (1 - Number(item.activeDiscountPercent) / 100) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                          <span class="text-[9px] text-gray-400 line-through font-light">${(Number(item.productPrice) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </>
+                      ) : (
+                        <span class="text-brand-charcoal font-semibold">${(Number(item.productPrice) * item.quantity).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

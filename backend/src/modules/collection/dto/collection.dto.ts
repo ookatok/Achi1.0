@@ -15,6 +15,9 @@ export const CreateCollectionSchema = z.object({
   storyParagraphsTh: z.string().optional().nullable(),
   storyImageUrl: z.string().optional().nullable(),
   galleryImages: z.string().optional().nullable(),
+  discountPercent: z.number().int().min(0).max(100).optional().default(0),
+  isVisible: z.boolean().optional().default(false),
+  showOnHome: z.boolean().optional().default(false),
 });
 
 export type CreateCollectionDto = z.infer<typeof CreateCollectionSchema>;

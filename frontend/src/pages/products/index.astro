@@ -336,7 +336,7 @@ const displayTags = tagsList.map(t => ({
             {/* Heart Favorite Button */}
             <button
               class="absolute top-6 right-6 text-gray-400 hover:text-brand-charcoal transition-colors focus:outline-none cursor-pointer z-20"
-              data-favorite-btn
+              data-favorite-btn data-discount={product.activeDiscountPercent || 0}
               data-id={product.id}
               data-name={product.name}
               data-price={product.price}
@@ -347,8 +347,13 @@ const displayTags = tagsList.map(t => ({
               </svg>
             </button>
 
-            {/* Product Image Box */}
+            <!-- Product Image Box -->
             <div class="aspect-[1/1] overflow-hidden flex flex-col items-center justify-center bg-gray-50 border border-gray-100/50 rounded-sm mb-6 relative group">
+              {product.activeDiscountPercent > 0 && (
+                <span class="absolute top-6 left-6 z-20 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-sm shadow-sm">
+                  -{product.activeDiscountPercent}%
+                </span>
+              )}
               {product.imageUrl ? (
                 <img src={resolveImage(product.imageUrl)} alt={product.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               ) : (
@@ -381,7 +386,14 @@ const displayTags = tagsList.map(t => ({
                 )}
               </div>
               <div class="flex items-center justify-between mt-2">
-                <span class="text-xs text-brand-gold font-medium">${Number(product.price).toLocaleString()}</span>
+                {product.activeDiscountPercent > 0 ? (
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-red-600 font-bold">${(Number(product.price) * (1 - product.activeDiscountPercent / 100)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span class="text-[10px] text-gray-400 line-through font-light">${Number(product.price).toLocaleString()}</span>
+                  </div>
+                ) : (
+                  <span class="text-xs text-brand-gold font-medium">${Number(product.price).toLocaleString()}</span>
+                )}
                 {product.status !== 'inactive' && (
                   product.stockQuantity > 0 ? (
                     <span class="text-[9px] uppercase tracking-wider text-stone-500 font-light">

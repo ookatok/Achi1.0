@@ -1,0 +1,1 @@
+ALTER TABLE `collections` ADD `show_on_home` boolean DEFAULT false NOT NULL;

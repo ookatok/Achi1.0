@@ -5,7 +5,7 @@ import { categories } from '../../db/schema/category.schema';
 import { tags, productTags } from '../../db/schema/tag.schema';
 import { eq, and, gte, lte, sql, like, or, desc, inArray } from 'drizzle-orm';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
-import type { CreateProductDto, GetProductsQueryDto } from './dto/product.dto';
+import type { GetProductsQueryDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductRepository {
@@ -83,23 +83,27 @@ export class ProductRepository {
     }
 
     if (query.query) {
-      conditions.push(
-        or(
-          like(products.name, `%${query.query}%`),
-          like(products.description, `%${query.query}%`),
-          like(categories.name, `%${query.query}%`),
-          sql`exists (
-            select 1 from product_tags pt
-            inner join tags t on pt.tag_id = t.id
-            where pt.product_id = ${products.id} and t.name like ${`%${query.query}%`}
-          )`
-        )
-      );
+      const terms = query.query.split(',').map((t) => t.trim()).filter(Boolean);
+      if (terms.length > 0) {
+        const termConditions = terms.map((term) =>
+          or(
+            like(products.name, `%${term}%`),
+            like(products.description, `%${term}%`),
+            like(categories.name, `%${term}%`),
+            sql`exists (
+              select 1 from product_tags pt
+              inner join tags t on pt.tag_id = t.id
+              where pt.product_id = ${products.id} and t.name like ${`%${term}%`}
+            )`
+          )
+        );
+        conditions.push(or(...termConditions));
+      }
     }
 
     if (query.collection) {
       if (query.collection === 'best-sellers') {
-        conditions.push(sql`${products.id} IN (101, 102, 105, 106)`);
+        conditions.push(eq(products.isBestSeller, true));
       } else if (query.collection === 'trending') {
         conditions.push(sql`${products.id} IN (103, 104, 107, 108)`);
       } else if (query.collection === 'new-arrivals') {
@@ -143,6 +147,13 @@ export class ProductRepository {
 
     const offset = (query.page - 1) * query.limit;
 
+    const salesCountExpr = sql<number>`cast(coalesce((
+      select sum(oi.quantity)
+      from order_items oi
+      inner join orders o on oi.order_id = o.id
+      where oi.product_id = products.id and o.status != 'cancelled'
+    ), 0) as unsigned)`;
+
     const baseQuery = this.db
       .select({
         id: products.id,
@@ -150,6 +161,8 @@ export class ProductRepository {
         slug: products.slug,
         description: products.description,
         price: products.price,
+        discountPercent: products.discountPercent,
+        activeDiscountPercent: sql<number>`greatest(coalesce(${products.discountPercent}, 0), coalesce((select max(c.discount_percent) from collection_products cp inner join collections c on cp.collection_id = c.id where cp.product_id = products.id), 0))`.as('active_discount_percent'),
         stockQuantity: products.stockQuantity,
         allowOnOrder: products.allowOnOrder,
         onOrderQuantity: products.onOrderQuantity,
@@ -167,6 +180,8 @@ export class ProductRepository {
         status: products.status,
         categoryName: categories.name,
         categorySlug: categories.slug,
+        isBestSeller: products.isBestSeller,
+        salesCount: salesCountExpr.as('sales_count'),
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id));
@@ -175,9 +190,17 @@ export class ProductRepository {
       conditions.push(inArray(categories.slug, query.categorySlug));
     }
 
+    let orderCriteria: any[] = [desc(products.createdAt)];
+    if (query.collection === 'best-sellers') {
+      orderCriteria = [
+        desc(salesCountExpr),
+        desc(products.createdAt)
+      ];
+    }
+
     const results = await baseQuery
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(products.createdAt))
+      .orderBy(...orderCriteria)
       .limit(query.limit)
       .offset(offset);
 
@@ -189,6 +212,13 @@ export class ProductRepository {
 
   async findOne(id: number, tx?: any) {
     const client = tx || this.db;
+    const salesCountExpr = sql<number>`cast(coalesce((
+      select sum(oi.quantity)
+      from order_items oi
+      inner join orders o on oi.order_id = o.id
+      where oi.product_id = products.id and o.status != 'cancelled'
+    ), 0) as unsigned)`;
+
     const results = await client
       .select({
         id: products.id,
@@ -196,6 +226,8 @@ export class ProductRepository {
         slug: products.slug,
         description: products.description,
         price: products.price,
+        discountPercent: products.discountPercent,
+        activeDiscountPercent: sql<number>`greatest(coalesce(${products.discountPercent}, 0), coalesce((select max(c.discount_percent) from collection_products cp inner join collections c on cp.collection_id = c.id where cp.product_id = products.id), 0))`.as('active_discount_percent'),
         stockQuantity: products.stockQuantity,
         allowOnOrder: products.allowOnOrder,
         onOrderQuantity: products.onOrderQuantity,
@@ -211,6 +243,8 @@ export class ProductRepository {
         )`.as('tags'),
         categoryId: products.categoryId,
         status: products.status,
+        isBestSeller: products.isBestSeller,
+        salesCount: salesCountExpr.as('sales_count'),
       })
       .from(products)
       .where(eq(products.id, id))

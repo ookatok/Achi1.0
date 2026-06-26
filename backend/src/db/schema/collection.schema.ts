@@ -1,4 +1,4 @@
-import { mysqlTable, bigint, varchar, timestamp, text } from 'drizzle-orm/mysql-core';
+import { mysqlTable, bigint, varchar, timestamp, text, boolean, int } from 'drizzle-orm/mysql-core';
 import { products } from './product.schema';
 
 export const collections = mysqlTable('collections', {
@@ -16,6 +16,9 @@ export const collections = mysqlTable('collections', {
   storyParagraphsTh: text('story_paragraphs_th'),
   storyImageUrl: varchar('story_image_url', { length: 500 }),
   galleryImages: text('gallery_images'),
+  discountPercent: int('discount_percent').default(0).notNull(),
+  isVisible: boolean('is_visible').notNull().default(false),
+  showOnHome: boolean('show_on_home').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });

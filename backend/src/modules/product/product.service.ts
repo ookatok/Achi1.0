@@ -14,6 +14,7 @@ export class ProductService {
       slug: dto.slug,
       description: dto.description,
       price: String(dto.price),
+      discountPercent: dto.discountPercent,
       stockQuantity: dto.stockQuantity,
       allowOnOrder: dto.allowOnOrder,
       onOrderQuantity: dto.onOrderQuantity,
@@ -22,6 +23,7 @@ export class ProductService {
       images: dto.images as { color?: string; imageUrl: string }[],
       sizes: dto.sizes,
       colors: dto.colors,
+      isBestSeller: dto.isBestSeller,
     }, dto.tags);
     return { success: true, id: insertId };
   }
@@ -49,6 +51,7 @@ export class ProductService {
     if (dto.slug !== undefined) updateFields.slug = dto.slug;
     if (dto.description !== undefined) updateFields.description = dto.description;
     if (dto.price !== undefined) updateFields.price = String(dto.price);
+    if (dto.discountPercent !== undefined) updateFields.discountPercent = dto.discountPercent;
     if (dto.stockQuantity !== undefined) updateFields.stockQuantity = dto.stockQuantity;
     if (dto.allowOnOrder !== undefined) updateFields.allowOnOrder = dto.allowOnOrder;
     if (dto.onOrderQuantity !== undefined) updateFields.onOrderQuantity = dto.onOrderQuantity;
@@ -58,6 +61,7 @@ export class ProductService {
     if (dto.sizes !== undefined) updateFields.sizes = dto.sizes;
     if (dto.colors !== undefined) updateFields.colors = dto.colors;
     if (dto.status !== undefined) updateFields.status = dto.status;
+    if (dto.isBestSeller !== undefined) updateFields.isBestSeller = dto.isBestSeller;
 
     await this.productRepo.update(id, updateFields, dto.tags);
     return { success: true };

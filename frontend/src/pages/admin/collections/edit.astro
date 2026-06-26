@@ -117,7 +117,7 @@ try {
               1. {lang === 'en' ? "Basic Information" : "ข้อมูลพื้นฐาน"}
             </h3>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
                 {t('admin.collection_title')} *
@@ -129,6 +129,12 @@ try {
                 {t('admin.slug')} *
               </label>
               <input type="text" id="edit-col-slug" required value={collection.slug} class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest text-stone-400 font-semibold mb-1">
+                {lang === 'en' ? "Discount Percentage (%)" : "เปอร์เซ็นต์ส่วนลด (%)"}
+              </label>
+              <input type="number" id="edit-col-discount-percent" min="0" max="100" value={collection.discountPercent ?? 0} class="w-full border border-stone-200 px-3 py-2 text-xs focus:outline-none focus:border-brand-charcoal rounded-sm" />
             </div>
           </div>
           <div>
@@ -645,6 +651,7 @@ try {
       const id = (document.getElementById('edit-col-id') as HTMLInputElement).value;
       const title = (document.getElementById('edit-col-title') as HTMLInputElement).value;
       const slug = (document.getElementById('edit-col-slug') as HTMLInputElement).value;
+      const discountPercent = parseInt((document.getElementById('edit-col-discount-percent') as HTMLInputElement).value, 10) || 0;
       const imageUrl = (document.getElementById('edit-col-image') as HTMLInputElement).value;
       const description = (document.getElementById('edit-col-desc') as HTMLTextAreaElement).value;
       const publishDateStr = (document.getElementById('edit-col-publish') as HTMLInputElement).value;
@@ -671,7 +678,7 @@ try {
       });
 
       const payload = { 
-        title, slug, description, imageUrl, publishDate, productIds,
+        title, slug, discountPercent, description, imageUrl, publishDate, productIds,
         storyTitleEn, storyTitleTh, storySubtitleEn, storySubtitleTh,
         storyParagraphsEn, storyParagraphsTh, storyImageUrl, galleryImages
       };
