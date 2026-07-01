@@ -105,7 +105,7 @@ const pathname = Astro.url.pathname;
 const urlParams = Astro.url.searchParams;
 const tabParam = urlParams.get('tab');
 
-let resolvedActiveTab = 'dashboard';
+let resolvedActiveTab = 'heroes';
 if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arrival-sets')) {
   resolvedActiveTab = 'products';
 } else if (pathname.includes('/admin/collections')) {
@@ -357,7 +357,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
     {isAdminPanel ? (
       <div class="min-h-screen w-full flex flex-col md:flex-row bg-[#f8fafc] text-slate-800 font-sans">
         <!-- Sidebar on the left -->
-        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-200 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out flex flex-col border-r border-slate-800 shrink-0">
+        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-200 transform -translate-x-full md:translate-x-0 md:sticky md:top-0 md:h-screen transition-transform duration-300 ease-in-out flex flex-col border-r border-slate-800 shrink-0">
           <!-- Sidebar Header -->
           <div class="h-24 px-6 flex flex-col justify-center border-b border-slate-800">
             <a href={l('/')} class="font-serif text-2xl tracking-[0.2em] font-light leading-none text-white pl-[0.1em] decoration-transparent">A C H I</a>

@@ -1987,7 +1987,7 @@ const resolveImage = (url: string) => {
         // Update URL query parameter
         if (pushState && tabKey) {
           const url = new URL(window.location.href);
-          if (tabKey === 'dashboard') {
+          if (tabKey === 'heroes') {
             url.searchParams.delete('tab');
           } else {
             url.searchParams.set('tab', tabKey);
@@ -2030,17 +2030,20 @@ const resolveImage = (url: string) => {
         switchTab(navContacts, contactsSection, false);
       } else if (tabParam === 'faqs' && navFaqs && faqsSection) {
         switchTab(navFaqs, faqsSection, false);
-      } else {
+      } else if (tabParam === 'dashboard' && navDashboard && dashboardSection) {
         switchTab(navDashboard, dashboardSection, false);
+      } else {
+        switchTab(navHeroes, heroesSection, false);
       }
 
       // Handle popstate for browser history back/forward navigation
       window.addEventListener('popstate', () => {
         const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab') || 'dashboard';
+        const tab = params.get('tab') || 'heroes';
         const navBtn = document.getElementById(`nav-tab-${tab}`);
-        let section = dashboardSection;
-        if (tab === 'orders') section = ordersSection;
+        let section = heroesSection;
+        if (tab === 'dashboard') section = dashboardSection;
+        else if (tab === 'orders') section = ordersSection;
         else if (tab === 'products') section = productsSection;
         else if (tab === 'collections') section = collectionsSection;
         else if (tab === 'blogs') section = blogsSection;
