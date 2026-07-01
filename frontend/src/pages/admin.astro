@@ -1446,6 +1446,109 @@ const resolveImage = (url: string) => {
         )}
       </div>
     </div>
+
+    <!-- Section: Hero Banners Management -->
+    <div id="heroes-section" class="bg-white border border-stone-200 p-8 rounded-sm space-y-6 hidden">
+      <div class="flex justify-between items-center pb-2 border-b border-stone-100">
+        <h2 class="font-serif text-lg tracking-widest uppercase text-brand-charcoal font-medium">
+          {lang === 'en' ? 'Hero Banners Management' : 'การจัดการภาพแบนเนอร์ HERO'}
+        </h2>
+      </div>
+
+      <div class="space-y-8" id="heroes-management-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <!-- Item 1: Home Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? 'Home Page' : 'หน้าแรก (Home Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-home" class="w-full h-full object-cover" src="/assets/images/hero-authentic.png" />
+              <span id="label-hero-home" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-home" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_home">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_home" data-default="/assets/images/hero-authentic.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 2: Shop Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? 'Shop Page' : 'หน้าช้อปสินค้า (Shop Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-shop" class="w-full h-full object-cover" src="/assets/images/collection-hero.png" />
+              <span id="label-hero-shop" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-shop" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_shop">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_shop" data-default="/assets/images/collection-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 3: Collections Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? 'Collections Page' : 'หน้าคอลเลกชัน (Collections Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-collections" class="w-full h-full object-cover" src="/assets/images/collection-hero.png" />
+              <span id="label-hero-collections" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-collections" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_collections">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_collections" data-default="/assets/images/collection-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 4: Blog Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? 'Blog Page' : 'หน้าบล็อกข่าวสาร (Blog Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-blog" class="w-full h-full object-cover" src="/assets/images/collection-hero.png" />
+              <span id="label-hero-blog" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-blog" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_blog">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_blog" data-default="/assets/images/collection-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 
 
@@ -1683,6 +1786,7 @@ const resolveImage = (url: string) => {
       const navBlogs = document.getElementById('nav-tab-blogs');
       const navContacts = document.getElementById('nav-tab-contacts');
       const navFaqs = document.getElementById('nav-tab-faqs');
+      const navHeroes = document.getElementById('nav-tab-heroes');
  
       const dashboardSection = document.getElementById('dashboard-section');
       const ordersSection = document.getElementById('orders-section');
@@ -1691,6 +1795,7 @@ const resolveImage = (url: string) => {
       const blogsSection = document.getElementById('blogs-section');
       const contactsSection = document.getElementById('contacts-section');
       const faqsSection = document.getElementById('faqs-section');
+      const heroesSection = document.getElementById('heroes-section');
  
       console.log('[Admin Tabs] Elements found:', {
         navDashboard: !!navDashboard,
@@ -1700,18 +1805,20 @@ const resolveImage = (url: string) => {
         navBlogs: !!navBlogs,
         navContacts: !!navContacts,
         navFaqs: !!navFaqs,
+        navHeroes: !!navHeroes,
         dashboardSection: !!dashboardSection,
         ordersSection: !!ordersSection,
         productsSection: !!productsSection,
         collectionsSection: !!collectionsSection,
         blogsSection: !!blogsSection,
         contactsSection: !!contactsSection,
-        faqsSection: !!faqsSection
+        faqsSection: !!faqsSection,
+        heroesSection: !!heroesSection
       });
  
       const switchTab = (activeNavBtn: any, activeSection: any, pushState = true) => {
         console.log('[Admin Tabs] Switching tab to:', activeSection?.id);
-        [navDashboard, navOrders, navProducts, navCollections, navBlogs, navContacts, navFaqs].forEach(btn => {
+        [navDashboard, navOrders, navProducts, navCollections, navBlogs, navContacts, navFaqs, navHeroes].forEach(btn => {
           if (btn) {
             if (btn === activeNavBtn) {
               btn.classList.add('active', 'bg-white/10', 'text-white', 'font-semibold');
@@ -1723,7 +1830,7 @@ const resolveImage = (url: string) => {
           }
         });
  
-        [dashboardSection, ordersSection, productsSection, collectionsSection, blogsSection, contactsSection, faqsSection].forEach(section => {
+        [dashboardSection, ordersSection, productsSection, collectionsSection, blogsSection, contactsSection, faqsSection, heroesSection].forEach(section => {
           if (section) {
             if (section === activeSection) {
               section.classList.remove('hidden');
@@ -1764,6 +1871,7 @@ const resolveImage = (url: string) => {
       navBlogs?.addEventListener('click', (e) => { e.preventDefault(); switchTab(navBlogs, blogsSection); });
       navContacts?.addEventListener('click', (e) => { e.preventDefault(); switchTab(navContacts, contactsSection); });
       navFaqs?.addEventListener('click', (e) => { e.preventDefault(); switchTab(navFaqs, faqsSection); });
+      navHeroes?.addEventListener('click', (e) => { e.preventDefault(); switchTab(navHeroes, heroesSection); });
 
       // Dashboard see-all links
       document.getElementById('dashboard-see-all-orders')?.addEventListener('click', (e) => {
@@ -2629,5 +2737,193 @@ const resolveImage = (url: string) => {
         }
       });
     });
+
+    // Hero Banners Management
+    try {
+      console.log('[Admin Heroes] Initializing Hero Banners Management...');
+      
+      const loadHeroes = async () => {
+        try {
+          const res = await fetch('/api/web-image/settings');
+          if (res.ok) {
+            const settings = await res.json();
+            
+            // Populate Home Hero
+            const previewHome = document.getElementById('preview-hero-home') as HTMLImageElement;
+            const labelHome = document.getElementById('label-hero-home');
+            if (previewHome) {
+              previewHome.src = settings.hero_home || '/assets/images/hero-authentic.png';
+            }
+            if (labelHome) {
+              if (settings.hero_home) labelHome.classList.remove('hidden');
+              else labelHome.classList.add('hidden');
+            }
+
+            // Populate Shop Hero
+            const previewShop = document.getElementById('preview-hero-shop') as HTMLImageElement;
+            const labelShop = document.getElementById('label-hero-shop');
+            if (previewShop) {
+              previewShop.src = settings.hero_shop || '/assets/images/collection-hero.png';
+            }
+            if (labelShop) {
+              if (settings.hero_shop) labelShop.classList.remove('hidden');
+              else labelShop.classList.add('hidden');
+            }
+
+            // Populate Collections Hero
+            const previewCollections = document.getElementById('preview-hero-collections') as HTMLImageElement;
+            const labelCollections = document.getElementById('label-hero-collections');
+            if (previewCollections) {
+              previewCollections.src = settings.hero_collections || '/assets/images/collection-hero.png';
+            }
+            if (labelCollections) {
+              if (settings.hero_collections) labelCollections.classList.remove('hidden');
+              else labelCollections.classList.add('hidden');
+            }
+
+            // Populate Blog Hero
+            const previewBlog = document.getElementById('preview-hero-blog') as HTMLImageElement;
+            const labelBlog = document.getElementById('label-hero-blog');
+            if (previewBlog) {
+              previewBlog.src = settings.hero_blog || '/assets/images/collection-hero.png';
+            }
+            if (labelBlog) {
+              if (settings.hero_blog) labelBlog.classList.remove('hidden');
+              else labelBlog.classList.add('hidden');
+            }
+          }
+        } catch (err) {
+          console.error('[Admin Heroes] Failed to fetch settings:', err);
+        }
+      };
+
+      // Load initially
+      loadHeroes();
+
+      // Hook up change image button clicks
+      const uploadButtons = document.querySelectorAll('.btn-upload-hero');
+      uploadButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-key');
+          if (key) {
+            const fileInputId = key.replace('hero_', 'file-hero-');
+            const fileInput = document.getElementById(fileInputId);
+            fileInput?.click();
+          }
+        });
+      });
+
+      // Hook up file input change events
+      const fileInputs = ['file-hero-home', 'file-hero-shop', 'file-hero-collections', 'file-hero-blog'];
+      fileInputs.forEach(inputId => {
+        const input = document.getElementById(inputId) as HTMLInputElement;
+        if (input) {
+          input.addEventListener('change', async () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            const key = inputId.replace('file-hero-', 'hero_');
+
+            // Show loading state
+            window.showStatusAlert(200, lang === 'en' ? 'Uploading image...' : 'กำลังอัปโหลดรูปภาพ...', null, false);
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+              // Upload file to product upload endpoint
+              const uploadRes = await fetch('/api/products/upload', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                },
+                body: formData
+              });
+
+              if (uploadRes.ok) {
+                const data = await uploadRes.json();
+                const imageUrl = data.imageUrl;
+                
+                // Let's call POST /api/web-image/settings to update the setting
+                const settingsRes = await fetch('/api/web-image/settings', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ key, value: imageUrl })
+                });
+
+                if (settingsRes.ok) {
+                  window.showStatusAlert(
+                    200,
+                    lang === 'en' ? 'Hero banner updated successfully.' : 'อัปเดตภาพแบนเนอร์สำเร็จ',
+                    null,
+                    true,
+                    () => {
+                      loadHeroes();
+                    }
+                  );
+                } else {
+                  const errData = await settingsRes.json();
+                  window.showStatusAlert(settingsRes.status, null, errData ? errData.message : (lang === 'en' ? 'Failed to save settings.' : 'บันทึกการตั้งค่าไม่สำเร็จ'));
+                }
+              } else {
+                window.showStatusAlert(uploadRes.status, null, lang === 'en' ? 'Failed to upload image.' : 'อัปโหลดรูปภาพไม่สำเร็จ');
+              }
+            } catch (err) {
+              console.error(err);
+              window.showStatusAlert(0, null, lang === 'en' ? 'Network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            } finally {
+              // Clear input value to allow uploading same file again
+              input.value = '';
+            }
+          });
+        }
+      });
+
+      // Hook up delete/reset button clicks
+      const deleteButtons = document.querySelectorAll('.btn-delete-hero');
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const key = btn.getAttribute('data-key');
+          if (!key) return;
+
+          if (!confirm(lang === 'en' ? 'Are you sure you want to reset this hero image to default?' : 'คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตภาพแบนเนอร์นี้กลับเป็นรูปเริ่มต้น?')) return;
+
+          try {
+            const settingsRes = await fetch('/api/web-image/settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ key, value: '' }) // Set value to empty string to reset
+            });
+
+            if (settingsRes.ok) {
+              window.showStatusAlert(
+                200,
+                lang === 'en' ? 'Hero banner reset successfully.' : 'รีเซ็ตภาพแบนเนอร์สำเร็จ',
+                null,
+                true,
+                () => {
+                  loadHeroes();
+                }
+              );
+            } else {
+              const errData = await settingsRes.json();
+              window.showStatusAlert(settingsRes.status, null, errData ? errData.message : (lang === 'en' ? 'Failed to reset hero.' : 'รีเซ็ตภาพแบนเนอร์ไม่สำเร็จ'));
+            }
+          } catch (err) {
+            console.error(err);
+            window.showStatusAlert(0, null, lang === 'en' ? 'Network error occurred.' : 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+          }
+        });
+      });
+
+    } catch (e) {
+      console.error('[Admin Heroes] Error initializing heroes section:', e);
+    }
   </script>
 </Layout>

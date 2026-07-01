@@ -5,6 +5,7 @@ import sharp = require('sharp');
 
 @Injectable()
 export class WebImageService implements OnModuleInit {
+  private readonly settingsFile = path.join(process.cwd(), 'public', 'assets', 'page-settings.json');
   private readonly imagesDir = path.join(process.cwd(), 'public', 'assets', 'images');
 
   async onModuleInit() {
@@ -15,6 +16,42 @@ export class WebImageService implements OnModuleInit {
     } catch (e) {
       console.error('[WebImageService] Auto-conversion during startup failed:', e);
     }
+  }
+
+  async getSettings(): Promise<Record<string, string>> {
+    if (!fs.existsSync(this.settingsFile)) {
+      return {
+        hero_home: '',
+        hero_shop: '',
+        hero_collections: '',
+        hero_blog: ''
+      };
+    }
+    try {
+      const data = fs.readFileSync(this.settingsFile, 'utf8');
+      return JSON.parse(data);
+    } catch (e) {
+      return {
+        hero_home: '',
+        hero_shop: '',
+        hero_collections: '',
+        hero_blog: ''
+      };
+    }
+  }
+
+  async updateSetting(key: string, value: string): Promise<{ success: boolean; settings: Record<string, string> }> {
+    const settings = await this.getSettings();
+    settings[key] = value;
+    
+    // Ensure assets folder exists
+    const assetsDir = path.dirname(this.settingsFile);
+    if (!fs.existsSync(assetsDir)) {
+      fs.mkdirSync(assetsDir, { recursive: true });
+    }
+
+    fs.writeFileSync(this.settingsFile, JSON.stringify(settings, null, 2), 'utf8');
+    return { success: true, settings };
   }
 
   async convertAll(): Promise<{ success: boolean; converted: string[]; errors: string[] }> {
