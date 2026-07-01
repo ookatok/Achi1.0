@@ -1546,6 +1546,138 @@ const resolveImage = (url: string) => {
             </div>
           </div>
 
+          <!-- Item 5: Men's Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "Men's Category Page" : 'หน้าหมวดหมู่ผู้ชาย (Men Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-men" class="w-full h-full object-cover" src="/assets/images/men-hero.png" />
+              <span id="label-hero-men" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-men" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_men">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_men" data-default="/assets/images/men-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 6: Women's Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "Women's Category Page" : 'หน้าหมวดหมู่ผู้หญิง (Women Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-women" class="w-full h-full object-cover" src="/assets/images/women-hero.png" />
+              <span id="label-hero-women" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-women" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_women">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_women" data-default="/assets/images/women-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 7: New Arrivals Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "New Arrivals Page" : 'หน้าสินค้ามาใหม่ (New Arrivals)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-new-arrivals" class="w-full h-full object-cover" src="/assets/images/set2.png" />
+              <span id="label-hero-new-arrivals" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-new-arrivals" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_new_arrivals">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_new_arrivals" data-default="/assets/images/set2.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 8: Best Sellers Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "Best Sellers Page" : 'หน้าสินค้าขายดี (Best Sellers)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-best-sellers" class="w-full h-full object-cover" src="/assets/images/banners/best-sellers.png" />
+              <span id="label-hero-best-sellers" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-best-sellers" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_best_sellers">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_best_sellers" data-default="/assets/images/banners/best-sellers.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 9: Discounts Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "Discounts Page" : 'หน้าส่วนลด (Discounts Page)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-discount" class="w-full h-full object-cover" src="/assets/images/collection-hero.png" />
+              <span id="label-hero-discount" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-discount" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_discount">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_discount" data-default="/assets/images/collection-hero.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Item 10: Total Looks Page Hero -->
+          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
+            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
+              {lang === 'en' ? "Total Looks Page" : 'หน้าเซ็ตแต่งกาย (Total Looks)'}
+            </h3>
+            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+              <img id="preview-hero-total-looks" class="w-full h-full object-cover" src="/assets/images/set1.png" />
+              <span id="label-hero-total-looks" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="file" id="file-hero-total-looks" class="hidden" accept="image/*" />
+              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_total_looks">
+                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
+              </button>
+              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_total_looks" data-default="/assets/images/set1.png">
+                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -2791,6 +2923,72 @@ const resolveImage = (url: string) => {
               if (settings.hero_blog) labelBlog.classList.remove('hidden');
               else labelBlog.classList.add('hidden');
             }
+
+            // Populate Men Hero
+            const previewMen = document.getElementById('preview-hero-men') as HTMLImageElement;
+            const labelMen = document.getElementById('label-hero-men');
+            if (previewMen) {
+              previewMen.src = settings.hero_men || '/assets/images/men-hero.png';
+            }
+            if (labelMen) {
+              if (settings.hero_men) labelMen.classList.remove('hidden');
+              else labelMen.classList.add('hidden');
+            }
+
+            // Populate Women Hero
+            const previewWomen = document.getElementById('preview-hero-women') as HTMLImageElement;
+            const labelWomen = document.getElementById('label-hero-women');
+            if (previewWomen) {
+              previewWomen.src = settings.hero_women || '/assets/images/women-hero.png';
+            }
+            if (labelWomen) {
+              if (settings.hero_women) labelWomen.classList.remove('hidden');
+              else labelWomen.classList.add('hidden');
+            }
+
+            // Populate New Arrivals Hero
+            const previewNewArrivals = document.getElementById('preview-hero-new-arrivals') as HTMLImageElement;
+            const labelNewArrivals = document.getElementById('label-hero-new-arrivals');
+            if (previewNewArrivals) {
+              previewNewArrivals.src = settings.hero_new_arrivals || '/assets/images/set2.png';
+            }
+            if (labelNewArrivals) {
+              if (settings.hero_new_arrivals) labelNewArrivals.classList.remove('hidden');
+              else labelNewArrivals.classList.add('hidden');
+            }
+
+            // Populate Best Sellers Hero
+            const previewBestSellers = document.getElementById('preview-hero-best-sellers') as HTMLImageElement;
+            const labelBestSellers = document.getElementById('label-hero-best-sellers');
+            if (previewBestSellers) {
+              previewBestSellers.src = settings.hero_best_sellers || '/assets/images/banners/best-sellers.png';
+            }
+            if (labelBestSellers) {
+              if (settings.hero_best_sellers) labelBestSellers.classList.remove('hidden');
+              else labelBestSellers.classList.add('hidden');
+            }
+
+            // Populate Discount Hero
+            const previewDiscount = document.getElementById('preview-hero-discount') as HTMLImageElement;
+            const labelDiscount = document.getElementById('label-hero-discount');
+            if (previewDiscount) {
+              previewDiscount.src = settings.hero_discount || '/assets/images/collection-hero.png';
+            }
+            if (labelDiscount) {
+              if (settings.hero_discount) labelDiscount.classList.remove('hidden');
+              else labelDiscount.classList.add('hidden');
+            }
+
+            // Populate Total Looks Hero
+            const previewTotalLooks = document.getElementById('preview-hero-total-looks') as HTMLImageElement;
+            const labelTotalLooks = document.getElementById('label-hero-total-looks');
+            if (previewTotalLooks) {
+              previewTotalLooks.src = settings.hero_total_looks || '/assets/images/set1.png';
+            }
+            if (labelTotalLooks) {
+              if (settings.hero_total_looks) labelTotalLooks.classList.remove('hidden');
+              else labelTotalLooks.classList.add('hidden');
+            }
           }
         } catch (err) {
           console.error('[Admin Heroes] Failed to fetch settings:', err);
@@ -2806,7 +3004,7 @@ const resolveImage = (url: string) => {
         btn.addEventListener('click', () => {
           const key = btn.getAttribute('data-key');
           if (key) {
-            const fileInputId = key.replace('hero_', 'file-hero-');
+            const fileInputId = key.replace('hero_', 'file-hero-').replace(/_/g, '-');
             const fileInput = document.getElementById(fileInputId);
             fileInput?.click();
           }
@@ -2814,7 +3012,18 @@ const resolveImage = (url: string) => {
       });
 
       // Hook up file input change events
-      const fileInputs = ['file-hero-home', 'file-hero-shop', 'file-hero-collections', 'file-hero-blog'];
+      const fileInputs = [
+        'file-hero-home', 
+        'file-hero-shop', 
+        'file-hero-collections', 
+        'file-hero-blog',
+        'file-hero-men',
+        'file-hero-women',
+        'file-hero-new-arrivals',
+        'file-hero-best-sellers',
+        'file-hero-discount',
+        'file-hero-total-looks'
+      ];
       fileInputs.forEach(inputId => {
         const input = document.getElementById(inputId) as HTMLInputElement;
         if (input) {
@@ -2822,7 +3031,7 @@ const resolveImage = (url: string) => {
             const file = input.files?.[0];
             if (!file) return;
 
-            const key = inputId.replace('file-hero-', 'hero_');
+            const key = inputId.replace('file-hero-', 'hero_').replace(/-/g, '_');
 
             // Show loading state
             window.showStatusAlert(200, lang === 'en' ? 'Uploading image...' : 'กำลังอัปโหลดรูปภาพ...', null, false);

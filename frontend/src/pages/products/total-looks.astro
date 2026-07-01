@@ -24,6 +24,19 @@ try {
 } catch (err) {
   console.error('[NestJS API Error] Fetching collections failed in total-looks.astro', err);
 }
+
+let pageSettings = {
+  hero_total_looks: ''
+} as Record<string, string>;
+
+try {
+  const res = await fetch(`${BACKEND_URL}/api/web-image/settings`);
+  if (res.ok) {
+    pageSettings = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching page settings failed.', err);
+}
 ---
 
 <Layout 
@@ -33,7 +46,7 @@ try {
 >
   {/* Editorial Collection Hero Banner */}
   <section class="w-full relative h-[45vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center opacity-70" style="background-image: url('/assets/images/set1.png?v=3');"></div>
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage(pageSettings.hero_total_looks || '/assets/images/set1.png')}');`}></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">

@@ -24,7 +24,13 @@ export class WebImageService implements OnModuleInit {
         hero_home: '',
         hero_shop: '',
         hero_collections: '',
-        hero_blog: ''
+        hero_blog: '',
+        hero_men: '',
+        hero_women: '',
+        hero_new_arrivals: '',
+        hero_best_sellers: '',
+        hero_discount: '',
+        hero_total_looks: ''
       };
     }
     try {
@@ -35,7 +41,13 @@ export class WebImageService implements OnModuleInit {
         hero_home: '',
         hero_shop: '',
         hero_collections: '',
-        hero_blog: ''
+        hero_blog: '',
+        hero_men: '',
+        hero_women: '',
+        hero_new_arrivals: '',
+        hero_best_sellers: '',
+        hero_discount: '',
+        hero_total_looks: ''
       };
     }
   }

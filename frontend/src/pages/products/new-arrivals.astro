@@ -37,6 +37,19 @@ if (sizes) queryParams.set('sizes', sizes);
 if (colors) queryParams.set('colors', colors);
 if (searchQuery) queryParams.set('query', searchQuery);
 
+let pageSettings = {
+  hero_new_arrivals: ''
+} as Record<string, string>;
+
+try {
+  const res = await fetch(`${BACKEND_URL}/api/web-image/settings`);
+  if (res.ok) {
+    pageSettings = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching page settings failed.', err);
+}
+
 try {
   const res = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
   if (res.ok) {
@@ -103,7 +116,7 @@ const getColorsArray = (colors: any) => {
 <Layout title={lang === 'en' ? "New Arrivals | ACHI Studio" : "สินค้ามาใหม่ | ACHI Studio"} description={lang === 'en' ? "Explore ACHI's custom tailored outerwear, statement collections, and basic essentials." : "สำรวจสินค้ามาใหม่ เอาต์เตอร์แวร์สั่งตัดพิเศษ และเสื้อผ้าดีไซน์มินิมอลจาก ACHI"} showHeroHeader={true}>
   {/* Editorial Collection Hero Banner */}
   <section class="w-full relative h-[70vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage('/assets/images/set2.png')}');`}></div>
+    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage(pageSettings.hero_new_arrivals || '/assets/images/set2.png')}');`}></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">

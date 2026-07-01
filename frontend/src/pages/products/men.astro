@@ -17,6 +17,19 @@ const resolveImage = (url: string) => {
   return url.replace(/\.(png|jpg|jpeg)$/i, '.webp') + '?v=3';
 };
 
+let pageSettings = {
+  hero_men: ''
+} as Record<string, string>;
+
+try {
+  const res = await fetch(`${BACKEND_URL}/api/web-image/settings`);
+  if (res.ok) {
+    pageSettings = await res.json();
+  }
+} catch (err) {
+  console.error('[NestJS API Error] Fetching page settings failed.', err);
+}
+
 let productsList = [] as any[];
 let totalProducts = 0;
 
@@ -60,7 +73,7 @@ const getColorsArray = (colors: any) => {
 <Layout title={lang === 'en' ? "Men's Fashion | ACHI Studio" : "แฟชั่นผู้ชาย | ACHI Studio"} description={lang === 'en' ? "New season, new looks. Shop ACHI's latest men's clothing, outerwear, and accessories." : "ซีซันใหม่ ลุคใหม่ ช้อปเสื้อผ้าผู้ชาย เสื้อตัวนอก และเครื่องประดับล่าสุดจาก ACHI"} showHeroHeader={true}>
   <!-- Men's Hero Section -->
   <section class="w-full relative h-[100vh] bg-[#3B3835] flex items-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center opacity-65" style={`background-image: url('${resolveImage('/assets/images/men-hero.png')}');`}></div>
+    <div class="absolute inset-0 bg-cover bg-center opacity-65" style={`background-image: url('${resolveImage(pageSettings.hero_men || '/assets/images/men-hero.png')}');`}></div>
     <div class="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent opacity-40"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 pt-24 flex flex-col justify-center items-start h-full">
