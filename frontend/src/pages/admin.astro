@@ -1552,48 +1552,6 @@ const resolveImage = (url: string) => {
           </div>
 
           <!-- Item 5: Men's Page Hero -->
-          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
-            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
-              {lang === 'en' ? "Men's Category Page" : 'หน้าหมวดหมู่ผู้ชาย (Men Page)'}
-            </h3>
-            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
-              <img id="preview-hero-men" class="w-full h-full object-cover" src="/assets/images/men-hero.png" />
-              <span id="label-hero-men" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
-                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
-              </span>
-            </div>
-            <div class="flex items-center gap-3">
-              <input type="file" id="file-hero-men" class="hidden" accept="image/*" />
-              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_men">
-                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
-              </button>
-              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_men" data-default="/assets/images/men-hero.png">
-                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
-              </button>
-            </div>
-          </div>
-
-          <!-- Item 6: Women's Page Hero -->
-          <div class="border border-stone-100 p-6 rounded-sm space-y-4">
-            <h3 class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-2">
-              {lang === 'en' ? "Women's Category Page" : 'หน้าหมวดหมู่ผู้หญิง (Women Page)'}
-            </h3>
-            <div class="aspect-[16/9] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
-              <img id="preview-hero-women" class="w-full h-full object-cover" src="/assets/images/women-hero.png" />
-              <span id="label-hero-women" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
-                {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
-              </span>
-            </div>
-            <div class="flex items-center gap-3">
-              <input type="file" id="file-hero-women" class="hidden" accept="image/*" />
-              <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_women">
-                {lang === 'en' ? 'Change Image' : 'เปลี่ยนรูปภาพ'}
-              </button>
-              <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-4 py-2 rounded-sm text-[9px] uppercase tracking-widest font-semibold cursor-pointer transition-all shrink-0" data-key="hero_women" data-default="/assets/images/women-hero.png">
-                {lang === 'en' ? 'Delete (Reset)' : 'ลบ (ใช้รูปเริ่มต้น)'}
-              </button>
-            </div>
-          </div>
 
           <!-- Item 7: New Arrivals Page Hero -->
           <div class="border border-stone-100 p-6 rounded-sm space-y-4">
@@ -2956,27 +2914,7 @@ const resolveImage = (url: string) => {
               else labelBlog.classList.add('hidden');
             }
 
-            // Populate Men Hero
-            const previewMen = document.getElementById('preview-hero-men') as HTMLImageElement;
-            const labelMen = document.getElementById('label-hero-men');
-            if (previewMen) {
-              previewMen.src = settings.hero_men || svgPlaceholder;
-            }
-            if (labelMen) {
-              if (settings.hero_men) labelMen.classList.remove('hidden');
-              else labelMen.classList.add('hidden');
-            }
 
-            // Populate Women Hero
-            const previewWomen = document.getElementById('preview-hero-women') as HTMLImageElement;
-            const labelWomen = document.getElementById('label-hero-women');
-            if (previewWomen) {
-              previewWomen.src = settings.hero_women || svgPlaceholder;
-            }
-            if (labelWomen) {
-              if (settings.hero_women) labelWomen.classList.remove('hidden');
-              else labelWomen.classList.add('hidden');
-            }
 
             // Populate New Arrivals Hero
             const previewNewArrivals = document.getElementById('preview-hero-new-arrivals') as HTMLImageElement;
@@ -3094,8 +3032,6 @@ const resolveImage = (url: string) => {
         'file-hero-shop', 
         'file-hero-collections', 
         'file-hero-blog',
-        'file-hero-men',
-        'file-hero-women',
         'file-hero-new-arrivals',
         'file-hero-best-sellers',
         'file-hero-discount',

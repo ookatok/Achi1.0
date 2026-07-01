@@ -1,9 +1,7 @@
 {
-  "hero_shop": "",
-  "hero_collections": "",
-  "hero_blog": "",
-  "hero_men": "",
-  "hero_women": "",
+  "hero_shop": "/assets/uploads/product-1782890845883-818661412.png",
+  "hero_collections": "/assets/uploads/product-1782890853325-923438488.png",
+  "hero_blog": "/assets/uploads/product-1782890858846-61870121.png",
   "hero_new_arrivals": "",
   "hero_best_sellers": "",
   "hero_discount": "",
@@ -11,5 +9,6 @@
   "category_tshirts": "",
   "category_hoodies": "",
   "category_pants": "",
-  "category_bags": ""
+  "category_bags": "",
+  "hero_home": "/assets/uploads/product-1782890744652-256527543.png"
 }
