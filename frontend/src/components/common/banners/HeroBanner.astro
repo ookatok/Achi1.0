@@ -11,7 +11,7 @@ interface Props {
 const { title, subtitle, description, imageUrl, ctaText, ctaLink } = Astro.props;
 ---
 <section class="w-full relative h-[100vh] bg-[#1A1A1A] flex items-center text-white overflow-hidden">
-  <div class="hero-banner-image absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${imageUrl}');`}></div>
+  {imageUrl && <div class="hero-banner-image absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${imageUrl}');`}></div>}
   <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
   
   <div class="hero-banner-content relative w-full max-w-[1440px] mx-auto px-6 pt-24 flex flex-col justify-center items-start h-full">

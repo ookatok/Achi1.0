@@ -2978,6 +2978,9 @@ const resolveImage = (url: string) => {
     // Hero Banners Management
     try {
       console.log('[Admin Heroes] Initializing Hero Banners Management...');
+
+      const svgPlaceholder = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"><rect width="100%" height="100%" fill="%231c1917"/><text x="50%" y="50%" font-family="monospace, sans-serif" font-weight="bold" font-size="20" fill="%2357534e" dominant-baseline="middle" text-anchor="middle" letter-spacing="4">TEXT ONLY (NO IMAGE)</text></svg>`;
+      const svgPlaceholder34 = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800"><rect width="100%" height="100%" fill="%231c1917"/><text x="50%" y="50%" font-family="monospace, sans-serif" font-weight="bold" font-size="20" fill="%2357534e" dominant-baseline="middle" text-anchor="middle" letter-spacing="4">TEXT ONLY</text></svg>`;
       
       const loadHeroes = async () => {
         try {
@@ -2989,7 +2992,7 @@ const resolveImage = (url: string) => {
             const previewHome = document.getElementById('preview-hero-home') as HTMLImageElement;
             const labelHome = document.getElementById('label-hero-home');
             if (previewHome) {
-              previewHome.src = settings.hero_home || '/assets/images/hero-authentic.png';
+              previewHome.src = settings.hero_home || svgPlaceholder;
             }
             if (labelHome) {
               if (settings.hero_home) labelHome.classList.remove('hidden');
@@ -3000,7 +3003,7 @@ const resolveImage = (url: string) => {
             const previewShop = document.getElementById('preview-hero-shop') as HTMLImageElement;
             const labelShop = document.getElementById('label-hero-shop');
             if (previewShop) {
-              previewShop.src = settings.hero_shop || '/assets/images/collection-hero.png';
+              previewShop.src = settings.hero_shop || svgPlaceholder;
             }
             if (labelShop) {
               if (settings.hero_shop) labelShop.classList.remove('hidden');
@@ -3011,7 +3014,7 @@ const resolveImage = (url: string) => {
             const previewCollections = document.getElementById('preview-hero-collections') as HTMLImageElement;
             const labelCollections = document.getElementById('label-hero-collections');
             if (previewCollections) {
-              previewCollections.src = settings.hero_collections || '/assets/images/collection-hero.png';
+              previewCollections.src = settings.hero_collections || svgPlaceholder;
             }
             if (labelCollections) {
               if (settings.hero_collections) labelCollections.classList.remove('hidden');
@@ -3022,7 +3025,7 @@ const resolveImage = (url: string) => {
             const previewBlog = document.getElementById('preview-hero-blog') as HTMLImageElement;
             const labelBlog = document.getElementById('label-hero-blog');
             if (previewBlog) {
-              previewBlog.src = settings.hero_blog || '/assets/images/collection-hero.png';
+              previewBlog.src = settings.hero_blog || svgPlaceholder;
             }
             if (labelBlog) {
               if (settings.hero_blog) labelBlog.classList.remove('hidden');
@@ -3033,7 +3036,7 @@ const resolveImage = (url: string) => {
             const previewMen = document.getElementById('preview-hero-men') as HTMLImageElement;
             const labelMen = document.getElementById('label-hero-men');
             if (previewMen) {
-              previewMen.src = settings.hero_men || '/assets/images/men-hero.png';
+              previewMen.src = settings.hero_men || svgPlaceholder;
             }
             if (labelMen) {
               if (settings.hero_men) labelMen.classList.remove('hidden');
@@ -3044,7 +3047,7 @@ const resolveImage = (url: string) => {
             const previewWomen = document.getElementById('preview-hero-women') as HTMLImageElement;
             const labelWomen = document.getElementById('label-hero-women');
             if (previewWomen) {
-              previewWomen.src = settings.hero_women || '/assets/images/women-hero.png';
+              previewWomen.src = settings.hero_women || svgPlaceholder;
             }
             if (labelWomen) {
               if (settings.hero_women) labelWomen.classList.remove('hidden');
@@ -3055,7 +3058,7 @@ const resolveImage = (url: string) => {
             const previewNewArrivals = document.getElementById('preview-hero-new-arrivals') as HTMLImageElement;
             const labelNewArrivals = document.getElementById('label-hero-new-arrivals');
             if (previewNewArrivals) {
-              previewNewArrivals.src = settings.hero_new_arrivals || '/assets/images/set2.png';
+              previewNewArrivals.src = settings.hero_new_arrivals || svgPlaceholder;
             }
             if (labelNewArrivals) {
               if (settings.hero_new_arrivals) labelNewArrivals.classList.remove('hidden');
@@ -3066,7 +3069,7 @@ const resolveImage = (url: string) => {
             const previewBestSellers = document.getElementById('preview-hero-best-sellers') as HTMLImageElement;
             const labelBestSellers = document.getElementById('label-hero-best-sellers');
             if (previewBestSellers) {
-              previewBestSellers.src = settings.hero_best_sellers || '/assets/images/banners/best-sellers.png';
+              previewBestSellers.src = settings.hero_best_sellers || svgPlaceholder;
             }
             if (labelBestSellers) {
               if (settings.hero_best_sellers) labelBestSellers.classList.remove('hidden');
@@ -3077,7 +3080,7 @@ const resolveImage = (url: string) => {
             const previewDiscount = document.getElementById('preview-hero-discount') as HTMLImageElement;
             const labelDiscount = document.getElementById('label-hero-discount');
             if (previewDiscount) {
-              previewDiscount.src = settings.hero_discount || '/assets/images/collection-hero.png';
+              previewDiscount.src = settings.hero_discount || svgPlaceholder;
             }
             if (labelDiscount) {
               if (settings.hero_discount) labelDiscount.classList.remove('hidden');
@@ -3088,7 +3091,7 @@ const resolveImage = (url: string) => {
             const previewTotalLooks = document.getElementById('preview-hero-total-looks') as HTMLImageElement;
             const labelTotalLooks = document.getElementById('label-hero-total-looks');
             if (previewTotalLooks) {
-              previewTotalLooks.src = settings.hero_total_looks || '/assets/images/set1.png';
+              previewTotalLooks.src = settings.hero_total_looks || svgPlaceholder;
             }
             if (labelTotalLooks) {
               if (settings.hero_total_looks) labelTotalLooks.classList.remove('hidden');
@@ -3099,7 +3102,7 @@ const resolveImage = (url: string) => {
             const previewCatTshirts = document.getElementById('preview-category-tshirts') as HTMLImageElement;
             const labelCatTshirts = document.getElementById('label-category-tshirts');
             if (previewCatTshirts) {
-              previewCatTshirts.src = settings.category_tshirts || '/assets/images/shirt-cat-men.png';
+              previewCatTshirts.src = settings.category_tshirts || svgPlaceholder34;
             }
             if (labelCatTshirts) {
               if (settings.category_tshirts) labelCatTshirts.classList.remove('hidden');
@@ -3110,7 +3113,7 @@ const resolveImage = (url: string) => {
             const previewCatHoodies = document.getElementById('preview-category-hoodies') as HTMLImageElement;
             const labelCatHoodies = document.getElementById('label-category-hoodies');
             if (previewCatHoodies) {
-              previewCatHoodies.src = settings.category_hoodies || '/assets/images/products/hoodie.png';
+              previewCatHoodies.src = settings.category_hoodies || svgPlaceholder34;
             }
             if (labelCatHoodies) {
               if (settings.category_hoodies) labelCatHoodies.classList.remove('hidden');
@@ -3121,7 +3124,7 @@ const resolveImage = (url: string) => {
             const previewCatPants = document.getElementById('preview-category-pants') as HTMLImageElement;
             const labelCatPants = document.getElementById('label-category-pants');
             if (previewCatPants) {
-              previewCatPants.src = settings.category_pants || '/assets/images/bottoms-cat-men.png';
+              previewCatPants.src = settings.category_pants || svgPlaceholder34;
             }
             if (labelCatPants) {
               if (settings.category_pants) labelCatPants.classList.remove('hidden');
@@ -3132,7 +3135,7 @@ const resolveImage = (url: string) => {
             const previewCatBags = document.getElementById('preview-category-bags') as HTMLImageElement;
             const labelCatBags = document.getElementById('label-category-bags');
             if (previewCatBags) {
-              previewCatBags.src = settings.category_bags || '/assets/images/bag-cat-women.png';
+              previewCatBags.src = settings.category_bags || svgPlaceholder34;
             }
             if (labelCatBags) {
               if (settings.category_bags) labelCatBags.classList.remove('hidden');

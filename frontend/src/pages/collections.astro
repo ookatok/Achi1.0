@@ -50,7 +50,7 @@ try {
 >
   {/* Editorial Collection Hero Banner */}
   <section class="w-full relative h-[45vh] bg-[#3C3C3C] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage(pageSettings.hero_collections || '/assets/images/collection-hero.png')}');`}></div>
+    {pageSettings.hero_collections && <div class="absolute inset-0 bg-cover bg-center opacity-70" style={`background-image: url('${resolveImage(pageSettings.hero_collections)}');`}></div>}
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">

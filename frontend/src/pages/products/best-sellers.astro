@@ -69,7 +69,7 @@ const getColorsArray = (colors: any) => {
 <Layout title={lang === 'en' ? "Best Sellers | ACHI Studio" : "สินค้าขายดี | ACHI Studio"} description={lang === 'en' ? "Shop our most coveted and signature e-commerce fashion items." : "ช้อปสินค้าแฟชั่นที่ได้รับความนิยมสูงสุดและเป็นเอกลักษณ์เฉพาะตัวของเรา"} showHeroHeader={true}>
   <!-- Best Sellers Hero Banner -->
   <section class="w-full relative h-[60vh] bg-[#22252A] flex items-center justify-center text-white overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center opacity-85" style={`background-image: url('${resolveImage(pageSettings.hero_best_sellers || '/assets/images/banners/best-sellers.png')}');`}></div>
+    {pageSettings.hero_best_sellers && <div class="absolute inset-0 bg-cover bg-center opacity-85" style={`background-image: url('${resolveImage(pageSettings.hero_best_sellers)}');`}></div>}
     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">

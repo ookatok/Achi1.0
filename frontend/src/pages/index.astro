@@ -109,7 +109,7 @@ const categories = [
   {
     titleEn: "T-Shirts & Polos",
     titleTh: "เสื้อยืดและเสื้อโปโล",
-    image: pageSettings.category_tshirts || "/assets/images/shirt-cat-men.png",
+    image: pageSettings.category_tshirts || "",
     link: "/products?query=T-shirt",
     query: "T-shirt",
     descriptionEn: "Essential everyday tops",
@@ -118,7 +118,7 @@ const categories = [
   {
     titleEn: "Hoodies & Jackets",
     titleTh: "เสื้อฮู้ดและเสื้อนอก",
-    image: pageSettings.category_hoodies || "/assets/images/products/hoodie.png",
+    image: pageSettings.category_hoodies || "",
     link: "/products?query=Hoodie",
     query: "Hoodie",
     descriptionEn: "Comfortable outer layers",
@@ -127,7 +127,7 @@ const categories = [
   {
     titleEn: "Pants, Shorts & Skirts",
     titleTh: "กางเกงและกระโปรง",
-    image: pageSettings.category_pants || "/assets/images/bottoms-cat-men.png",
+    image: pageSettings.category_pants || "",
     link: "/products?query=pants,shorts,skirts,jeans",
     query: "pants,shorts,skirts,jeans",
     descriptionEn: "Tailored bottomwear styles",
@@ -136,7 +136,7 @@ const categories = [
   {
     titleEn: "Bags & Accessories",
     titleTh: "กระเป๋าและเครื่องประดับ",
-    image: pageSettings.category_bags || "/assets/images/bag-cat-women.png",
+    image: pageSettings.category_bags || "",
     link: "/products?query=Bags",
     query: "Bags",
     descriptionEn: "Complete your premium look",
@@ -154,7 +154,7 @@ const categories = [
     title={t('home.hero.title')}
     subtitle={t('home.hero.subtitle')}
     description={t('home.hero.description')}
-    imageUrl={resolveImage(pageSettings.hero_home || '/assets/images/hero-authentic.png')}
+    imageUrl={pageSettings.hero_home ? resolveImage(pageSettings.hero_home) : ''}
     ctaText={t('home.hero.cta')}
     ctaLink="/products"
   />
@@ -203,16 +203,18 @@ const categories = [
           href={category.link} 
           data-category-card
           data-base-query={category.query}
-          class="group relative aspect-[3/4] overflow-hidden rounded-sm bg-stone-100 block transition-all duration-500 hover:shadow-lg"
+          class="group relative aspect-[3/4] overflow-hidden rounded-sm bg-[#1A1A1A] block transition-all duration-500 hover:shadow-lg"
         >
           {/* Background Image */}
-          <div 
-            class="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-out scale-100 group-hover:scale-105" 
-            style={`background-image: url('${resolveImage(category.image)}');`}
-          ></div>
+          {category.image && (
+            <div 
+              class="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-out scale-100 group-hover:scale-105" 
+              style={`background-image: url('${resolveImage(category.image)}');`}
+            ></div>
+          )}
           
-          {/* Gradient Overlay */}
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500"></div>
+          {/* Gradient Overlay or subtle hover overlay */}
+          <div class={`absolute inset-0 transition-all duration-500 ${category.image ? 'bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90' : 'bg-black/20 group-hover:bg-black/30'}`}></div>
           
           {/* Content */}
           <div class="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
