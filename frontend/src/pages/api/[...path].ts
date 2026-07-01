@@ -32,11 +32,6 @@ export const ALL: APIRoute = async ({ request, params, url }) => {
 
   // Forward body if not GET/HEAD
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    const contentType = request.headers.get('content-type') || '';
-    if (contentType.includes('multipart/form-data')) {
-      // Delete content-type header so fetch API generates the correct multipart boundary automatically
-      headers.delete('content-type');
-    }
     init.body = await request.arrayBuffer();
     // @ts-expect-error: RequestInit duplex option is not recognized by standard types
     init.duplex = 'half';
