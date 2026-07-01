@@ -1,6 +1,6 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { useTranslations } from '../../lib/translations';
+import Layout from '../layouts/Layout.astro';
+import { useTranslations } from '../lib/translations';
 
 const lang = (Astro.cookies.get('lang')?.value === 'en' ? 'en' : 'th') as 'th' | 'en';
 const t = useTranslations(lang);
