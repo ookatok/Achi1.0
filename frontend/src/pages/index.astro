@@ -19,7 +19,11 @@ let pageSettings = {
   hero_home: '',
   hero_shop: '',
   hero_collections: '',
-  hero_blog: ''
+  hero_blog: '',
+  category_tshirts: '',
+  category_hoodies: '',
+  category_pants: '',
+  category_bags: ''
 } as Record<string, string>;
 
 try {
@@ -105,7 +109,7 @@ const categories = [
   {
     titleEn: "T-Shirts & Polos",
     titleTh: "เสื้อยืดและเสื้อโปโล",
-    image: "/assets/images/shirt-cat-men.png",
+    image: pageSettings.category_tshirts || "/assets/images/shirt-cat-men.png",
     link: "/products?query=T-shirt",
     query: "T-shirt",
     descriptionEn: "Essential everyday tops",
@@ -114,7 +118,7 @@ const categories = [
   {
     titleEn: "Hoodies & Jackets",
     titleTh: "เสื้อฮู้ดและเสื้อนอก",
-    image: "/assets/images/products/hoodie.png",
+    image: pageSettings.category_hoodies || "/assets/images/products/hoodie.png",
     link: "/products?query=Hoodie",
     query: "Hoodie",
     descriptionEn: "Comfortable outer layers",
@@ -123,7 +127,7 @@ const categories = [
   {
     titleEn: "Pants, Shorts & Skirts",
     titleTh: "กางเกงและกระโปรง",
-    image: "/assets/images/bottoms-cat-men.png",
+    image: pageSettings.category_pants || "/assets/images/bottoms-cat-men.png",
     link: "/products?query=pants,shorts,skirts,jeans",
     query: "pants,shorts,skirts,jeans",
     descriptionEn: "Tailored bottomwear styles",
@@ -132,7 +136,7 @@ const categories = [
   {
     titleEn: "Bags & Accessories",
     titleTh: "กระเป๋าและเครื่องประดับ",
-    image: "/assets/images/bag-cat-women.png",
+    image: pageSettings.category_bags || "/assets/images/bag-cat-women.png",
     link: "/products?query=Bags",
     query: "Bags",
     descriptionEn: "Complete your premium look",

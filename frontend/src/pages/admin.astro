@@ -1456,7 +1456,12 @@ const resolveImage = (url: string) => {
       </div>
 
       <div class="space-y-8" id="heroes-management-container">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Subsection: Page Hero Banners -->
+        <div class="space-y-4">
+          <h3 class="font-serif text-xs font-semibold tracking-wider text-slate-400 uppercase border-b border-stone-100 pb-2">
+            {lang === 'en' ? 'Page Hero Banners (16:9 Ratio)' : 'ภาพแบนเนอร์หลักของแต่ละหน้า (อัตราส่วน 16:9)'}
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           
           <!-- Item 1: Home Page Hero -->
           <div class="border border-stone-100 p-6 rounded-sm space-y-4">
@@ -1677,8 +1682,105 @@ const resolveImage = (url: string) => {
               </button>
             </div>
           </div>
-
+          </div>
         </div>
+
+        <!-- Subsection: Home Page Category Cards -->
+        <div class="pt-8 border-t border-stone-200/60 space-y-4">
+          <h3 class="font-serif text-xs font-semibold tracking-wider text-slate-400 uppercase border-b border-stone-100 pb-2">
+            {lang === 'en' ? 'Home Page Category Cards (3:4 Ratio)' : 'ภาพการ์ดหมวดหมู่หน้าแรก (อัตราส่วน 3:4)'}
+          </h3>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Item 1: T-Shirts Category -->
+            <div class="border border-stone-100 p-4 rounded-sm space-y-4">
+              <h4 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-1.5">
+                {lang === 'en' ? 'T-Shirts & Polos' : 'เสื้อยืดและเสื้อโปโล'}
+              </h4>
+              <div class="aspect-[3/4] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+                <img id="preview-category-tshirts" class="w-full h-full object-cover" src="/assets/images/shirt-cat-men.png" />
+                <span id="label-category-tshirts" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                  {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="file" id="file-category-tshirts" class="hidden" accept="image/*" />
+                <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_tshirts">
+                  {lang === 'en' ? 'Change' : 'เปลี่ยนรูป'}
+                </button>
+                <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_tshirts" data-default="/assets/images/shirt-cat-men.png">
+                  {lang === 'en' ? 'Reset' : 'ใช้รูปเดิม'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 2: Hoodies Category -->
+            <div class="border border-stone-100 p-4 rounded-sm space-y-4">
+              <h4 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-1.5">
+                {lang === 'en' ? 'Hoodies & Jackets' : 'เสื้อฮู้ดและเสื้อนอก'}
+              </h4>
+              <div class="aspect-[3/4] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+                <img id="preview-category-hoodies" class="w-full h-full object-cover" src="/assets/images/products/hoodie.png" />
+                <span id="label-category-hoodies" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                  {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="file" id="file-category-hoodies" class="hidden" accept="image/*" />
+                <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_hoodies">
+                  {lang === 'en' ? 'Change' : 'เปลี่ยนรูป'}
+                </button>
+                <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_hoodies" data-default="/assets/images/products/hoodie.png">
+                  {lang === 'en' ? 'Reset' : 'ใช้รูปเดิม'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 3: Pants Category -->
+            <div class="border border-stone-100 p-4 rounded-sm space-y-4">
+              <h4 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-1.5">
+                {lang === 'en' ? 'Pants & Bottoms' : 'กางเกงและกระโปรง'}
+              </h4>
+              <div class="aspect-[3/4] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+                <img id="preview-category-pants" class="w-full h-full object-cover" src="/assets/images/bottoms-cat-men.png" />
+                <span id="label-category-pants" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                  {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="file" id="file-category-pants" class="hidden" accept="image/*" />
+                <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_pants">
+                  {lang === 'en' ? 'Change' : 'เปลี่ยนรูป'}
+                </button>
+                <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_pants" data-default="/assets/images/bottoms-cat-men.png">
+                  {lang === 'en' ? 'Reset' : 'ใช้รูปเดิม'}
+                </button>
+              </div>
+            </div>
+
+            <!-- Item 4: Bags Category -->
+            <div class="border border-stone-100 p-4 rounded-sm space-y-4">
+              <h4 class="font-serif text-xs font-semibold tracking-wider text-brand-charcoal uppercase border-b border-stone-50 pb-1.5">
+                {lang === 'en' ? 'Bags & Accessories' : 'กระเป๋าและเครื่องประดับ'}
+              </h4>
+              <div class="aspect-[3/4] w-full bg-stone-50 border border-stone-100/50 rounded-sm overflow-hidden relative flex items-center justify-center">
+                <img id="preview-category-bags" class="w-full h-full object-cover" src="/assets/images/bag-cat-women.png" />
+                <span id="label-category-bags" class="absolute top-2 left-2 bg-brand-charcoal/80 text-white text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-sm font-bold hidden">
+                  {lang === 'en' ? 'Custom' : 'ภาพปรับแต่ง'}
+                </span>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="file" id="file-category-bags" class="hidden" accept="image/*" />
+                <button type="button" class="btn-upload-hero bg-brand-charcoal hover:bg-stone-850 text-white px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_bags">
+                  {lang === 'en' ? 'Change' : 'เปลี่ยนรูป'}
+                </button>
+                <button type="button" class="btn-delete-hero border border-stone-200 hover:border-red-500 text-stone-600 hover:text-red-500 px-3 py-1.5 rounded-sm text-[8px] uppercase tracking-widest font-semibold cursor-pointer transition-all w-full text-center" data-key="category_bags" data-default="/assets/images/bag-cat-women.png">
+                  {lang === 'en' ? 'Reset' : 'ใช้รูปเดิม'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2992,6 +3094,50 @@ const resolveImage = (url: string) => {
               if (settings.hero_total_looks) labelTotalLooks.classList.remove('hidden');
               else labelTotalLooks.classList.add('hidden');
             }
+
+            // Populate category tshirts
+            const previewCatTshirts = document.getElementById('preview-category-tshirts') as HTMLImageElement;
+            const labelCatTshirts = document.getElementById('label-category-tshirts');
+            if (previewCatTshirts) {
+              previewCatTshirts.src = settings.category_tshirts || '/assets/images/shirt-cat-men.png';
+            }
+            if (labelCatTshirts) {
+              if (settings.category_tshirts) labelCatTshirts.classList.remove('hidden');
+              else labelCatTshirts.classList.add('hidden');
+            }
+
+            // Populate category hoodies
+            const previewCatHoodies = document.getElementById('preview-category-hoodies') as HTMLImageElement;
+            const labelCatHoodies = document.getElementById('label-category-hoodies');
+            if (previewCatHoodies) {
+              previewCatHoodies.src = settings.category_hoodies || '/assets/images/products/hoodie.png';
+            }
+            if (labelCatHoodies) {
+              if (settings.category_hoodies) labelCatHoodies.classList.remove('hidden');
+              else labelCatHoodies.classList.add('hidden');
+            }
+
+            // Populate category pants
+            const previewCatPants = document.getElementById('preview-category-pants') as HTMLImageElement;
+            const labelCatPants = document.getElementById('label-category-pants');
+            if (previewCatPants) {
+              previewCatPants.src = settings.category_pants || '/assets/images/bottoms-cat-men.png';
+            }
+            if (labelCatPants) {
+              if (settings.category_pants) labelCatPants.classList.remove('hidden');
+              else labelCatPants.classList.add('hidden');
+            }
+
+            // Populate category bags
+            const previewCatBags = document.getElementById('preview-category-bags') as HTMLImageElement;
+            const labelCatBags = document.getElementById('label-category-bags');
+            if (previewCatBags) {
+              previewCatBags.src = settings.category_bags || '/assets/images/bag-cat-women.png';
+            }
+            if (labelCatBags) {
+              if (settings.category_bags) labelCatBags.classList.remove('hidden');
+              else labelCatBags.classList.add('hidden');
+            }
           }
         } catch (err) {
           console.error('[Admin Heroes] Failed to fetch settings:', err);
@@ -3007,7 +3153,8 @@ const resolveImage = (url: string) => {
         btn.addEventListener('click', () => {
           const key = btn.getAttribute('data-key');
           if (key) {
-            const fileInputId = key.replace('hero_', 'file-hero-').replace(/_/g, '-');
+            const prefix = key.startsWith('hero_') ? 'file-hero-' : 'file-category-';
+            const fileInputId = key.replace('hero_', prefix).replace('category_', prefix).replace(/_/g, '-');
             const fileInput = document.getElementById(fileInputId);
             fileInput?.click();
           }
@@ -3025,7 +3172,11 @@ const resolveImage = (url: string) => {
         'file-hero-new-arrivals',
         'file-hero-best-sellers',
         'file-hero-discount',
-        'file-hero-total-looks'
+        'file-hero-total-looks',
+        'file-category-tshirts',
+        'file-category-hoodies',
+        'file-category-pants',
+        'file-category-bags'
       ];
       fileInputs.forEach(inputId => {
         const input = document.getElementById(inputId) as HTMLInputElement;
@@ -3034,7 +3185,7 @@ const resolveImage = (url: string) => {
             const file = input.files?.[0];
             if (!file) return;
 
-            const key = inputId.replace('file-hero-', 'hero_').replace(/-/g, '_');
+            const key = inputId.replace('file-hero-', 'hero_').replace('file-category-', 'category_').replace(/-/g, '_');
 
             // Show loading state
             window.showStatusAlert(200, lang === 'en' ? 'Uploading image...' : 'กำลังอัปโหลดรูปภาพ...', null, false);
@@ -3069,7 +3220,7 @@ const resolveImage = (url: string) => {
                 if (settingsRes.ok) {
                   window.showStatusAlert(
                     200,
-                    lang === 'en' ? 'Hero banner updated successfully.' : 'อัปเดตภาพแบนเนอร์สำเร็จ',
+                    lang === 'en' ? 'Image updated successfully.' : 'อัปเดตภาพสำเร็จ',
                     null,
                     true,
                     () => {
@@ -3101,7 +3252,7 @@ const resolveImage = (url: string) => {
           const key = btn.getAttribute('data-key');
           if (!key) return;
 
-          if (!confirm(lang === 'en' ? 'Are you sure you want to reset this hero image to default?' : 'คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตภาพแบนเนอร์นี้กลับเป็นรูปเริ่มต้น?')) return;
+          if (!confirm(lang === 'en' ? 'Are you sure you want to reset this image to default?' : 'คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตภาพนี้กลับเป็นรูปเริ่มต้น?')) return;
 
           try {
             const settingsRes = await fetch('/api/web-image/settings', {
@@ -3116,7 +3267,7 @@ const resolveImage = (url: string) => {
             if (settingsRes.ok) {
               window.showStatusAlert(
                 200,
-                lang === 'en' ? 'Hero banner reset successfully.' : 'รีเซ็ตภาพแบนเนอร์สำเร็จ',
+                lang === 'en' ? 'Image reset successfully.' : 'รีเซ็ตภาพสำเร็จ',
                 null,
                 true,
                 () => {
@@ -3125,7 +3276,7 @@ const resolveImage = (url: string) => {
               );
             } else {
               const errData = await settingsRes.json();
-              window.showStatusAlert(settingsRes.status, null, errData ? errData.message : (lang === 'en' ? 'Failed to reset hero.' : 'รีเซ็ตภาพแบนเนอร์ไม่สำเร็จ'));
+              window.showStatusAlert(settingsRes.status, null, errData ? errData.message : (lang === 'en' ? 'Failed to reset image.' : 'รีเซ็ตภาพไม่สำเร็จ'));
             }
           } catch (err) {
             console.error(err);

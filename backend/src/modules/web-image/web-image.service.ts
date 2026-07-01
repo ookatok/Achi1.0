@@ -30,7 +30,11 @@ export class WebImageService implements OnModuleInit {
         hero_new_arrivals: '',
         hero_best_sellers: '',
         hero_discount: '',
-        hero_total_looks: ''
+        hero_total_looks: '',
+        category_tshirts: '',
+        category_hoodies: '',
+        category_pants: '',
+        category_bags: ''
       };
     }
     try {
@@ -47,7 +51,11 @@ export class WebImageService implements OnModuleInit {
         hero_new_arrivals: '',
         hero_best_sellers: '',
         hero_discount: '',
-        hero_total_looks: ''
+        hero_total_looks: '',
+        category_tshirts: '',
+        category_hoodies: '',
+        category_pants: '',
+        category_bags: ''
       };
     }
   }
