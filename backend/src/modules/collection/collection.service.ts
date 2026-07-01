@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { DRIZZLE_PROVIDER } from '../../core/database/database.provider';
 import { collections, collectionProducts } from '../../db/schema/collection.schema';
 import { products } from '../../db/schema/product.schema';

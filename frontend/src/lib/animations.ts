@@ -196,12 +196,12 @@ export function initFreeScrollCarousel(): void {
       e.preventDefault();
     });
 
-    function beginPhysicsLoop() {
+    const beginPhysicsLoop = () => {
       cancelAnimationFrame(momentumID);
       momentumID = requestAnimationFrame(updatePhysics);
-    }
+    };
 
-    function updatePhysics() {
+    const updatePhysics = () => {
       if (isDown) return;
 
       if (Math.abs(velX) > 0.5) {
@@ -216,7 +216,7 @@ export function initFreeScrollCarousel(): void {
         handleLoop();
         momentumID = requestAnimationFrame(updatePhysics);
       }
-    }
+    };
 
     // Start auto-scrolling loop
     beginPhysicsLoop();
