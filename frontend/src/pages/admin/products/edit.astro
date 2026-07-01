@@ -1338,7 +1338,7 @@ if (Array.isArray(detailImages)) {
           const data = await res.json();
           let errorMsg = data ? data.message : getMsg('failedUpdateProduct');
           
-          if (data && data.errors && Array.isArray(data.errors)) {
+          if (data && data.error?.details && Array.isArray(data.error.details)) {
             const keyTranslations = {
               name: lang === 'en' ? 'Product Name' : 'ชื่อสินค้า',
               slug: lang === 'en' ? 'Slug' : 'รหัส URL (Slug)',
@@ -1354,7 +1354,7 @@ if (Array.isArray(detailImages)) {
               tags: lang === 'en' ? 'Tags' : 'แท็กสินค้า'
             } as Record<string, string>;
 
-            const fieldErrors = data.errors.map((err: any) => {
+            const fieldErrors = data.error.details.map((err: any) => {
               const rawField = err.path ? err.path[0] : '';
               const fieldLabel = keyTranslations[rawField] || rawField || (lang === 'en' ? 'field' : 'ข้อมูล');
               const message = err.message === 'Required' 
