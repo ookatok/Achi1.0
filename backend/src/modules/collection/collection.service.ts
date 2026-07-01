@@ -17,15 +17,7 @@ export class CollectionService {
     
     const parsedPublishDate = publishDate ? new Date(publishDate) : null;
 
-    if (dto.showOnHome === true) {
-      const activeSets = await this.db
-        .select()
-        .from(collections)
-        .where(eq(collections.showOnHome, true));
-      if (activeSets.length >= 3) {
-        throw new BadRequestException('Maximum of 3 sets can be shown on the home page');
-      }
-    }
+
 
     return await this.db.transaction(async (tx) => {
       const result = await tx.insert(collections).values({
@@ -125,16 +117,7 @@ export class CollectionService {
     // Verify exists
     await this.findOne(id);
 
-    if (dto.showOnHome === true) {
-      const activeSets = await this.db
-        .select()
-        .from(collections)
-        .where(eq(collections.showOnHome, true));
-      const activeCount = activeSets.filter(c => c.id !== id).length;
-      if (activeCount >= 3) {
-        throw new BadRequestException('Maximum of 3 sets can be shown on the home page');
-      }
-    }
+
 
     return await this.db.transaction(async (tx) => {
       // Update collection fields

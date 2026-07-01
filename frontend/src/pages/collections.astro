@@ -43,10 +43,10 @@ try {
           <span class="border border-white border-opacity-40 px-3 py-1 text-[10px] tracking-widest uppercase font-light rounded-full mb-4 inline-block">
             {lang === 'en' ? "EXPLORE" : "สำรวจ"}
           </span>
-          <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight uppercase leading-none">
+          <h1 class="motion-title font-serif text-4xl sm:text-6xl font-bold tracking-tight uppercase leading-none">
             {t('collections.hero.title')}
           </h1>
-          <p class="text-xs sm:text-sm tracking-widest font-light text-gray-300 max-w-xl mt-4 uppercase leading-relaxed">
+          <p class="motion-desc text-xs sm:text-sm tracking-widest font-light text-gray-300 max-w-xl mt-4 uppercase leading-relaxed">
             {t('collections.hero.subtitle')}
           </p>
         </div>
@@ -58,7 +58,7 @@ try {
   <section class="max-w-[1440px] mx-auto px-6 py-24 bg-white">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
       {collections.map((col) => (
-        <div class="flex flex-col group">
+        <div class="motion-item flex flex-col group">
           {/* Card Image Container */}
           <a href={`/products/${col.slug}`} class="relative aspect-[3/4] overflow-hidden bg-gray-100 rounded-sm block">
             <img 

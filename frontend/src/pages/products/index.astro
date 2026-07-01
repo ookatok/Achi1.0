@@ -234,8 +234,22 @@ const displayTags = tagsList.map(t => ({
         <span class="text-[10px] text-gray-400 tracking-wider uppercase">{pageList.length} {lang === 'en' ? "Items" : "รายการ"}</span>
       </div>
 
+      {/* Mobile filter backdrop overlay */}
+      <div id="mobile-filter-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none lg:hidden"></div>
+
       {/* Filter Sidebar Content (Hidden on Mobile by default, visible on Desktop) */}
       <div id="sidebar-filters-content" class="hidden lg:block space-y-8 mt-4 lg:mt-0">
+        {/* Drawer Header Close Button on Mobile */}
+        <div class="lg:hidden flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+          <span class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase">
+            {lang === 'en' ? "Filters" : "ตัวกรอง"}
+          </span>
+          <button type="button" id="mobile-filter-close-btn" class="text-gray-400 hover:text-brand-charcoal p-1 focus:outline-none cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       
       {/* Categories Filter (Checkboxes) */}
       <div class="border-b border-gray-100 pb-6">
@@ -285,43 +299,104 @@ const displayTags = tagsList.map(t => ({
         </div>
       </div>
 
-      {/* Price Filter (Select) */}
+      {/* Price Filter (Custom Dropdown + Inputs) */}
       <div class="border-b border-gray-100 pb-6">
         <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
           {lang === 'en' ? "Price Range" : "ช่วงราคา"}
         </h4>
-        <select id="price-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
-          <option value="">{lang === 'en' ? "All Prices" : "ทุกช่วงราคา"}</option>
-          <option value="0-500" selected={minPrice === '0' && maxPrice === '500'}>{lang === 'en' ? "Under $500" : "ต่ำกว่า $500"}</option>
-          <option value="500-1000" selected={minPrice === '500' && maxPrice === '1000'}>$500 - $1,000</option>
-        </select>
+        
+        <div class="relative w-full mb-3 select-none">
+          <button type="button" id="price-dropdown-btn" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold flex items-center justify-between cursor-pointer">
+            <span id="price-dropdown-selected">
+              {minPrice === '0' && maxPrice === '500' ? (lang === 'en' ? "Under $500" : "ต่ำกว่า $500") : 
+               minPrice === '500' && maxPrice === '1000' ? "$500 - $1,000" : 
+               (minPrice || maxPrice) ? (lang === 'en' ? "Custom Range" : "กำหนดช่วงราคาเอง") : 
+               (lang === 'en' ? "All Prices" : "ทุกช่วงราคา")}
+            </span>
+            <span class="text-[8px] transition-transform duration-300 dropdown-arrow">▼</span>
+          </button>
+          <div id="price-dropdown-menu" class="absolute left-0 w-full bg-white border border-gray-200 mt-1 shadow-md z-30 rounded-sm py-1 custom-dropdown-menu">
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="">{lang === 'en' ? "All Prices" : "ทุกช่วงราคา"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="0-500">{lang === 'en' ? "Under $500" : "ต่ำกว่า $500"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="500-1000">$500 - $1,000</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="custom">{lang === 'en' ? "Custom Range" : "กำหนดช่วงราคาเอง"}</div>
+          </div>
+        </div>
+
+        {/* Custom Input Fields */}
+        <div id="custom-price-container" class="flex items-center gap-2 text-xs text-brand-charcoal">
+          <div class="flex items-center bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 w-1/2">
+            <span class="text-gray-400 mr-1 font-light">$</span>
+            <input 
+              type="number" 
+              id="price-min-input" 
+              min="0" 
+              value={minPrice || ""} 
+              class="w-full bg-transparent outline-none text-xs font-medium text-brand-charcoal"
+              placeholder="Min"
+            />
+          </div>
+          <span class="text-gray-400 font-light">-</span>
+          <div class="flex items-center bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 w-1/2">
+            <span class="text-gray-400 mr-1 font-light">$</span>
+            <input 
+              type="number" 
+              id="price-max-input" 
+              min="0" 
+              value={maxPrice || ""} 
+              class="w-full bg-transparent outline-none text-xs font-medium text-brand-charcoal"
+              placeholder="Max"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Color Filter (Select) */}
+      {/* Color Filter (Custom Dropdown) */}
       <div class="border-b border-gray-100 pb-6">
         <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
           {lang === 'en' ? "Color" : "สี"}
         </h4>
-        <select id="color-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
-          <option value="">{lang === 'en' ? "All Colors" : "ทุกสี"}</option>
-          <option value="#94B2E6" selected={colors === '#94B2E6'}>{lang === 'en' ? "Soft Blue" : "สีฟ้าอ่อน"}</option>
-          <option value="#F3F1EC" selected={colors === '#F3F1EC'}>{lang === 'en' ? "Soft Cream" : "สีครีมอ่อน"}</option>
-          <option value="#1B2F50" selected={colors === '#1B2F50'}>{lang === 'en' ? "Navy" : "สีกรมท่า"}</option>
-        </select>
+        <input type="hidden" id="color-filter" value={colors || ""} />
+        <div class="relative w-full select-none">
+          <button type="button" id="color-dropdown-btn" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold flex items-center justify-between cursor-pointer">
+            <span id="color-dropdown-selected">
+              {colors === '#94B2E6' ? (lang === 'en' ? "Soft Blue" : "สีฟ้าอ่อน") : 
+               colors === '#F3F1EC' ? (lang === 'en' ? "Soft Cream" : "สีครีมอ่อน") : 
+               colors === '#1B2F50' ? (lang === 'en' ? "Navy" : "สีกรมท่า") : 
+               (lang === 'en' ? "All Colors" : "ทุกสี")}
+            </span>
+            <span class="text-[8px] transition-transform duration-300 dropdown-arrow">▼</span>
+          </button>
+          <div id="color-dropdown-menu" class="absolute left-0 w-full bg-white border border-gray-200 mt-1 shadow-md z-30 rounded-sm py-1 custom-dropdown-menu">
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="">{lang === 'en' ? "All Colors" : "ทุกสี"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="#94B2E6">{lang === 'en' ? "Soft Blue" : "สีฟ้าอ่อน"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="#F3F1EC">{lang === 'en' ? "Soft Cream" : "สีครีมอ่อน"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="#1B2F50">{lang === 'en' ? "Navy" : "สีกรมท่า"}</div>
+          </div>
+        </div>
       </div>
 
-      {/* Size Filter (Select) */}
+      {/* Size Filter (Custom Dropdown) */}
       <div class="pb-6">
         <h4 class="font-serif text-xs font-semibold tracking-widest text-brand-charcoal uppercase mb-3">
           {lang === 'en' ? "Size" : "ขนาด (ไซส์)"}
         </h4>
-        <select id="size-filter" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold">
-          <option value="">{lang === 'en' ? "All Sizes" : "ทุกขนาด"}</option>
-          <option value="S" selected={sizes === 'S'}>S</option>
-          <option value="M" selected={sizes === 'M'}>M</option>
-          <option value="L" selected={sizes === 'L'}>L</option>
-          <option value="XL" selected={sizes === 'XL'}>XL</option>
-        </select>
+        <input type="hidden" id="size-filter" value={sizes || ""} />
+        <div class="relative w-full select-none">
+          <button type="button" id="size-dropdown-btn" class="w-full bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-sm outline-none text-xs uppercase tracking-wider font-light text-gray-600 focus:border-brand-gold flex items-center justify-between cursor-pointer">
+            <span id="size-dropdown-selected">
+              {sizes ? sizes : (lang === 'en' ? "All Sizes" : "ทุกขนาด")}
+            </span>
+            <span class="text-[8px] transition-transform duration-300 dropdown-arrow">▼</span>
+          </button>
+          <div id="size-dropdown-menu" class="absolute left-0 w-full bg-white border border-gray-200 mt-1 shadow-md z-30 rounded-sm py-1 custom-dropdown-menu">
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="">{lang === 'en' ? "All Sizes" : "ทุกขนาด"}</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="S">S</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="M">M</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="L">L</div>
+            <div class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-xs uppercase tracking-wider font-light text-gray-600" data-value="XL">XL</div>
+          </div>
+        </div>
       </div>
       </div>
     </aside>
@@ -428,12 +503,72 @@ const displayTags = tagsList.map(t => ({
     </div>
   </div>
 
+  <style>
+    /* Custom Dropdown animation styling */
+    .custom-dropdown-menu {
+      transform: translateY(-10px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.3s;
+    }
+    .custom-dropdown-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Hide standard chrome spin buttons on numeric input fields */
+    #price-min-input::-webkit-outer-spin-button,
+    #price-min-input::-webkit-inner-spin-button,
+    #price-max-input::-webkit-outer-spin-button,
+    #price-max-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    #price-min-input,
+    #price-max-input {
+      -moz-appearance: textfield;
+    }
+
+    /* Mobile drawer styles */
+    @media (max-width: 1023px) {
+      #sidebar-filters-content {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 320px;
+        height: 100vh;
+        background-color: white;
+        z-index: 50;
+        padding: 24px;
+        box-shadow: 5px 0 30px rgba(0,0,0,0.12);
+        overflow-y: auto;
+        transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        margin-top: 0 !important;
+        display: block !important;
+      }
+      #sidebar-filters-content.open {
+        left: 0;
+      }
+      #mobile-filter-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.drawer-open {
+        overflow: hidden;
+      }
+    }
+  </style>
+
   <script is:inline>
     const categoryCheckboxes = document.querySelectorAll('input[name="category-checkbox"]');
     const tagCheckboxes = document.querySelectorAll('input[name="tag-checkbox"]');
-    const priceFilter = document.getElementById('price-filter');
     const colorFilter = document.getElementById('color-filter');
     const sizeFilter = document.getElementById('size-filter');
+    const minInput = document.getElementById('price-min-input');
+    const maxInput = document.getElementById('price-max-input');
 
     const updateFilters = () => {
       const params = new URLSearchParams(window.location.search);
@@ -460,14 +595,20 @@ const displayTags = tagsList.map(t => ({
         params.delete('tags');
       }
 
-      // Price
-      if (priceFilter && priceFilter.value) {
-        const [min, max] = priceFilter.value.split('-');
-        params.set('minPrice', min);
-        params.set('maxPrice', max);
-      } else {
-        params.delete('minPrice');
-        params.delete('maxPrice');
+      // Price Range fields
+      if (minInput && maxInput) {
+        const minVal = minInput.value.trim();
+        const maxVal = maxInput.value.trim();
+        if (minVal !== '') {
+          params.set('minPrice', minVal);
+        } else {
+          params.delete('minPrice');
+        }
+        if (maxVal !== '') {
+          params.set('maxPrice', maxVal);
+        } else {
+          params.delete('maxPrice');
+        }
       }
 
       // Color
@@ -493,25 +634,175 @@ const displayTags = tagsList.map(t => ({
     // Add change listeners
     categoryCheckboxes.forEach(cb => cb.addEventListener('change', updateFilters));
     tagCheckboxes.forEach(cb => cb.addEventListener('change', updateFilters));
-    [priceFilter, colorFilter, sizeFilter].forEach(el => {
-      if (el) el.addEventListener('change', updateFilters);
-    });
 
-    // Mobile toggle filter sidebar
-    const mobileFilterToggleBtn = document.getElementById('mobile-filter-toggle-btn');
-    const sidebarFiltersContent = document.getElementById('sidebar-filters-content');
+    // Custom Dropdown Menus Setup
+    const setupCustomDropdown = (btnId, menuId, selectedId, hiddenInputId) => {
+      const btn = document.getElementById(btnId);
+      const menu = document.getElementById(menuId);
+      const selected = document.getElementById(selectedId);
+      const hiddenInput = hiddenInputId ? document.getElementById(hiddenInputId) : null;
+      const arrow = btn?.querySelector('.dropdown-arrow');
 
-    if (mobileFilterToggleBtn && sidebarFiltersContent) {
-      mobileFilterToggleBtn.addEventListener('click', () => {
-        const isHidden = sidebarFiltersContent.classList.contains('hidden');
-        if (isHidden) {
-          sidebarFiltersContent.classList.remove('hidden');
-          mobileFilterToggleBtn.classList.add('text-brand-gold');
+      if (!btn || !menu) return;
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // Close all other dropdowns first
+        document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+          if (m !== menu) {
+            m.classList.remove('open');
+            m.parentElement?.querySelector('.dropdown-arrow')?.classList.remove('rotate-180');
+          }
+        });
+
+        const isOpen = menu.classList.contains('open');
+        if (isOpen) {
+          menu.classList.remove('open');
+          arrow?.classList.remove('rotate-180');
         } else {
-          sidebarFiltersContent.classList.add('hidden');
-          mobileFilterToggleBtn.classList.remove('text-brand-gold');
+          menu.classList.add('open');
+          arrow?.classList.add('rotate-180');
         }
       });
+
+      menu.querySelectorAll('[data-value]').forEach(option => {
+        option.addEventListener('click', () => {
+          const value = option.getAttribute('data-value') || '';
+          const text = option.textContent || '';
+          
+          if (selected) selected.textContent = text;
+          if (hiddenInput) {
+            hiddenInput.value = value;
+            updateFilters();
+          }
+
+          menu.classList.remove('open');
+          arrow?.classList.remove('rotate-180');
+        });
+      });
+    };
+
+    setupCustomDropdown('color-dropdown-btn', 'color-dropdown-menu', 'color-dropdown-selected', 'color-filter');
+    setupCustomDropdown('size-dropdown-btn', 'size-dropdown-menu', 'size-dropdown-selected', 'size-filter');
+
+    // Custom setup for Price Dropdown due to extra logic with input fields
+    const priceBtn = document.getElementById('price-dropdown-btn');
+    const priceMenu = document.getElementById('price-dropdown-menu');
+    const priceSelected = document.getElementById('price-dropdown-selected');
+    const priceArrow = priceBtn?.querySelector('.dropdown-arrow');
+
+    if (priceBtn && priceMenu && minInput && maxInput) {
+      priceBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+          if (m !== priceMenu) {
+            m.classList.remove('open');
+            m.parentElement?.querySelector('.dropdown-arrow')?.classList.remove('rotate-180');
+          }
+        });
+        const isOpen = priceMenu.classList.contains('open');
+        if (isOpen) {
+          priceMenu.classList.remove('open');
+          priceArrow?.classList.remove('rotate-180');
+        } else {
+          priceMenu.classList.add('open');
+          priceArrow?.classList.add('rotate-180');
+        }
+      });
+
+      priceMenu.querySelectorAll('[data-value]').forEach(option => {
+        option.addEventListener('click', () => {
+          const value = option.getAttribute('data-value') || '';
+          
+          if (value === '') {
+            minInput.value = '';
+            maxInput.value = '';
+            updateFilters();
+          } else if (value === '0-500') {
+            minInput.value = '0';
+            maxInput.value = '500';
+            updateFilters();
+          } else if (value === '500-1000') {
+            minInput.value = '500';
+            maxInput.value = '1000';
+            updateFilters();
+          } else if (value === 'custom') {
+            priceSelected.textContent = option.textContent;
+            minInput.focus();
+          }
+
+          priceMenu.classList.remove('open');
+          priceArrow?.classList.remove('rotate-180');
+        });
+      });
+
+      // Typing in input fields updates select/dropdown text state
+      const syncInputsToDropdownText = () => {
+        const minVal = minInput.value.trim();
+        const maxVal = maxInput.value.trim();
+        if (minVal === '' && maxVal === '') {
+          priceSelected.textContent = priceMenu.querySelector('[data-value=""]')?.textContent || 'All Prices';
+        } else if (minVal === '0' && maxVal === '500') {
+          priceSelected.textContent = priceMenu.querySelector('[data-value="0-500"]')?.textContent || 'Under $500';
+        } else if (minVal === '500' && maxVal === '1000') {
+          priceSelected.textContent = priceMenu.querySelector('[data-value="500-1000"]')?.textContent || '$500 - $1,000';
+        } else {
+          priceSelected.textContent = priceMenu.querySelector('[data-value="custom"]')?.textContent || 'Custom Range';
+        }
+      };
+
+      minInput.addEventListener('input', syncInputsToDropdownText);
+      maxInput.addEventListener('input', syncInputsToDropdownText);
+
+      minInput.addEventListener('change', updateFilters);
+      maxInput.addEventListener('change', updateFilters);
     }
+
+    // Close all dropdowns when clicking outside
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-dropdown-menu').forEach(menu => {
+        menu.classList.remove('open');
+        menu.parentElement?.querySelector('.dropdown-arrow')?.classList.remove('rotate-180');
+      });
+    });
+
+    // Mobile toggle filter sidebar drawer script
+    const mobileFilterToggleBtn = document.getElementById('mobile-filter-toggle-btn');
+    const sidebarFiltersContent = document.getElementById('sidebar-filters-content');
+    const mobileFilterCloseBtn = document.getElementById('mobile-filter-close-btn');
+    const mobileFilterBackdrop = document.getElementById('mobile-filter-backdrop');
+
+    const openDrawer = () => {
+      sidebarFiltersContent?.classList.add('open');
+      mobileFilterBackdrop?.classList.add('open');
+      document.body.classList.add('drawer-open');
+    };
+
+    const closeDrawer = () => {
+      sidebarFiltersContent?.classList.remove('open');
+      mobileFilterBackdrop?.classList.remove('open');
+      document.body.classList.remove('drawer-open');
+    };
+
+    if (mobileFilterToggleBtn) {
+      mobileFilterToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openDrawer();
+      });
+    }
+
+    if (mobileFilterCloseBtn) {
+      mobileFilterCloseBtn.addEventListener('click', closeDrawer);
+    }
+
+    if (mobileFilterBackdrop) {
+      mobileFilterBackdrop.addEventListener('click', closeDrawer);
+    }
+
+    // Close mobile drawer on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
   </script>
 </Layout>

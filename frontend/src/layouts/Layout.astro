@@ -138,6 +138,113 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
     
     <title>{title}</title>
     <style is:global>
+      /* Force Outfit font globally for a unified minimal aesthetic */
+      *, *::before, *::after {
+        font-family: 'Outfit', sans-serif !important;
+      }
+
+      /* Apps Navigation Drawer Styles */
+      #apps-nav-drawer {
+        position: fixed;
+        top: 0;
+        right: -320px;
+        width: 320px;
+        height: 100vh;
+        background-color: white;
+        z-index: 50;
+        padding: 24px;
+        box-shadow: -5px 0 30px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      #apps-nav-drawer.open {
+        right: 0;
+      }
+      #apps-drawer-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.apps-drawer-open {
+        overflow: hidden;
+      }
+
+      /* Mobile Nav Drawer Styles */
+      #mobile-nav-drawer {
+        position: fixed;
+        top: 0;
+        left: -320px;
+        width: 320px;
+        height: 100vh;
+        background-color: white;
+        z-index: 50;
+        padding: 24px;
+        box-shadow: 5px 0 30px rgba(0,0,0,0.15);
+        overflow-y: auto;
+        transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      #mobile-nav-drawer.open {
+        left: 0;
+      }
+      #mobile-nav-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.nav-drawer-open {
+        overflow: hidden;
+      }
+
+      /* Global details dropdown slide-down animation */
+      details[open] > summary ~ * {
+        animation: details-sweep 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes details-sweep {
+        0% {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Initial state for Motion scroll/load animations */
+      .motion-title,
+      .motion-desc,
+      .motion-item {
+        opacity: 0;
+      }
+
+      #shop-mega-menu {
+        transform: translateY(-20px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.4s;
+      }
+      #shop-mega-menu.open {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+      #mega-menu-backdrop {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s;
+      }
+      #mega-menu-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
       #shop-mega-menu a {
         color: #1c1917 !important; /* text-brand-charcoal (black) */
         transition: color 0.2s ease-in-out;
@@ -204,19 +311,21 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
       }
 
       /* Product Card Slider Overrides */
-      .prev-img-btn, .next-img-btn, .dot-indicators-container {
+      .prev-img-btn, .next-img-btn {
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition: opacity 0.2s ease-in-out;
+      }
+      .dot-indicators-container {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
       }
       .product-card-hover:hover .prev-img-btn,
       .product-card-hover:hover .next-img-btn,
       .product-card-hover:hover .dot-indicators-container {
         opacity: 1;
         pointer-events: auto;
-      }
-      .prev-img-btn:hover, .next-img-btn:hover {
-        transform: translateY(-50%) scale(1.05);
       }
     </style>
     <script is:inline set:html={`
@@ -245,106 +354,249 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
     `} />
   </head>
   <body class="min-h-screen flex flex-col bg-white text-brand-charcoal font-sans">
-    <!-- Header -->
-    <header 
-      data-hero={showHeroHeader ? "true" : "false"}
-      class={`w-full z-50 transition-all duration-300 ${showHeroHeader ? 'bg-transparent fixed top-0 text-white border-b border-transparent' : 'bg-white/95 text-brand-charcoal sticky top-0 border-b border-gray-200/50 backdrop-blur-md shadow-sm'}`}
-    >
-      <div class="max-w-[1440px] mx-auto px-6 h-24 flex items-center justify-between">
-        <!-- Logo Section -->
-        <div class="flex flex-col items-center">
-          <a href={l('/')} class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</a>
-          <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light block leading-none pl-[0.4em]">Cool Every Day</span>
-        </div>
+    {isAdminPanel ? (
+      <div class="min-h-screen w-full flex flex-col md:flex-row bg-[#f8fafc] text-slate-800 font-sans">
+        <!-- Sidebar on the left -->
+        <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-200 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out flex flex-col border-r border-slate-800 shrink-0">
+          <!-- Sidebar Header -->
+          <div class="h-24 px-6 flex flex-col justify-center border-b border-slate-800">
+            <a href={l('/')} class="font-serif text-2xl tracking-[0.2em] font-light leading-none text-white pl-[0.1em] decoration-transparent">A C H I</a>
+            <div class="w-24 border-t border-slate-700 my-1.5 opacity-30"></div>
+            <span class="text-[9px] tracking-[0.3em] uppercase text-slate-400 font-light block leading-none pl-[0.1em]">{lang === 'en' ? 'STUDIO ADMIN' : 'ผู้ดูแลระบบ'}</span>
+          </div>
 
-        <!-- Center Navigation -->
-        <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full">
-          {isAdminPanel ? (
-            <>
-              <a 
-                href={l('/admin')} 
-                id="nav-tab-dashboard" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'dashboard' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.dashboard')}
-              </a>
-              <a 
-                href={l('/admin?tab=orders')} 
-                id="nav-tab-orders" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 gap-1.5 decoration-transparent ${
-                  resolvedActiveTab === 'orders' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
+          <!-- Sidebar Navigation -->
+          <nav class="flex-grow px-4 py-6 space-y-1.5 overflow-y-auto">
+            <!-- Dashboard Tab -->
+            <a 
+              href={l('/admin')} 
+              id="nav-tab-dashboard" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'dashboard' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>{t('nav.dashboard')}</span>
+            </a>
+
+            <!-- Orders Tab -->
+            <a 
+              href={l('/admin?tab=orders')} 
+              id="nav-tab-orders" 
+              class={`flex items-center justify-between px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'orders' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <div class="flex items-center gap-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
                 <span>{t('nav.orders')}</span>
-                <span id="nav-orders-badge" class={`inline-flex items-center justify-center bg-red-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1 rounded-full ${pendingOrdersCount > 0 ? '' : 'hidden'}`}>
-                  {pendingOrdersCount}
+              </div>
+              <span id="nav-orders-badge" class={`inline-flex items-center justify-center bg-red-500 text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1.5 rounded-full ${pendingOrdersCount > 0 ? '' : 'hidden'}`}>
+                {pendingOrdersCount}
+              </span>
+            </a>
+
+            <!-- Products Tab -->
+            <a 
+              href={l('/admin?tab=products')} 
+              id="nav-tab-products" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'products' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <span>{t('nav.products')}</span>
+            </a>
+
+            <!-- Collections Tab -->
+            <a 
+              href={l('/admin?tab=collections')} 
+              id="nav-tab-collections" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'collections' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span>{t('nav.collections')}</span>
+            </a>
+
+            <!-- Blogs Tab -->
+            <a 
+              href={l('/admin?tab=blogs')} 
+              id="nav-tab-blogs" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'blogs' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              <span>{t('nav.blogs')}</span>
+            </a>
+
+            <!-- Contacts Tab -->
+            <a 
+              href={l('/admin?tab=contacts')} 
+              id="nav-tab-contacts" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'contacts' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span>{t('nav.contacts')}</span>
+            </a>
+
+            <!-- FAQs Tab -->
+            <a 
+              href={l('/admin?tab=faqs')} 
+              id="nav-tab-faqs" 
+              class={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs uppercase tracking-wider font-medium transition-all duration-200 decoration-transparent ${
+                resolvedActiveTab === 'faqs' 
+                  ? 'bg-white/10 text-white font-semibold active' 
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{t('nav.faqs')}</span>
+            </a>
+          </nav>
+
+          <!-- Sidebar Footer with Logout -->
+          <div class="p-4 border-t border-slate-800">
+            <button
+              id="sidebar-signout-btn"
+              class="w-full flex items-center justify-center gap-2 border border-slate-700 text-slate-300 hover:bg-white/5 hover:text-white px-4 py-2.5 rounded-lg text-xs uppercase tracking-widest font-semibold transition-all duration-200 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>{t('admin.signout')}</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Sidebar mobile overlay backdrop -->
+        <div id="admin-sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden md:hidden"></div>
+
+        <!-- Main Workspace -->
+        <div class="flex-grow flex flex-col min-w-0">
+          <!-- Top Dashboard Header -->
+          <header class="h-24 bg-white border-b border-slate-200/60 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm/50">
+            <div class="flex items-center gap-4">
+              <!-- Mobile menu hamburger toggle -->
+              <button id="admin-sidebar-toggle" class="p-2 -ml-2 text-slate-500 hover:text-slate-800 md:hidden cursor-pointer bg-transparent border-none outline-none" aria-label="Toggle Sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              <!-- Tab Title / Breadcrumbs -->
+              <div>
+                <h2 id="admin-header-title" class="font-serif text-lg tracking-wider text-slate-800 font-bold uppercase select-none">
+                  {resolvedActiveTab === 'dashboard' ? t('nav.dashboard') : resolvedActiveTab}
+                </h2>
+                <div class="text-[9px] tracking-widest text-slate-400 uppercase font-light mt-0.5 select-none">
+                  ACHI Studio / <span id="admin-header-subtitle">{resolvedActiveTab}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search and Profile info -->
+            <div class="flex items-center gap-6">
+              <!-- Decorative search input -->
+              <div class="relative hidden sm:block w-64">
+                <input
+                  type="text"
+                  placeholder={t('admin.search_placeholder') || 'Search here...'}
+                  class="w-full bg-slate-50 border border-slate-200 rounded-full py-2 pl-10 pr-4 text-xs focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 placeholder-slate-400"
+                />
+                <span class="absolute left-3.5 top-2.5 text-slate-400 pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </span>
-              </a>
-              <a 
-                href={l('/admin?tab=products')} 
-                id="nav-tab-products" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'products' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.products')}
-              </a>
-              <a 
-                href={l('/admin?tab=collections')} 
-                id="nav-tab-collections" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'collections' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.collections')}
-              </a>
-              <a 
-                href={l('/admin?tab=blogs')} 
-                id="nav-tab-blogs" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'blogs' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.blogs')}
-              </a>
-              <a 
-                href={l('/admin?tab=contacts')} 
-                id="nav-tab-contacts" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'contacts' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.contacts')}
-              </a>
-              <a 
-                href={l('/admin?tab=faqs')} 
-                id="nav-tab-faqs" 
-                class={`border-b-2 pb-1 text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 h-full flex items-center p-0 m-0 decoration-transparent ${
-                  resolvedActiveTab === 'faqs' 
-                    ? 'border-brand-charcoal text-brand-charcoal active' 
-                    : 'border-transparent text-gray-400 hover:text-brand-charcoal'
-                }`}
-              >
-                {t('nav.faqs')}
-              </a>
-            </>
-          ) : (
-            <>
+              </div>
+
+              <!-- Language switcher -->
+              <button id="admin-language-selector-btn" class="language-selector-btn hover:opacity-70 transition-opacity cursor-pointer flex items-center gap-1.5 bg-transparent border-none outline-none" aria-label="Language Selector">
+                <Globe class="text-slate-500 w-4 h-4" />
+                <span class="text-[10px] tracking-widest font-semibold uppercase text-slate-600">{lang === 'en' ? 'EN' : 'TH'}</span>
+              </button>
+
+              <!-- Profile Details -->
+              <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block select-none">
+                  <div class="text-xs font-semibold text-slate-800 leading-none">{session?.user?.name || 'John Doe'}</div>
+                  <div class="text-[9px] text-slate-400 tracking-wider mt-1 uppercase font-light">{(session?.user as any)?.role || 'Super admin'}</div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs uppercase border border-slate-200 overflow-hidden shadow-sm shrink-0 select-none">
+                  {session?.user?.image ? (
+                    <img src={session.user.image} alt={session.user.name || 'User'} class="w-full h-full object-cover" />
+                  ) : (
+                    <span>{(session?.user?.name || 'JD').substring(0, 2)}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main class="flex-grow">
+            <slot />
+          </main>
+        </div>
+      </div>
+    ) : (
+      <>
+        <!-- Header -->
+        <header 
+          data-hero={showHeroHeader ? "true" : "false"}
+          class={`w-full z-50 transition-all duration-300 ${showHeroHeader ? 'bg-transparent fixed top-0 text-white border-b border-transparent' : 'bg-white/95 text-brand-charcoal sticky top-0 border-b border-gray-200/50 backdrop-blur-md shadow-sm'}`}
+        >
+          <div class="max-w-[1440px] mx-auto px-6 h-24 flex items-center justify-between">
+            <!-- Mobile Menu Toggle Button (Visible only on mobile/tablet) -->
+            <button 
+              id="mobile-nav-toggle-btn"
+              class="md:hidden p-2 text-current hover:opacity-70 transition-opacity focus:outline-none cursor-pointer"
+              aria-label="Open Navigation Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+
+            <!-- Logo Section -->
+            <div class="flex flex-col items-center">
+              <a href={l('/')} class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em] whitespace-nowrap">A C H I</a>
+              <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
+              <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light block leading-none pl-[0.4em] whitespace-nowrap">Cool Every Day</span>
+            </div>
+
+            <!-- Center Navigation -->
+            <nav class="hidden md:flex items-center gap-12 text-[13px] tracking-[0.15em] font-light uppercase h-full">
               <a href={l('/')} class="hover:opacity-70 transition-opacity">{t('nav.home')}</a>
               
               <!-- SHOP Mega Menu Container -->
@@ -352,7 +604,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                 <button id="shop-menu-btn" class="hover:opacity-70 transition-opacity flex items-center uppercase bg-transparent border-none outline-none cursor-pointer tracking-[0.15em] font-light text-[13px] p-0 m-0 text-current">{t('nav.shop')}</button>
                 
                 <!-- Dropdown Mega Menu (5 Columns) -->
-                <div id="shop-mega-menu" class="absolute top-full left-0 w-full bg-white border-t border-b border-gray-200 py-12 shadow-sm hidden z-50 text-left normal-case tracking-normal animate-fade-in">
+                <div id="shop-mega-menu" class="absolute top-full left-0 w-full bg-white border-t border-b border-gray-200 py-12 shadow-sm z-50 text-left normal-case tracking-normal">
                   <div class="max-w-[1440px] mx-auto px-6 grid grid-cols-5 gap-8">
                     <!-- Column 1: SHOP ALL -->
                     <div>
@@ -415,127 +667,312 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
               <a href={l('/collections')} class="hover:opacity-70 transition-opacity">{t('nav.collections')}</a>
               <a href={l('/blog')} class="hover:opacity-70 transition-opacity">{t('nav.blog')}</a>
               <a href={l('/contact')} class="hover:opacity-70 transition-opacity">{t('nav.contact')}</a>
-            </>
-          )}
-        </nav>
+            </nav>
 
-        <!-- Right Side Icons -->
-        <div class="flex items-center gap-6">
-          <!-- Search Icon Button -->
-          <button id="search-btn" class="hover:opacity-70 transition-opacity focus:outline-none cursor-pointer" aria-label="Search">
-            <Search />
-          </button>
+            <!-- Right Side Icons -->
+            <div class="flex items-center gap-6">
+              <!-- Search Icon Button -->
+              <button id="search-btn" class="hidden md:block hover:opacity-70 transition-opacity focus:outline-none cursor-pointer" aria-label="Search">
+                <Search />
+              </button>
 
-          <!-- Favorite Icon Button -->
-          <a href={l('/favorite')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="header-favorite-btn">
-            <Heart />
-            <span id="favorite-badge" class="absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
-          </a>
+              <!-- Favorite Icon Button -->
+              <a href={l('/favorite')} class="hidden md:inline-block hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Favorites" id="header-favorite-btn">
+                <Heart />
+                <span id="favorite-badge" class="absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
+              </a>
 
-          <!-- Cart Icon Button -->
-          <a href={l('/cart')} class="hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
-            <Cart />
-            <span id="cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
-          </a>
+              <!-- Cart Icon Button -->
+              <a href={l('/cart')} class="hidden md:inline-block hover:opacity-70 transition-opacity cursor-pointer relative" aria-label="Cart">
+                <Cart />
+                <span id="cart-badge" class={`absolute -top-1.5 -right-1.5 bg-brand-charcoal text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
+              </a>
 
-          <!-- Language Selector -->
-          <button id="language-selector-btn" class="language-selector-btn hover:opacity-70 transition-opacity cursor-pointer flex items-center gap-1.5" aria-label="Language Selector">
-            <Globe />
-            <span class="text-[10px] tracking-widest font-light uppercase">{lang === 'en' ? 'EN' : 'TH'}</span>
-          </button>
+              <!-- Language Selector -->
+              <button id="language-selector-btn" class="hidden md:flex language-selector-btn hover:opacity-70 transition-opacity cursor-pointer items-center gap-1.5" aria-label="Language Selector">
+                <Globe />
+                <span class="text-[10px] tracking-widest font-light uppercase">{lang === 'en' ? 'EN' : 'TH'}</span>
+              </button>
 
-          {session ? (
-            <a href={l('/profile')} class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
-              <User />
+              <div class="hidden md:block">
+                {session ? (
+                  <a href={l('/profile')} class="hover:opacity-70 transition-opacity cursor-pointer" aria-label="Profile">
+                    <User />
+                  </a>
+                ) : (
+                  <a href={l('/auth/signin')} class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
+                )}
+              </div>
+
+              <!-- Apps Icon Button (Visible only on mobile/tablet) -->
+              <button 
+                id="apps-nav-toggle-btn"
+                class="md:hidden p-2 text-current hover:opacity-70 transition-opacity focus:outline-none cursor-pointer flex items-center justify-center"
+                aria-label="Open User Menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V18ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Mobile Navigation Drawer Backdrop -->
+        <div id="mobile-nav-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden"></div>
+
+        <!-- Apps Navigation Drawer Backdrop -->
+        <div id="apps-drawer-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden"></div>
+
+        <!-- Apps Navigation Drawer -->
+        <div id="apps-nav-drawer" class="md:hidden">
+          <!-- Drawer Header -->
+          <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+            <span class="font-serif text-sm font-semibold tracking-wider text-brand-charcoal uppercase">
+              {lang === 'en' ? "Quick Access" : "ทางลัดด่วน"}
+            </span>
+            <button type="button" id="apps-nav-close-btn" class="text-gray-400 hover:text-brand-charcoal p-1 focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Vertical list of 4 navigation links -->
+          <div class="space-y-6">
+            <!-- 1. Shopping Cart -->
+            <a href={l('/cart')} class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-sm cursor-pointer transition-colors relative">
+              <div class="flex items-center gap-3">
+                <span class="text-brand-charcoal"><Cart /></span>
+                <span class="text-xs font-medium text-brand-charcoal uppercase tracking-wider">{lang === 'en' ? "Shopping Cart" : "ตะกร้าสินค้า"}</span>
+              </div>
+              <span id="apps-cart-badge" class={`bg-brand-charcoal text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-semibold transition-transform duration-300 ${cartCount > 0 ? 'scale-100' : 'scale-0'}`}>{cartCount}</span>
             </a>
-          ) : (
-            <a href={l('/auth/signin')} class="text-[11px] tracking-widest hover:opacity-70 transition-opacity uppercase font-light">{t('nav.signin')}</a>
-          )}
-        </div>
-      </div>
-    </header>
 
-    <!-- Mega Menu Backdrop -->
-    <div id="mega-menu-backdrop" class="fixed inset-0 bg-black/10 backdrop-blur-sm z-40 hidden transition-all duration-300"></div>
+            <!-- 2. My Wishlist -->
+            <a href={l('/favorite')} class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-sm cursor-pointer transition-colors relative">
+              <div class="flex items-center gap-3">
+                <span class="text-brand-charcoal"><Heart /></span>
+                <span class="text-xs font-medium text-brand-charcoal uppercase tracking-wider">{lang === 'en' ? "My Favorites" : "รายการโปรด"}</span>
+              </div>
+              <span id="apps-favorite-badge" class="bg-brand-charcoal text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-semibold scale-0 transition-transform duration-300">0</span>
+            </a>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow">
-      <slot />
-    </main>
+            <!-- 3. Language Selector -->
+            <button class="language-selector-btn w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-sm cursor-pointer transition-colors text-left focus:outline-none">
+              <div class="flex items-center gap-3">
+                <span class="text-brand-charcoal"><Globe /></span>
+                <span class="text-xs font-medium text-brand-charcoal uppercase tracking-wider">{lang === 'en' ? "Language / ภาษา" : "ภาษา / Language"}</span>
+              </div>
+              <span class="text-[10px] tracking-widest font-bold uppercase text-brand-gold bg-white border border-gray-200 px-2 py-0.5 rounded-sm">{lang === 'en' ? 'EN' : 'TH'}</span>
+            </button>
 
-    <!-- Footer -->
-    <footer class="w-full bg-white border-t border-gray-200 py-16 mt-20">
-      <div class="max-w-[1440px] mx-auto px-6 flex flex-col items-center">
-        <!-- Footer Logo -->
-        <div class="flex flex-col items-center mb-12 text-center">
-          <h4 class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em]">A C H I</h4>
-          <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light leading-none pl-[0.4em]">Cool Every Day</span>
-        </div>
-
-        <hr class="w-full border-gray-100 mb-12" />
-
-        <!-- Footer Links Grid -->
-        <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-8 text-[11px] uppercase tracking-wider font-light mb-8">
-          <!-- Col 1 -->
-          <div>
-            <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.company')}</h5>
-            <ul class="space-y-2 text-gray-500">
-              <li><a href={l('/about')} class="hover:text-brand-gold transition-colors">{t('footer.about')}</a></li>
-            </ul>
-          </div>
-
-          <!-- Col 2 -->
-          <div>
-            <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.service')}</h5>
-            <ul class="space-y-2 text-gray-500">
-              <li><a href={l('/contact')} class="hover:text-brand-gold transition-colors">{t('footer.contact')}</a></li>
-              <li><a href={l('/stores')} class="hover:text-brand-gold transition-colors">{t('footer.stores')}</a></li>
-              <li><a href={l('/delivery')} class="hover:text-brand-gold transition-colors">{t('footer.delivery')}</a></li>
-              <li><a href={l('/payments')} class="hover:text-brand-gold transition-colors">{t('footer.payments')}</a></li>
-              <li><a href={l('/return')} class="hover:text-brand-gold transition-colors">{t('footer.return')}</a></li>
-              <li><a href={l('/refunds')} class="hover:text-brand-gold transition-colors">{t('footer.refunds')}</a></li>
-              <li><a href={l('/product-care')} class="hover:text-brand-gold transition-colors">{t('footer.product_care')}</a></li>
-              <li><a href={l('/size-guide')} class="hover:text-brand-gold transition-colors">{t('footer.size_guide')}</a></li>
-              <li><a href={l('/faq')} class="hover:text-brand-gold transition-colors">{t('footer.faq')}</a></li>
-              <li><a href={l('/fact-sheet')} class="hover:text-brand-gold transition-colors">{t('footer.fact_sheet')}</a></li>
-            </ul>
-          </div>
-
-          <!-- Col 3 -->
-          <div>
-            <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.legal')}</h5>
-            <ul class="space-y-2 text-gray-500">
-              <li><a href={l('/privacy')} class="hover:text-brand-gold transition-colors">{t('footer.privacy')}</a></li>
-              <li><a href={l('/terms')} class="hover:text-brand-gold transition-colors">{t('footer.terms')}</a></li>
-              <li><a href={l('/cookies')} class="hover:text-brand-gold transition-colors">{t('footer.cookies')}</a></li>
-            </ul>
-          </div>
-
-          <!-- Col 4 -->
-          <div>
-            <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.follow')}</h5>
-            <ul class="space-y-2 text-gray-500">
-              <li><a href="https://facebook.com" class="hover:text-brand-gold transition-colors">{t('footer.facebook')}</a></li>
-              <li><a href="https://line.me" class="hover:text-brand-gold transition-colors">{t('footer.line')}</a></li>
-              <li><a href="https://instagram.com" class="hover:text-brand-gold transition-colors">{t('footer.instagram')}</a></li>
-              <li><a href="https://pinterest.com" class="hover:text-brand-gold transition-colors">{t('footer.pinterest')}</a></li>
-              <li><a href="https://twitter.com" class="hover:text-brand-gold transition-colors">{t('footer.twitter')}</a></li>
-              <li><a href="https://spotify.com" class="hover:text-brand-gold transition-colors">{t('footer.spotify')}</a></li>
-            </ul>
+            <!-- 4. User Profile / Sign In -->
+            {session ? (
+              <a href={l('/profile')} class="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-sm cursor-pointer transition-colors">
+                <span class="text-brand-charcoal"><User /></span>
+                <span class="text-xs font-medium text-brand-charcoal uppercase tracking-wider">{lang === 'en' ? "My Account" : "ข้อมูลส่วนตัว"}</span>
+              </a>
+            ) : (
+              <a href={l('/auth/signin')} class="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-sm cursor-pointer transition-colors">
+                <span class="text-brand-charcoal"><User /></span>
+                <span class="text-xs font-medium text-brand-charcoal uppercase tracking-wider">{lang === 'en' ? "Sign In" : "เข้าสู่ระบบ"}</span>
+              </a>
+            )}
           </div>
         </div>
-      </div>
-    </footer>
 
-    <!-- Search Overlay -->
+        <!-- Mobile Navigation Drawer -->
+        <div id="mobile-nav-drawer" class="md:hidden">
+          <!-- Drawer Header -->
+          <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <span class="font-serif text-lg tracking-[0.2em] font-light pl-[0.2em]">A C H I</span>
+            <button type="button" id="mobile-nav-close-btn" class="text-gray-400 hover:text-brand-charcoal p-1 focus:outline-none cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Search Input Box for Mobile -->
+          <div class="mb-6">
+            <form action={l('/products')} method="GET" class="relative">
+              <input 
+                type="text" 
+                name="query" 
+                placeholder={lang === 'en' ? "Search products..." : "ค้นหาสินค้า..."} 
+                class="w-full bg-gray-50 border border-gray-200 pl-9 pr-3 py-2 rounded-sm text-xs outline-none focus:border-brand-gold font-light"
+              />
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+                </svg>
+              </span>
+            </form>
+          </div>
+
+          <!-- Drawer Navigation Links -->
+          <nav class="space-y-4 text-xs tracking-widest uppercase text-brand-charcoal">
+            <div class="border-b border-gray-100 pb-3">
+              <a href={l('/')} class="block py-1 hover:text-brand-gold">{t('nav.home')}</a>
+            </div>
+            
+            <div class="border-b border-gray-100 pb-3">
+              <a href={l('/products')} class="block py-1 font-semibold hover:text-brand-gold">{t('menu.shop_all')}</a>
+            </div>
+
+            <!-- Men Accordion -->
+            <details class="group border-b border-gray-100 pb-3">
+              <summary class="flex justify-between items-center py-1 cursor-pointer list-none focus:outline-none">
+                <span>{t('home.men')}</span>
+                <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
+                <li><a href={l('/products?categorySlug=men&query=T-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.men_tshirt')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Polo')} class="hover:text-brand-gold block py-0.5">{t('menu.men_polo')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.men_hoodie')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.men_jeans')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Pants')} class="hover:text-brand-gold block py-0.5">{t('menu.men_pants')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.men_shorts')}</a></li>
+                <li><a href={l('/products?categorySlug=men&query=Bags')} class="hover:text-brand-gold block py-0.5">{t('menu.men_bags')}</a></li>
+              </ul>
+            </details>
+
+            <!-- Women Accordion -->
+            <details class="group border-b border-gray-100 pb-3">
+              <summary class="flex justify-between items-center py-1 cursor-pointer list-none focus:outline-none">
+                <span>{t('home.women')}</span>
+                <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
+                <li><a href={l('/products?categorySlug=women&query=T-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.women_tshirt')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Polo')} class="hover:text-brand-gold block py-0.5">{t('menu.women_polo')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.women_hoodie')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.women_jeans')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Pants')} class="hover:text-brand-gold block py-0.5">{t('menu.women_pants')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.women_shorts')}</a></li>
+                <li><a href={l('/products?categorySlug=women&query=Bags')} class="hover:text-brand-gold block py-0.5">{t('menu.women_bags')}</a></li>
+              </ul>
+            </details>
+
+            <!-- Featured Accordion -->
+            <details class="group border-b border-gray-100 pb-3">
+              <summary class="flex justify-between items-center py-1 cursor-pointer list-none focus:outline-none">
+                <span>{t('menu.featured')}</span>
+                <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
+                <li><a href={l('/products/new-arrivals')} class="hover:text-brand-gold block py-0.5">{t('nav.new_arrivals')}</a></li>
+                <li><a href={l('/products/best-sellers')} class="hover:text-brand-gold block py-0.5">{t('menu.best_sellers')}</a></li>
+                <li><a href={l('/discount')} class="hover:text-brand-gold block py-0.5">{t('nav.discount')}</a></li>
+              </ul>
+            </details>
+
+            <!-- Collections Accordion -->
+            <details class="group border-b border-gray-100 pb-3">
+              <summary class="flex justify-between items-center py-1 cursor-pointer list-none focus:outline-none">
+                <span>{t('menu.collections')}</span>
+                <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
+              </summary>
+              <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
+                <li><a href={l('/collections')} class="hover:text-brand-gold block py-0.5">{t('menu.events')}</a></li>
+                <li><a href={l('/products/total-looks')} class="hover:text-brand-gold block py-0.5">{t('menu.total_looks')}</a></li>
+              </ul>
+            </details>
+
+            <div class="border-b border-gray-100 pb-3">
+              <a href={l('/blog')} class="block py-1 hover:text-brand-gold">{t('nav.blog')}</a>
+            </div>
+
+            <div class="border-b border-gray-100 pb-3">
+              <a href={l('/contact')} class="block py-1 hover:text-brand-gold">{t('nav.contact')}</a>
+            </div>
+          </nav>
+        </div>
+
+        <!-- Mega Menu Backdrop -->
+        <div id="mega-menu-backdrop" class="fixed inset-0 bg-black/10 backdrop-blur-sm z-40"></div>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow">
+          <slot />
+        </main>
+
+        <!-- Footer -->
+        <footer class="w-full bg-white border-t border-gray-200 py-16 mt-20">
+          <div class="max-w-[1440px] mx-auto px-6 flex flex-col items-center">
+            <!-- Footer Logo -->
+            <div class="flex flex-col items-center mb-12 text-center">
+              <h4 class="font-serif text-3xl tracking-[0.3em] font-light leading-none pl-[0.3em] whitespace-nowrap">A C H I</h4>
+              <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
+              <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light leading-none pl-[0.4em] whitespace-nowrap">Cool Every Day</span>
+            </div>
+
+            <hr class="w-full border-gray-100 mb-12" />
+
+            <!-- Footer Links Grid -->
+            <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-8 text-[11px] uppercase tracking-wider font-light mb-8">
+              <!-- Col 1 -->
+              <div>
+                <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.company')}</h5>
+                <ul class="space-y-2 text-gray-500">
+                  <li><a href={l('/about')} class="hover:text-brand-gold transition-colors">{t('footer.about')}</a></li>
+                </ul>
+              </div>
+
+              <!-- Col 2 -->
+              <div>
+                <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.service')}</h5>
+                <ul class="space-y-2 text-gray-500">
+                  <li><a href={l('/contact')} class="hover:text-brand-gold transition-colors">{t('footer.contact')}</a></li>
+                  <li><a href={l('/stores')} class="hover:text-brand-gold transition-colors">{t('footer.stores')}</a></li>
+                  <li><a href={l('/delivery')} class="hover:text-brand-gold transition-colors">{t('footer.delivery')}</a></li>
+                  <li><a href={l('/payments')} class="hover:text-brand-gold transition-colors">{t('footer.payments')}</a></li>
+                  <li><a href={l('/return')} class="hover:text-brand-gold transition-colors">{t('footer.return')}</a></li>
+                  <li><a href={l('/refunds')} class="hover:text-brand-gold transition-colors">{t('footer.refunds')}</a></li>
+                  <li><a href={l('/product-care')} class="hover:text-brand-gold transition-colors">{t('footer.product_care')}</a></li>
+                  <li><a href={l('/size-guide')} class="hover:text-brand-gold transition-colors">{t('footer.size_guide')}</a></li>
+                  <li><a href={l('/faq')} class="hover:text-brand-gold transition-colors">{t('footer.faq')}</a></li>
+                  <li><a href={l('/fact-sheet')} class="hover:text-brand-gold transition-colors">{t('footer.fact_sheet')}</a></li>
+                </ul>
+              </div>
+
+              <!-- Col 3 -->
+              <div>
+                <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.legal')}</h5>
+                <ul class="space-y-2 text-gray-500">
+                  <li><a href={l('/privacy')} class="hover:text-brand-gold transition-colors">{t('footer.privacy')}</a></li>
+                  <li><a href={l('/terms')} class="hover:text-brand-gold transition-colors">{t('footer.terms')}</a></li>
+                  <li><a href={l('/cookies')} class="hover:text-brand-gold transition-colors">{t('footer.cookies')}</a></li>
+                </ul>
+              </div>
+
+              <!-- Col 4 -->
+              <div>
+                <h5 class="font-medium mb-4 text-brand-charcoal">{t('footer.follow')}</h5>
+                <ul class="space-y-2 text-gray-500">
+                  <li><a href="https://facebook.com" class="hover:text-brand-gold transition-colors">{t('footer.facebook')}</a></li>
+                  <li><a href="https://line.me" class="hover:text-brand-gold transition-colors">{t('footer.line')}</a></li>
+                  <li><a href="https://instagram.com" class="hover:text-brand-gold transition-colors">{t('footer.instagram')}</a></li>
+                  <li><a href="https://pinterest.com" class="hover:text-brand-gold transition-colors">{t('footer.pinterest')}</a></li>
+                  <li><a href="https://twitter.com" class="hover:text-brand-gold transition-colors">{t('footer.twitter')}</a></li>
+                  <li><a href="https://spotify.com" class="hover:text-brand-gold transition-colors">{t('footer.spotify')}</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </>
+    )}
+
+<!-- Search Overlay -->
     <div id="search-overlay" class="fixed inset-0 bg-white z-50 flex flex-col hidden">
       <!-- Search Overlay Header -->
       <div class="max-w-[1440px] w-full mx-auto px-6 h-24 flex items-center justify-between">
         <div class="flex flex-col items-center">
-          <span class="font-serif text-3xl tracking-[0.3em] font-light pl-[0.3em]">A C H I</span>
+          <span class="font-serif text-3xl tracking-[0.3em] font-light pl-[0.3em] whitespace-nowrap">A C H I</span>
           <div class="w-36 border-t border-current opacity-30 my-1.5"></div>
-          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light pl-[0.4em]">Cool Every Day</span>
+          <span class="text-[9px] tracking-[0.4em] uppercase text-gray-400 font-light pl-[0.4em] whitespace-nowrap">Cool Every Day</span>
         </div>
 
         <!-- Center Navigation -->
@@ -888,7 +1325,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
 
       const handleStickyScroll = () => {
         if (!stickyHeader) return;
-        const isMenuOpen = shopMegaMenu && (shopMegaMenu.classList.contains('block') || !shopMegaMenu.classList.contains('hidden'));
+        const isMenuOpen = shopMegaMenu && shopMegaMenu.classList.contains('open');
         
         if (window.scrollY > 20 || isMenuOpen) {
           stickyHeader.classList.add('scrolled');
@@ -920,15 +1357,13 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
 
         shopMenuBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const isHidden = shopMegaMenu.classList.contains('hidden');
-          if (isHidden) {
-            shopMegaMenu.classList.remove('hidden');
-            shopMegaMenu.classList.add('block');
-            if (backdrop) backdrop.classList.remove('hidden');
+          const isOpen = shopMegaMenu.classList.contains('open');
+          if (!isOpen) {
+            shopMegaMenu.classList.add('open');
+            if (backdrop) backdrop.classList.add('open');
           } else {
-            shopMegaMenu.classList.remove('block');
-            shopMegaMenu.classList.add('hidden');
-            if (backdrop) backdrop.classList.add('hidden');
+            shopMegaMenu.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('open');
           }
           handleStickyScroll();
         });
@@ -936,18 +1371,16 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
         // Close when clicking outside
         document.addEventListener('click', (e) => {
           if (shopMegaMenu && !shopMegaMenu.contains(e.target) && e.target !== shopMenuBtn) {
-            shopMegaMenu.classList.remove('block');
-            shopMegaMenu.classList.add('hidden');
-            if (backdrop) backdrop.classList.add('hidden');
+            shopMegaMenu.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('open');
             handleStickyScroll();
           }
         });
 
         if (backdrop) {
           backdrop.addEventListener('click', () => {
-            shopMegaMenu.classList.remove('block');
-            shopMegaMenu.classList.add('hidden');
-            backdrop.classList.add('hidden');
+            shopMegaMenu.classList.remove('open');
+            backdrop.classList.remove('open');
             handleStickyScroll();
           });
         }
@@ -1056,7 +1489,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
         };
 
         const updateFavoriteBadge = (count) => {
-          const badges = [document.getElementById('favorite-badge'), document.getElementById('search-favorite-badge')];
+          const badges = [document.getElementById('favorite-badge'), document.getElementById('search-favorite-badge'), document.getElementById('apps-favorite-badge')];
           badges.forEach(badge => {
             if (!badge) return;
             badge.textContent = count;
@@ -1223,7 +1656,7 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
               const cartData = await res.json();
               const count = cartData.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
               
-              const badges = [document.getElementById('cart-badge'), document.getElementById('search-cart-badge')];
+              const badges = [document.getElementById('cart-badge'), document.getElementById('search-cart-badge'), document.getElementById('apps-cart-badge')];
               badges.forEach(badge => {
                 if (!badge) return;
                 badge.textContent = count;
@@ -1565,6 +1998,113 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
           modal.querySelector('div').classList.add('scale-100');
         };
       })();
+          // Admin Mobile Sidebar Toggle
+      (function() {
+        const toggleBtn = document.getElementById('admin-sidebar-toggle');
+        const sidebar = document.getElementById('admin-sidebar');
+        const backdrop = document.getElementById('admin-sidebar-backdrop');
+        if (toggleBtn && sidebar && backdrop) {
+          const toggleSidebar = () => {
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+          };
+          toggleBtn.addEventListener('click', toggleSidebar);
+          backdrop.addEventListener('click', toggleSidebar);
+        }
+      })();
     </script>
+    <script>
+    import { initPageReveal, initScrollReveal, initHeroScrollZoom } from "../lib/animations";
+
+    try {
+      initPageReveal();
+      initScrollReveal();
+      initHeroScrollZoom();
+    } catch (err) {
+      console.error('[Motion API Error] Global animations failed.', err);
+    }
+  </script>
+
+  <script is:inline>
+    (function() {
+      // Mobile main menu toggle drawer script
+      const mobileNavToggleBtn = document.getElementById('mobile-nav-toggle-btn');
+      const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+      const mobileNavCloseBtn = document.getElementById('mobile-nav-close-btn');
+      const mobileNavBackdrop = document.getElementById('mobile-nav-backdrop');
+
+      const openNavDrawer = () => {
+        mobileNavDrawer?.classList.add('open');
+        mobileNavBackdrop?.classList.add('open');
+        document.body.classList.add('nav-drawer-open');
+      };
+
+      const closeNavDrawer = () => {
+        mobileNavDrawer?.classList.remove('open');
+        mobileNavBackdrop?.classList.remove('open');
+        document.body.classList.remove('nav-drawer-open');
+      };
+
+      if (mobileNavToggleBtn) {
+        mobileNavToggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openNavDrawer();
+        });
+      }
+
+      if (mobileNavCloseBtn) {
+        mobileNavCloseBtn.addEventListener('click', closeNavDrawer);
+      }
+
+      if (mobileNavBackdrop) {
+        mobileNavBackdrop.addEventListener('click', closeNavDrawer);
+      }
+
+      // Close mobile drawer on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeNavDrawer();
+      });
+    })();
+
+    (function() {
+      // Apps navigation menu toggle drawer script
+      const appsNavToggleBtn = document.getElementById('apps-nav-toggle-btn');
+      const appsNavDrawer = document.getElementById('apps-nav-drawer');
+      const appsNavCloseBtn = document.getElementById('apps-nav-close-btn');
+      const appsDrawerBackdrop = document.getElementById('apps-drawer-backdrop');
+
+      const openAppsDrawer = () => {
+        appsNavDrawer?.classList.add('open');
+        appsDrawerBackdrop?.classList.add('open');
+        document.body.classList.add('apps-drawer-open');
+      };
+
+      const closeAppsDrawer = () => {
+        appsNavDrawer?.classList.remove('open');
+        appsDrawerBackdrop?.classList.remove('open');
+        document.body.classList.remove('apps-drawer-open');
+      };
+
+      if (appsNavToggleBtn) {
+        appsNavToggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openAppsDrawer();
+        });
+      }
+
+      if (appsNavCloseBtn) {
+        appsNavCloseBtn.addEventListener('click', closeAppsDrawer);
+      }
+
+      if (appsDrawerBackdrop) {
+        appsDrawerBackdrop.addEventListener('click', closeAppsDrawer);
+      }
+
+      // Close mobile drawer on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAppsDrawer();
+      });
+    })();
+  </script>
   </body>
 </html>

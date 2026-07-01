@@ -47,10 +47,10 @@ const resolveImage = (url: string) => {
     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
     
     <div class="relative w-full max-w-[1440px] mx-auto px-6 flex flex-col justify-end h-full pb-16">
-      <h1 class="font-serif text-4xl sm:text-6xl tracking-widest uppercase leading-none mb-3">
+      <h1 class="motion-title font-serif text-4xl sm:text-6xl tracking-widest uppercase leading-none mb-3">
         ACHI <span class="italic font-normal text-stone-200">{lang === 'en' ? "Editorial" : "กองบรรณาธิการ"}</span>
       </h1>
-      <p class="font-sans text-[10px] sm:text-xs tracking-[0.25em] font-light uppercase text-gray-300">
+      <p class="motion-desc font-sans text-[10px] sm:text-xs tracking-[0.25em] font-light uppercase text-gray-300">
         {lang === 'en' ? "Collections, styling guides, and brand updates" : "คอลเลกชัน คู่มือการจัดสไตล์ และข่าวสารแบรนด์"}
       </p>
     </div>
@@ -60,7 +60,7 @@ const resolveImage = (url: string) => {
   <div class="max-w-[1200px] mx-auto px-6 py-24">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
       {paginatedBlogs.map((blog) => (
-        <article class="group space-y-6">
+        <article class="motion-item group space-y-6">
           <a href={`/blog/${blog.id}`} class="block aspect-[16/10] bg-stone-50 overflow-hidden rounded-sm border border-stone-100/50">
             {blog.imageUrl ? (
               <img 
