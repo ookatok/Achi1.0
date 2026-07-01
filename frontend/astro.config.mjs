@@ -19,6 +19,12 @@ export default defineConfig({
     },
     server: {
       allowedHosts: true,
+      proxy: {
+        '/assets/uploads': {
+          target: process.env.BACKEND_URL || 'http://localhost:3001',
+          changeOrigin: true,
+        }
+      }
     },
   },
   output: 'server',
