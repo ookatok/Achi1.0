@@ -206,7 +206,7 @@ try {
                     <button type="button" data-cmd="bulletList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">• List</button>
                     <button type="button" data-cmd="orderedList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">1. List</button>
                   </div>
-                  <div id="story-paragraphs-en-editor" class="p-3 min-h-[280px] overflow-y-auto resize-y font-sans text-xs focus:outline-none bg-white"></div>
+                  <div id="story-paragraphs-en-editor" class="p-3 min-h-[280px] overflow-y-auto font-sans text-xs bg-white cursor-text" onclick="this.querySelector('.ProseMirror')?.focus()"></div>
                 </div>
               </div>
             </div>
@@ -236,7 +236,7 @@ try {
                     <button type="button" data-cmd="bulletList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">• List</button>
                     <button type="button" data-cmd="orderedList" class="h-8 px-3 hover:bg-stone-100 rounded-md font-semibold text-[10px] border border-stone-200 bg-white shadow-xs cursor-pointer transition-all flex items-center justify-center gap-1 text-stone-700">1. List</button>
                   </div>
-                  <div id="story-paragraphs-th-editor" class="p-3 min-h-[280px] overflow-y-auto resize-y font-sans text-xs focus:outline-none bg-white"></div>
+                  <div id="story-paragraphs-th-editor" class="p-3 min-h-[280px] overflow-y-auto font-sans text-xs bg-white cursor-text" onclick="this.querySelector('.ProseMirror')?.focus()"></div>
                 </div>
               </div>
             </div>
@@ -354,7 +354,11 @@ try {
           element: editorEnEl,
           extensions: [StarterKit],
           content: initialStoryEn,
+          editable: true,
+          injectCSS: true,
         });
+        const pm = editorEnEl.querySelector('.ProseMirror') as HTMLElement | null;
+        if (pm) { pm.style.minHeight = '250px'; pm.style.outline = 'none'; }
       }
     } catch (e) {
       console.error('Failed to init EN editor:', e);
@@ -367,7 +371,11 @@ try {
           element: editorThEl,
           extensions: [StarterKit],
           content: initialStoryTh,
+          editable: true,
+          injectCSS: true,
         });
+        const pm = editorThEl.querySelector('.ProseMirror') as HTMLElement | null;
+        if (pm) { pm.style.minHeight = '250px'; pm.style.outline = 'none'; }
       }
     } catch (e) {
       console.error('Failed to init TH editor:', e);
@@ -760,6 +768,9 @@ try {
     .ProseMirror {
       outline: none;
       min-height: 250px;
+      cursor: text;
+      user-select: text;
+      -webkit-user-select: text;
     }
     .ProseMirror p {
       margin-bottom: 0.5rem;
