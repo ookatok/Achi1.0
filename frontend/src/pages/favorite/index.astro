@@ -1,6 +1,6 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { useTranslations } from '../lib/translations';
+import Layout from '../../layouts/Layout.astro';
+import { useTranslations } from '../../lib/translations';
 import { getSession } from 'auth-astro/server';
 
 const session = await getSession(Astro.request);
