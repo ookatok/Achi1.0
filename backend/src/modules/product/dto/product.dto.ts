@@ -9,7 +9,7 @@ export const CreateProductSchema = z.object({
   allowOnOrder: z.boolean().optional().default(false),
   onOrderQuantity: z.number().int().nonnegative().optional().default(0),
   categoryId: z.number().int().positive().nullable().optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: z.string().refine((val) => val === '' || val.startsWith('/assets/') || val.startsWith('http://') || val.startsWith('https://'), { message: 'Invalid image path' }).optional().or(z.literal('')),
   images: z.array(z.object({
     color: z.string().optional(),
     imageUrl: z.string()
