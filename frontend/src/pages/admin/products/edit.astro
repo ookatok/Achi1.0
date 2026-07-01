@@ -1326,7 +1326,37 @@ if (Array.isArray(detailImages)) {
           );
         } else {
           const data = await res.json();
-          window.showStatusAlert(res.status, null, data ? data.message : getMsg('failedUpdateProduct'));
+          let errorMsg = data ? data.message : getMsg('failedUpdateProduct');
+          
+          if (data && data.errors && Array.isArray(data.errors)) {
+            const keyTranslations = {
+              name: lang === 'en' ? 'Product Name' : 'ชื่อสินค้า',
+              slug: lang === 'en' ? 'Slug' : 'รหัส URL (Slug)',
+              price: lang === 'en' ? 'Price' : 'ราคา',
+              discountPercent: lang === 'en' ? 'Discount Percent' : 'เปอร์เซ็นต์ส่วนลด',
+              stockQuantity: lang === 'en' ? 'Stock Quantity' : 'จำนวนสต็อก',
+              categoryId: lang === 'en' ? 'Category' : 'หมวดหมู่',
+              status: lang === 'en' ? 'Status' : 'สถานะสินค้า',
+              imageUrl: lang === 'en' ? 'Main Image' : 'รูปภาพหลัก',
+              description: lang === 'en' ? 'Description' : 'รายละเอียดสินค้า',
+              sizes: lang === 'en' ? 'Sizes' : 'ไซส์สินค้า',
+              colors: lang === 'en' ? 'Colors' : 'สีสินค้า',
+              tags: lang === 'en' ? 'Tags' : 'แท็กสินค้า'
+            } as Record<string, string>;
+
+            const fieldErrors = data.errors.map((err: any) => {
+              const rawField = err.path ? err.path[0] : '';
+              const fieldLabel = keyTranslations[rawField] || rawField || (lang === 'en' ? 'field' : 'ข้อมูล');
+              const message = err.message === 'Required' 
+                ? (lang === 'en' ? 'is required' : 'จำเป็นต้องระบุ')
+                : (err.message || 'Invalid input');
+              return `${fieldLabel} ${message}`;
+            }).join(', ');
+
+            errorMsg = `${lang === 'en' ? 'Validation failed' : 'ข้อมูลไม่ถูกต้อง'}: ${fieldErrors}`;
+          }
+
+          window.showStatusAlert(res.status, null, errorMsg);
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
