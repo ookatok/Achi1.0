@@ -493,7 +493,10 @@ const displayTags = tagsList.map(t => ({
         ))}
         {pageList.length === 0 && (
           <div class="col-span-full text-center py-24 text-stone-400 font-light italic text-sm border border-dashed border-stone-200 rounded-sm">
-            {lang === 'en' ? 'No products match your selected filters' : 'ไม่พบสินค้าที่ตรงตามเงื่อนไขการค้นหา'}
+            {isFiltered 
+              ? (lang === 'en' ? 'No products match your selected filters' : 'ไม่พบสินค้าที่ตรงตามเงื่อนไขการค้นหา')
+              : (lang === 'en' ? 'Our products catalog is being prepared. New items will be uploaded soon!' : 'ขออภัย ทางร้านกำลังเตรียมข้อมูลแค็ตตาล็อกสินค้าใหม่ สินค้าจะได้รับการอัปเดตเร็วๆ นี้!')
+            }
           </div>
         )}
       </div>

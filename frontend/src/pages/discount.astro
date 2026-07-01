@@ -532,8 +532,11 @@ const getDiscountDetails = (product: any) => {
       </div>
 
       {displayProducts.length === 0 && (
-        <div class="text-center py-24 text-stone-400 italic font-light text-sm bg-stone-50 border border-stone-100 rounded-sm w-full">
-          {lang === 'en' ? "No discounted products match your criteria." : "ไม่มีสินค้าลดราคาที่ตรงตามเงื่อนไขของคุณ"}
+        <div class="text-center py-24 text-stone-400 italic font-light text-sm bg-stone-50 border border-dashed border-stone-200 rounded-sm w-full">
+          {isFiltered
+            ? (lang === 'en' ? "No discounted products match your criteria." : "ไม่มีสินค้าลดราคาที่ตรงตามเงื่อนไขของคุณ")
+            : (lang === 'en' ? "There are no discount deals active at the moment. Please check back later!" : "ขออภัย ขณะนี้ยังไม่มีรายการสินค้าลดราคาพิเศษ โปรดติดตามโปรโมชันใหม่เร็วๆ นี้!")
+          }
         </div>
       )}
 

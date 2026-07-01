@@ -58,56 +58,62 @@ const resolveImage = (url: string) => {
 
   <!-- Blog Articles Grid -->
   <div class="max-w-[1200px] mx-auto px-6 py-24">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
-      {paginatedBlogs.map((blog) => (
-        <article class="motion-item group space-y-6">
-          <a href={`/blog/${blog.id}`} class="block aspect-[16/10] bg-stone-50 overflow-hidden rounded-sm border border-stone-100/50">
-            {blog.imageUrl ? (
-              <img 
-                src={resolveImage(blog.imageUrl)} 
-                alt={blog.title} 
-                class="w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700 ease-out" 
-              />
-            ) : (
-              <div class="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 font-sans text-xs uppercase tracking-widest font-light">
-                ACHI Editorial
-              </div>
-            )}
-          </a>
-          
-          <div class="space-y-3">
-            <div class="flex flex-wrap items-center gap-2.5 text-[10px] uppercase tracking-widest text-stone-400 font-medium">
-              <span>{lang === 'en' ? "By" : "โดย"} {blog.authorName || 'ACHI Studio'}</span>
-              {blog.categoryName && (
-                <>
-                  <span class="w-1.5 h-1.5 rounded-full bg-brand-gold opacity-50"></span>
-                  <span class="text-brand-gold font-bold">{blog.categoryName}</span>
-                </>
+    {paginatedBlogs.length === 0 ? (
+      <div class="text-center py-24 text-stone-400 font-light italic text-sm border border-dashed border-stone-200 rounded-sm">
+        {lang === 'en' ? 'Our editorials and styling guides are being written. Please stay tuned!' : 'ขออภัย ทางทีมงานกำลังเขียนบทความและคู่มือการจัดแต่งสไตล์ใหม่ โปรดติดตามเร็วๆ นี้!'}
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
+        {paginatedBlogs.map((blog) => (
+          <article class="motion-item group space-y-6">
+            <a href={`/blog/${blog.id}`} class="block aspect-[16/10] bg-stone-50 overflow-hidden rounded-sm border border-stone-100/50">
+              {blog.imageUrl ? (
+                <img 
+                  src={resolveImage(blog.imageUrl)} 
+                  alt={blog.title} 
+                  class="w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700 ease-out" 
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400 font-sans text-xs uppercase tracking-widest font-light">
+                  ACHI Editorial
+                </div>
               )}
-              <span class="w-1.5 h-1.5 rounded-full bg-stone-300"></span>
-              <span>{new Date(blog.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </a>
+            
+            <div class="space-y-3">
+              <div class="flex flex-wrap items-center gap-2.5 text-[10px] uppercase tracking-widest text-stone-400 font-medium">
+                <span>{lang === 'en' ? "By" : "โดย"} {blog.authorName || 'ACHI Studio'}</span>
+                {blog.categoryName && (
+                  <>
+                    <span class="w-1.5 h-1.5 rounded-full bg-brand-gold opacity-50"></span>
+                    <span class="text-brand-gold font-bold">{blog.categoryName}</span>
+                  </>
+                )}
+                <span class="w-1.5 h-1.5 rounded-full bg-stone-300"></span>
+                <span>{new Date(blog.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              
+              <h2 class="font-serif text-2xl tracking-wide text-brand-charcoal group-hover:text-stone-600 transition-colors">
+                <a href={`/blog/${blog.id}`}>{blog.title}</a>
+              </h2>
+              
+              <p class="text-xs text-stone-600 font-light leading-relaxed font-sans line-clamp-3">
+                {blog.summary || (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '')}
+              </p>
+              
+              <div class="pt-2">
+                <a 
+                  href={`/blog/${blog.id}`} 
+                  class="inline-block text-[10px] uppercase tracking-widest font-semibold text-brand-charcoal border-b border-brand-charcoal hover:text-brand-gold hover:border-brand-gold transition-colors pb-0.5"
+                >
+                  {lang === 'en' ? "Read article" : "อ่านบทความ"}
+                </a>
+              </div>
             </div>
-            
-            <h2 class="font-serif text-2xl tracking-wide text-brand-charcoal group-hover:text-stone-600 transition-colors">
-              <a href={`/blog/${blog.id}`}>{blog.title}</a>
-            </h2>
-            
-            <p class="text-xs text-stone-600 font-light leading-relaxed font-sans line-clamp-3">
-              {blog.summary || (blog.content ? blog.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '')}
-            </p>
-            
-            <div class="pt-2">
-              <a 
-                href={`/blog/${blog.id}`} 
-                class="inline-block text-[10px] uppercase tracking-widest font-semibold text-brand-charcoal border-b border-brand-charcoal hover:text-brand-gold hover:border-brand-gold transition-colors pb-0.5"
-              >
-                {lang === 'en' ? "Read article" : "อ่านบทความ"}
-              </a>
-            </div>
-          </div>
-        </article>
-      ))}
-    </div>
+          </article>
+        ))}
+      </div>
+    )}
 
     <!-- Pagination Component -->
     <Pagination totalPages={totalPages} />

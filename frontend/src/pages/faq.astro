@@ -28,8 +28,8 @@ try {
 
     <div class="space-y-6 divide-y divide-gray-200 text-xs tracking-wider uppercase font-light text-gray-600">
       {faqs.length === 0 ? (
-        <div class="text-center py-12 text-stone-400 font-light normal-case tracking-normal">
-          {lang === 'en' ? "No FAQs available at the moment." : "ไม่มีข้อมูลคำถามที่พบบ่อยในขณะนี้"}
+        <div class="text-center py-24 text-stone-400 font-light italic text-sm border border-dashed border-stone-200 rounded-sm">
+          {lang === 'en' ? "Frequently Asked Questions are being prepared. Check back soon!" : "ขออภัย ขณะนี้กำลังจัดเตรียมข้อมูลคำถามที่พบบ่อย โปรดติดตามเร็วๆ นี้!"}
         </div>
       ) : (
         faqs.map((faq, index) => (
