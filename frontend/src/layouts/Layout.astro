@@ -633,13 +633,13 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                     <div>
                       <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('home.men')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                        <li><a href={l('/products?categorySlug=men&query=T-shirt')} class="hover:text-brand-gold">{t('menu.men_tshirt')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Polo')} class="hover:text-brand-gold">{t('menu.men_polo')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Hoodie')} class="hover:text-brand-gold">{t('menu.men_hoodie')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Jeans')} class="hover:text-brand-gold">{t('menu.men_jeans')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Pants')} class="hover:text-brand-gold">{t('menu.men_pants')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Shorts')} class="hover:text-brand-gold">{t('menu.men_shorts')}</a></li>
-                        <li><a href={l('/products?categorySlug=men&query=Bags')} class="hover:text-brand-gold">{t('menu.men_bags')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=t-shirt')} class="hover:text-brand-gold">{t('menu.men_tshirt')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=polo-shirt')} class="hover:text-brand-gold">{t('menu.men_polo')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=hoodie')} class="hover:text-brand-gold">{t('menu.men_hoodie')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=jeans')} class="hover:text-brand-gold">{t('menu.men_jeans')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=pants')} class="hover:text-brand-gold">{t('menu.men_pants')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=shorts')} class="hover:text-brand-gold">{t('menu.men_shorts')}</a></li>
+                        <li><a href={l('/products?tags=men&categorySlug=bags')} class="hover:text-brand-gold">{t('menu.men_bags')}</a></li>
                       </ul>
                     </div>
 
@@ -647,14 +647,14 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                     <div>
                       <h4 class="font-medium text-gray-400 text-[11px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{t('home.women')}</h4>
                       <ul class="space-y-3 text-[11px] tracking-widest text-gray-500 font-light uppercase">
-                        <li><a href={l('/products?categorySlug=women&query=T-shirt')} class="hover:text-brand-gold">{t('menu.women_tshirt')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Polo')} class="hover:text-brand-gold">{t('menu.women_polo')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Hoodie')} class="hover:text-brand-gold">{t('menu.women_hoodie')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Jeans')} class="hover:text-brand-gold">{t('menu.women_jeans')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Pants')} class="hover:text-brand-gold">{t('menu.women_pants')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Shorts')} class="hover:text-brand-gold">{t('menu.women_shorts')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Skirts')} class="hover:text-brand-gold">{t('menu.skirts')}</a></li>
-                        <li><a href={l('/products?categorySlug=women&query=Bags')} class="hover:text-brand-gold">{t('menu.women_bags')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=t-shirt')} class="hover:text-brand-gold">{t('menu.women_tshirt')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=polo-shirt')} class="hover:text-brand-gold">{t('menu.women_polo')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=hoodie')} class="hover:text-brand-gold">{t('menu.women_hoodie')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=jeans')} class="hover:text-brand-gold">{t('menu.women_jeans')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=pants')} class="hover:text-brand-gold">{t('menu.women_pants')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=shorts')} class="hover:text-brand-gold">{t('menu.women_shorts')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=skirts')} class="hover:text-brand-gold">{t('menu.skirts')}</a></li>
+                        <li><a href={l('/products?tags=women&categorySlug=bags')} class="hover:text-brand-gold">{t('menu.women_bags')}</a></li>
                       </ul>
                     </div>
 
@@ -844,13 +844,13 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                 <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
-                <li><a href={l('/products?categorySlug=men&query=T-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.men_tshirt')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Polo')} class="hover:text-brand-gold block py-0.5">{t('menu.men_polo')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.men_hoodie')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.men_jeans')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Pants')} class="hover:text-brand-gold block py-0.5">{t('menu.men_pants')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.men_shorts')}</a></li>
-                <li><a href={l('/products?categorySlug=men&query=Bags')} class="hover:text-brand-gold block py-0.5">{t('menu.men_bags')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=t-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.men_tshirt')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=polo-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.men_polo')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.men_hoodie')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.men_jeans')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=pants')} class="hover:text-brand-gold block py-0.5">{t('menu.men_pants')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.men_shorts')}</a></li>
+                <li><a href={l('/products?tags=men&categorySlug=bags')} class="hover:text-brand-gold block py-0.5">{t('menu.men_bags')}</a></li>
               </ul>
             </details>
 
@@ -861,13 +861,13 @@ if (pathname.includes('/admin/products') || pathname.includes('/admin/new-arriva
                 <span class="text-[8px] transition-transform duration-300 group-open:rotate-180">▼</span>
               </summary>
               <ul class="pl-4 mt-3 space-y-3 text-[11px] text-gray-500 font-light normal-case">
-                <li><a href={l('/products?categorySlug=women&query=T-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.women_tshirt')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Polo')} class="hover:text-brand-gold block py-0.5">{t('menu.women_polo')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.women_hoodie')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.women_jeans')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Pants')} class="hover:text-brand-gold block py-0.5">{t('menu.women_pants')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.women_shorts')}</a></li>
-                <li><a href={l('/products?categorySlug=women&query=Bags')} class="hover:text-brand-gold block py-0.5">{t('menu.women_bags')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=t-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.women_tshirt')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=polo-shirt')} class="hover:text-brand-gold block py-0.5">{t('menu.women_polo')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=hoodie')} class="hover:text-brand-gold block py-0.5">{t('menu.women_hoodie')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=jeans')} class="hover:text-brand-gold block py-0.5">{t('menu.women_jeans')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=pants')} class="hover:text-brand-gold block py-0.5">{t('menu.women_pants')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=shorts')} class="hover:text-brand-gold block py-0.5">{t('menu.women_shorts')}</a></li>
+                <li><a href={l('/products?tags=women&categorySlug=bags')} class="hover:text-brand-gold block py-0.5">{t('menu.women_bags')}</a></li>
               </ul>
             </details>
 
